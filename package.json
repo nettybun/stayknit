@@ -1,0 +1,36 @@
+{
+  "name": "stayknit",
+  "version": "1.0.0",
+  "description": "Hot reload this",
+  "keywords": [],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "ssh://git@stayknit.ca:stayknit.git"
+  },
+  "author": "Grant Hames-Morgan",
+  "main": "index.ts",
+  "scripts": {
+    "build": "babel src --out-dir lib --extensions \".ts\"",
+    "build:css": "npx tailwindcss build src/styles.css --output lib/tailwind.css",
+    "start": "es-dev-server --file-extensions .ts --babel --watch"
+  },
+  "dependencies": {
+    "htm": "^3.0.3",
+    "sinuous": "^0.26.2",
+    "tailwindcss": "^1.2.0"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.9.0",
+    "@babel/preset-typescript": "^7.9.0",
+    "@typescript-eslint/eslint-plugin": "^2.27.0",
+    "@typescript-eslint/parser": "^2.27.0",
+    "es-dev-server": "^1.46.1",
+    "eslint": "^6.8.0",
+    "eslint-plugin-import": "^2.20.2",
+    "snowpack": "^1.6.0",
+    "sort-package-json": "^1.41.0",
+    "typescript": "^3.8.3"
+  }
+}
