@@ -11,7 +11,7 @@
   "author": "Grant Hames-Morgan",
   "main": "index.ts",
   "scripts": {
-    "build": "run-s build:**",
+    "build": "run-s build:** && npx snowpack --include \"src/**/*.ts\"",
     "build:ts": "babel src --out-dir lib --extensions \".ts\"",
     "build:css": "tailwindcss build src/styles.css --output lib/tailwind.css",
     "serve": "servor --reload",
@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "htm": "^3.0.3",
+    "sinuous": "file:sinuous/packages/sinuous",
     "tailwindcss": "^1.2.0"
   },
   "devDependencies": {

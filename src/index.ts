@@ -1,9 +1,6 @@
-// Api isn't available in .js but Firefox explicitly needs .js for the MIME type
-// eslint-disable-next-line import/named
-import { html, api, observable, Api } from '../sinuous/packages/sinuous/src/index.js';
-
-// TODO: Pragma h not imported [ "sinuous/babel-plugin-htm", { "useBuiltIns":
-// true, "useNativeSpread": true }] but Luwes does it in their scripts/bundles?
+import { html, api, observable } from 'sinuous';
+import { map } from 'sinuous/map';
+import type { Api } from 'sinuous';
 
 // Patch Sinuous' API to trace components into a WeakMap tree
 function enableTracing(api: Api) {

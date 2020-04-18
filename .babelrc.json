@@ -3,6 +3,14 @@
         "@babel/preset-typescript"
     ],
     "plugins": [
+        [
+            "sinuous/babel-plugin-htm",
+            {
+                "import": "sinuous",
+                "useBuiltIns": true,
+                "useNativeSpread": true
+            }
+        ],
         "snowpack/assets/babel-plugin.js"
     ]
 }
