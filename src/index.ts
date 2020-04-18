@@ -7,29 +7,41 @@ function enableTracing(api: Api) {
   let countInserts = 0;
   const { insert } = api;
   api.insert = (...args) => {
-    console.log('Insert', ++countInserts);
+    console.log(++countInserts, 'Insert');
     return insert(...args);
   };
   let countAdds = 0;
   const { add } = api;
   api.add = (...args) => {
-    console.log('Add', ++countAdds, args);
+    const [parent, value] = args.map(el => {
+      if (el instanceof HTMLElement) {
+        let str = el.tagName.toLowerCase();
+        if (el.className) str += `.${el.className.replace(' ', '.')}`;
+        str += ` Kids:${el.childElementCount}`;
+        return str;
+      }
+      if (el instanceof DocumentFragment) {
+        return 'Frag';
+      }
+      return String(el);
+    });
+    console.log(++countAdds, `Adding "${value}" to <${parent}>`);
     return add(...args);
   };
 }
 enableTracing(api);
 
 const HelloMessage = ({ name }: { name: string }) => html`
-  <div>Hello ${name}</div>
+  <span>Hello ${name}</span>
 `;
 
 // This can't be a document fragment, it needs to be mountable
-const messages = observable(document.createElement('div'));
+const messages = observable([]);
 
 const addMessage = (text: string) => {
-  const fragment = messages();
-  fragment.appendChild(HelloMessage({ name: text }));
-  messages(fragment);
+  const list = messages();
+  list.push(text);
+  messages(list);
 };
 
 setTimeout(() => {
@@ -117,7 +129,13 @@ const Page = () => html`
         </label>
       </div>
     </div>
-    ${messages}
+    <ul>
+    <!-- TODO: Why is "index" wrong and go from 1 to 3 -->
+    ${map(messages, (text, index) =>
+        // TODO: Is this cached? In htm's statics cache?
+        html` <li>${index + 1}. <${HelloMessage} name=${text} /></li>`
+    )}
+    </ul>
   </main>
 `;
 
