@@ -55,11 +55,16 @@
     "key-spacing": "error",
     "keyword-spacing": "error",
     "multiline-ternary": "error",
-    // This is broken for tag templates
-    // "indent": [
-    //   "error",
-    //   2
-    // ],
+    "indent": [
+      "error",
+      2,
+      {
+        // https://stackoverflow.com/questions/52178093/
+        "ignoredNodes": [
+          "TemplateLiteral *"
+        ]
+      }
+    ],
     "no-console": "off",
     "no-fallthrough": "error",
     "no-implicit-coercion": "error",
