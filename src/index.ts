@@ -57,7 +57,7 @@ const NavBar = ({ items }: { items: string[] }) => html`
     ${items.map(text => html`
         <a
           class="flex-1 text-center px-4 py-2 border-b-2 bg-white hover:bg-gray-100 hover:border-purple-500"
-          onclick=${() => addMessage(text)}
+          onClick=${() => addMessage(text)}
         >
           ${text}
         </a>
@@ -105,15 +105,18 @@ const Page = () => html`
     <div class="antialiased max-w-s mx-auto">
       <div class="flex flex-col">
         <label class="inline-flex items-center">
-          <input type="checkbox" class="form-checkbox text-pink-600" checked />
+          <input
+            type="checkbox"
+            class="form-checkbox
+            text-pink-600"
+            checked
+          />
           <span class="ml-2">Pink Checkbox</span>
         </label>
         <label class="inline-flex items-center">
           <input
             type="radio"
             class="form-radio text-red-600"
-            name="radio-colors"
-            value="1"
             checked
           />
           <span class="ml-2">Red Radio</span>
@@ -122,8 +125,6 @@ const Page = () => html`
           <input
             type="radio"
             class="form-radio text-green-600"
-            name="radio-colors"
-            value="2"
           />
           <span class="ml-2">Green Radio</span>
         </label>
