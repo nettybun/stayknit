@@ -1,12 +1,20 @@
 {
-    "presets": [
-        "@babel/preset-typescript"
-    ],
+    "sourceMaps": "inline",
     "plugins": [
         [
-            "sinuous/babel-plugin-htm",
+            "@babel/plugin-transform-typescript",
             {
-                "import": "sinuous",
+                "isTSX": true,
+                "jsxPragma": "h"
+            }
+        ],
+        [
+            "@babel/plugin-transform-react-jsx",
+            {
+                "pragma": "h",
+                "pragmaFrag": "h",
+                "throwIfNamespace": true,
+                "runtime": "classic",
                 "useBuiltIns": true,
                 "useNativeSpread": true
             }
