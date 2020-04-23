@@ -9,11 +9,11 @@
     "url": "ssh://git@stayknit.ca:stayknit.git"
   },
   "author": "Grant Hames-Morgan",
-  "main": "index.ts",
+  "main": "src/index.tsx",
   "scripts": {
     "build": "run-s build:**",
-    "build:ts": "babel src --out-dir lib --extensions \".tsx\"",
-    "build:css": "tailwindcss build src/styles.css --output lib/tailwind.css",
+    "build:ts": "babel src --out-dir build --extensions \".tsx\" --source-maps",
+    "build:css": "tailwindcss build src/styles.css --output build/tailwind.css",
     "serve": "servor --reload",
     "start": "run-p \"build:ts -- --watch\" serve"
   },
