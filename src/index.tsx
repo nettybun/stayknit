@@ -15,17 +15,17 @@ function enableTracing(api: Api) {
   api.add = (...args) => {
     const [parent, value] = args.map(el => {
       if (el instanceof HTMLElement) {
-        let str = el.tagName.toLowerCase();
-        if (el.className) str += `.${el.className.replace(' ', '.')}`;
-        str += ` Kids:${el.childElementCount}`;
+        let str = `[<${el.tagName.toLowerCase()}`;
+        if (el.className) str += `.${el.className.replace(/\s+/g, '.')}`;
+        str += `> w/ ${el.childNodes.length} kids]`;
         return str;
       }
       if (el instanceof DocumentFragment) {
-        return 'Frag';
+        return '[Frag]';
       }
-      return String(el);
+      return `"${String(el)}"`;
     });
-    console.log(++countAdds, `Adding "${value}" to <${parent}>`);
+    console.log(++countAdds, `${parent}\n    <- ${value}`);
     return add(...args);
   };
 }
