@@ -1,35 +1,9 @@
-import { observable, api, h } from 'sinuous';
+import { observable, api, h as hClean } from 'sinuous';
 import { map } from 'sinuous/map';
-import type { Api } from 'sinuous';
+import { traceH, traceAPI } from './tracing';
 
-// Patch Sinuous' API to trace components into a WeakMap tree
-function enableTracing(api: Api) {
-  let countInserts = 0;
-  const { insert } = api;
-  api.insert = (...args) => {
-    console.log(++countInserts, 'Insert');
-    return insert(...args);
-  };
-  let countAdds = 0;
-  const { add } = api;
-  api.add = (...args) => {
-    const [parent, value] = args.map(el => {
-      if (el instanceof HTMLElement) {
-        let str = `[<${el.tagName.toLowerCase()}`;
-        if (el.className) str += `.${el.className.replace(/\s+/g, '.')}`;
-        str += `> w/ ${el.childNodes.length} kids]`;
-        return str;
-      }
-      if (el instanceof DocumentFragment) {
-        return '[Frag]';
-      }
-      return `"${String(el)}"`;
-    });
-    console.log(++countAdds, `${parent}\n    <- ${value}`);
-    return add(...args);
-  };
-}
-enableTracing(api);
+const h = traceH(hClean);
+traceAPI(api);
 
 const HelloMessage = ({ name }: { name: string }) => (
   <span>Hello {name}</span>
