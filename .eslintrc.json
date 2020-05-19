@@ -38,6 +38,7 @@
         "ignoreRestArgs": false
       }
     ],
+    "@typescript-eslint/no-unused-vars": "off",
     "block-spacing": "error",
     "capitalized-comments": [
       "error",
