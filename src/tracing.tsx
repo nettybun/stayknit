@@ -1,4 +1,4 @@
-import type { Api } from 'sinuous';
+import type { Api } from 'sinuous/src';
 
 const renderStack = ['Page'];
 const renderMap = new WeakMap();
