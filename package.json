@@ -11,10 +11,11 @@
   "author": "Grant Hames-Morgan",
   "main": "src/index.tsx",
   "scripts": {
-    "build": "run-s build:**",
-    "build:ts": "babel src --out-dir build --extensions \".tsx\" --source-maps",
-    "build:css": "tailwindcss build src/styles.css --output build/tailwind.css",
-    "serve": "servor build --reload",
+    "build:ts": "babel src --out-dir serve --extensions \".tsx\" --source-maps",
+    "build:css": "tailwindcss build src/styles.css --output serve/tailwind.css",
+    "build:assets": "mkdir -p serve && cp -r ./static/* ./web_modules serve/",
+    "build": "run-p build:*",
+    "serve": "servor ./serve --reload",
     "start": "run-p \"build:ts -- --watch\" serve"
   },
   "dependencies": {
