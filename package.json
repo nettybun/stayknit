@@ -11,9 +11,15 @@
   "author": "Grant Hames-Morgan",
   "main": "src/index.tsx",
   "scripts": {
+    "snowpack:A": "sed -i 's|\"snowpack.*|//&|' .babelrc.json",
+    "snowpack:B": "run-s build:ts",
+    "snowpack:C": "snowpack --include serve/*.js",
+    "snowpack:D": "sed -i 's|//\"snowpack|\"snowpack|' .babelrc.json",
     "build:ts": "babel src --out-dir serve --extensions \".tsx\" --source-maps",
     "build:css": "tailwindcss build src/styles.css --output serve/tailwind.css",
     "build:assets": "mkdir -p serve && cp -r ./static/* ./web_modules serve/",
+    "setup": "run-s snowpack build",
+    "snowpack": "run-s snowpack:*",
     "build": "run-p build:*",
     "serve": "servor ./serve --reload",
     "start": "run-p \"build:ts -- --watch\" serve"
