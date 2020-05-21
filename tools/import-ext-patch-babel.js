@@ -14,7 +14,6 @@ const path = require('path');
 function rewriteImport(imp) {
   const isSourceImport = imp.startsWith('/') || imp.startsWith('.') || imp.startsWith('\\');
   if (isSourceImport && !path.extname(imp)) {
-    console.log(`Adding .js to "${imp}"`);
     return `${imp}.js`;
   }
   return imp;
