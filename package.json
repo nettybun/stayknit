@@ -8,7 +8,7 @@
     "type": "git",
     "url": "ssh://git@stayknit.ca:stayknit.git"
   },
-  "author": "Grant Hames-Morgan",
+  "author": "Gen Hames",
   "main": "src/index.tsx",
   "scripts": {
     "snowpack:A": "sed -i 's|\"snowpack.*|//&|' .babelrc.json",
