@@ -1,4 +1,5 @@
-import { observable, api, h } from 'sinuous';
+import { api, h } from 'sinuous';
+import { observable, computed, subscribe, sample } from 'sinuous/observable';
 import { map } from 'sinuous/map';
 import { traceH, traceAPI } from './tracing';
 
@@ -10,13 +11,27 @@ const HelloMessage = ({ name }: { name: string }) => (
 );
 
 // This can't be a document fragment, it needs to be mountable
-const messages = observable([]);
+const messages = observable([] as string[]);
 
 const addMessage = (text: string) => {
   const list = messages();
   list.push(text);
   messages(list);
 };
+
+const count = observable(0);
+const squared = computed(() => Math.pow(count(), 2));
+
+subscribe(() => {
+  const x = squared();
+  console.log(x);
+  // #addMessage(String(x));
+  const list = sample(messages);
+  list.push(String(x));
+  messages(list);
+});
+// Global
+Object.assign(window, { count });
 
 setTimeout(() => {
   addMessage('Everyone');
@@ -103,9 +118,8 @@ const Page = () =>
       </div>
     </div>
     <ul>
-      {/* TODO: Why is "index" wrong and go from 1 to 3 */}
-      {map(messages, (text, index) =>
-        <li>{index + 1}. <HelloMessage name={text} /></li>
+      {map(messages, (text) =>
+        <li><HelloMessage name={text} /></li>
       )}
     </ul>
   </main>;
