@@ -9,7 +9,6 @@
     "outDir": "lib",
     "pretty": true,
     "jsx": "preserve",
-    // TODO: This is to avoid "...no interface 'JSX.IntrinsicElements' ts(7026)"
-    "jsxFactory": "hClean"
+    "jsxFactory": "h"
   }
 }

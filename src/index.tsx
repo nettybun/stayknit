@@ -1,8 +1,8 @@
-import { observable, api, h as hClean } from 'sinuous';
+import { observable, api, h } from 'sinuous';
 import { map } from 'sinuous/map';
 import { traceH, traceAPI } from './tracing';
 
-const h = traceH(hClean);
+api.h = traceH(api.h);
 traceAPI(api);
 
 const HelloMessage = ({ name }: { name: string }) => (

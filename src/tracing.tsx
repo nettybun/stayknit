@@ -6,19 +6,19 @@ const renderMap = new WeakMap();
 // Global
 Object.assign(window, { renderStack, renderMap });
 
-export const traceH = <T extends Array<unknown>, U>(fn: (...args: T) => U) => {
-  return (...args: T): U => {
-    const [type] = args;
-    if (typeof type !== 'function') {
-      return fn(...args);
+export const traceH = (h: Function) => {
+  return (...args: unknown[]) => {
+    const [fn] = args;
+    if (typeof fn !== 'function') {
+      return h(...args);
     }
-    console.log(`✨ ${type.name} Maybe component?`);
-    renderStack.push(type.name);
-    const ret = fn(...args);
+    console.log(`✨ ${fn.name} Maybe component?`);
+    renderStack.push(fn.name);
+    const ret = h(...args);
     if (ret instanceof Node) {
-      console.log(`✨ ${type.name} Yes! Render stack:`, renderStack.join(', '));
+      console.log(`✨ ${fn.name} Yes! Render stack:`, renderStack.join(', '));
     } else {
-      console.log(`✨ ${type.name} No. Ignoring`);
+      console.log(`✨ ${fn.name} No. Ignoring`);
     }
     renderStack.pop();
     return ret;
