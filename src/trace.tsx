@@ -7,10 +7,12 @@ type ComponentName = ComponentNameBrand & string;
 type ComponentInstanceData = {
   name: ComponentName;
   /** Undefined while rendering */
-  node?: Node;
+  node: Node | undefined;
+  attached: boolean;
+  // TODO: Timing; Rerender Count;
+
   onAttach?: () => void;
   onDetach?: () => void;
-  // TODO: Timing; Rerender Count;
 }
 
 // Relationship in the component tree
@@ -28,8 +30,6 @@ const tree = {
   cParentOf: new WeakMap<Node, Node>(),
   /** _cCO.get(Parent) => WS[Child, Child, ...] */
   cChildrenOf: new WeakMap<Node, WeakSet<Node>>(),
-  /** Nodes that aren't attached to DOM or have no parent (TODO:) */
-  cNoParent: new WeakSet<Node>(),
   /** _cAP(Node) => <body/> (use cIL(Node) => <App/> to see component name) */
   cRootMounts: new WeakMap<Node, Node>(),
 
@@ -37,7 +37,6 @@ const tree = {
   createInstance(componentName: ComponentName, node: Node) {
     const instances = tree.cInstances.get(componentName) || new WeakSet<Node>();
     tree.cInstances.set(componentName, instances.add(node));
-    tree.cNoParent.add(node);
   },
   /** Attach components (doesn't have to be passed components) */
   relate(parent: Node, child: Node) {
@@ -45,17 +44,31 @@ const tree = {
     tree.cParentOf.set(child, parent);
     const children = tree.cChildrenOf.get(parent) || new WeakSet<Node>();
     tree.cChildrenOf.set(parent, children.add(child));
-    tree.cNoParent.delete(child);
   },
   /** Determine attachment (doesn't have to be passed a component) */
-  isNodeAttached(node: Node) {
-    // TODO: Resolve nodes to closest component
-    // If (!node.dataset.component) node = node.closest('[...]')
-    // Should trust our cNoParent - if it's in there then false
-    // Else, while (node.parentNode)..
+  isNodeAttached(node: Element) {
+    // Resolve nodes to closest component
+    let comp = undefined;
+    if (node instanceof HTMLElement || node instanceof SVGElement) {
+      comp = node.dataset.component
+        ? node as Node
+        : node.closest('[data-component]') as Node;
+    }
+    // Resolution failed, not in any component
+    if (!comp) return false;
 
-    // Ugh. Do I track attachment in ComponentInstanceData? Instead of walking
-    // the whole tree...
+    let compPrev: Node;
+    do {
+      const data = tree.cInstanceData.get(comp);
+      if (!data)
+        throw `cPO>cID was ${data}. Should never be falsy`;
+      if (data.attached)
+        return true;
+    // eslint-disable-next-line no-cond-assign
+    } while (compPrev = comp, comp = tree.cParentOf.get(comp));
+
+    // Made it this far, is the parent mounted?
+    return tree.cRootMounts.has(compPrev);
   },
 
   /** Lifecycle. Registered by calling within a component render */
