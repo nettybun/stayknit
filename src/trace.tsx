@@ -72,7 +72,7 @@ const tree = {
     do {
       const data = tree.cInstanceDetails.get(comp);
       if (!data)
-        throw `cPO>cID was ${data}. Should never be falsy`;
+        throw `cPO>cID was undefined for ${String(node)}`;
       if (data.attached)
         return true;
     // eslint-disable-next-line no-cond-assign
@@ -127,8 +127,12 @@ const wrapReviver = (hCall: typeof h) => {
     }
     // Is component
     const lifecycles = tree.cRenderingStack.pop();
-    if (!lifecycles || lifecycles !== data) {
-      console.error(`${name}: cRenderingStack pop() didn't match object: ${lifecycles}`);
+    if (!lifecycles) {
+      console.error(`${name}: cRenderingStack pop() was empty`);
+      return ret;
+    }
+    if (lifecycles !== data) {
+      console.error(`${name}: cRenderingStack pop() wrong object: ${String(lifecycles)}`);
       return ret;
     }
     const details: InstanceDetails = {
@@ -152,8 +156,7 @@ const trace = (api: Api) => {
   let countAdds = 0;
 
   const type = (el: unknown) => {
-    if ( el instanceof HTMLElement
-      || el instanceof SVGElement ) {
+    if (el instanceof HTMLElement || el instanceof SVGElement) {
       const className = el.getAttribute('className');
       const classes = className
         ? `.${className.replace(/\s+/g, '.')}`
