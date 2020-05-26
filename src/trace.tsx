@@ -1,29 +1,40 @@
 import type { h, Api } from 'sinuous/src';
 
+// Typescript isn't very strict, I don't use `extend`/`&` because it seems to
+// widen types on arrays:
+
+// type X = { x?: string };
+// let a: X[] = [];
+// let b: X & { a: string } = { a: '' }
+// a.push(b); (No error, even though I said only allow { x })
+
+// Possibly related:
+// https://mariusschulz.com/blog/weak-type-detection-in-typescript#the-limits-of-weak-type-detection
+
 enum ComponentNameBrand { _ = '' }
 type ComponentName = ComponentNameBrand & string;
 
-/** Instance information such as lifecycle methods */
-type ComponentInstanceData = {
-  name: ComponentName;
-  /** Undefined while rendering */
-  node: Node | undefined;
-  attached: boolean;
-  // TODO: Timing; Rerender Count;
+type LifecycleNames =
+  | 'onAttach'
+  | 'onDetach'
 
-  onAttach?: () => void;
-  onDetach?: () => void;
+type LifecycleMethods = {
+  [K in LifecycleNames]?: () => void;
 }
 
-// Relationship in the component tree
-// Stores top-level elements only
-// Use .closest() or .querySelector() to find components within the DOM
-// Fragments are [data-component] marked as "Fragment:<ComponentName>"
+/** Instance information */
+type InstanceDetails = {
+  name: ComponentName;
+  node: Node;
+  attached: boolean;
+  // TODO: Add timing, rerender count, etc
+} & LifecycleMethods;
+
 const tree = {
   /** Collection area for lifecycle methods set during render */
-  cRenderingStack: [] as ComponentInstanceData[],
+  cRenderingStack: [] as (LifecycleMethods & { name: ComponentName })[],
   /** Map a given instance (DOM node) to component information */
-  cInstanceData: new WeakMap<Node, ComponentInstanceData & { node: Node }>(),
+  cInstanceDetails: new WeakMap<Node, InstanceDetails>(),
   /** Map a component name to all of its instances (DOM nodes) */
   cInstances: new Map<ComponentName, WeakSet<Node>>(),
   /** _cPO.get(Child) => Parent */
@@ -35,14 +46,14 @@ const tree = {
 
   /** New component creation */
   createInstance(componentName: ComponentName, node: Node) {
-    const instances = tree.cInstances.get(componentName) || new WeakSet<Node>();
+    const instances = tree.cInstances.get(componentName) ?? new WeakSet<Node>();
     tree.cInstances.set(componentName, instances.add(node));
   },
   /** Attach components (doesn't have to be passed components) */
   relate(parent: Node, child: Node) {
     // TODO: Resolve nodes to closest component
     tree.cParentOf.set(child, parent);
-    const children = tree.cChildrenOf.get(parent) || new WeakSet<Node>();
+    const children = tree.cChildrenOf.get(parent) ?? new WeakSet<Node>();
     tree.cChildrenOf.set(parent, children.add(child));
   },
   /** Determine attachment (doesn't have to be passed a component) */
@@ -59,7 +70,7 @@ const tree = {
 
     let compPrev: Node;
     do {
-      const data = tree.cInstanceData.get(comp);
+      const data = tree.cInstanceDetails.get(comp);
       if (!data)
         throw `cPO>cID was ${data}. Should never be falsy`;
       if (data.attached)
@@ -85,7 +96,7 @@ const tree = {
   },
 };
 
-const setLifecycle = (fn: 'onAttach' | 'onDetach', callback: () => void) => {
+const setLifecycle = (fn: LifecycleNames, callback: () => void) => {
   const len = tree.cRenderingStack.length;
   if (len === 0) {
     throw new Error(`Tree: cRenderingStack empty. Can't set ${fn} lifecycle`);
@@ -102,7 +113,7 @@ const wrapReviver = (hCall: typeof h) => {
     }
     console.log(`Discovered ${fn.name}`);
     const name = fn.name as ComponentName;
-    const data: ComponentInstanceData = { name };
+    const data = { name };
     tree.cRenderingStack.push(data);
     // This is where tree.onAttach/tree.onDetach can be called
     // @ts-expect-error
@@ -116,12 +127,16 @@ const wrapReviver = (hCall: typeof h) => {
     }
     // Is component
     const lifecycles = tree.cRenderingStack.pop();
-    if (lifecycles === undefined || lifecycles !== data) {
+    if (!lifecycles || lifecycles !== data) {
       console.error(`${name}: cRenderingStack pop() didn't match object: ${lifecycles}`);
       return ret;
     }
-    data.node = ret;
-    tree.cInstanceData.set(ret, data as ComponentInstanceData & { node: Node });
+    const details: InstanceDetails = {
+      node: ret,
+      attached: false,
+      ...lifecycles,
+    };
+    tree.cInstanceDetails.set(ret, details);
     tree.createInstance(name, ret);
 
     console.log(`${name}: Done`);
