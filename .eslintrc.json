@@ -114,7 +114,12 @@
     "no-fallthrough": "error",
     "no-implicit-coercion": "error",
     "no-invalid-this": "error",
-    "no-multi-spaces": "error",
+    "no-multi-spaces": [
+      "error",
+      {
+        "ignoreEOLComments": true
+      }
+    ],
     "no-tabs": "error",
     "no-trailing-spaces": "error",
     "no-useless-concat": "error",
