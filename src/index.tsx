@@ -1,4 +1,4 @@
-import { api, h, svgJSX, html, svg } from 'sinuous';
+import { h, api, svgJSX } from 'sinuous/jsx';
 import { map } from 'sinuous/map';
 
 import { trace } from './trace';

@@ -1,4 +1,4 @@
-import { h } from 'sinuous';
+import { h } from 'sinuous/jsx';
 import { addMessage } from '../data/messages';
 
 const NavBar = ({ items }: { items: string[] }) =>

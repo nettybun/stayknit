@@ -1,4 +1,4 @@
-import { h, observable } from 'sinuous';
+import { h, observable } from 'sinuous/jsx';
 import { tree } from '../trace';
 
 const MountTest = () => {

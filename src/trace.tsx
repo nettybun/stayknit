@@ -1,4 +1,4 @@
-import type { h, Api } from 'sinuous/src';
+import type { h, SinuousApi } from 'sinuous/jsx';
 
 // Typescript isn't very strict, I don't use `extend`/`&` because it seems to
 // widen types on arrays:
@@ -108,7 +108,7 @@ const wrapReviver = (hCall: typeof h) => {
   const wrap: typeof h = (...args: unknown[]) => {
     const [fn] = args;
     if (typeof fn !== 'function') {
-      // @ts-expect-error
+      // @ts-ignore
       return hCall(...args);
     }
     console.log(`Discovered ${fn.name}`);
@@ -116,7 +116,7 @@ const wrapReviver = (hCall: typeof h) => {
     const data = { name };
     tree.cRenderingStack.push(data);
     // This is where tree.onAttach/tree.onDetach can be called
-    // @ts-expect-error
+    // @ts-ignore
     const ret = hCall(...args);
 
     if (ret instanceof Node) {
@@ -150,7 +150,7 @@ const wrapReviver = (hCall: typeof h) => {
 };
 
 // Patch Sinuous' API to trace components into a WeakMap tree
-const trace = (api: Api) => {
+const trace = (api: SinuousApi) => {
   const { h, insert, add } = api;
   let countInserts = 0;
   let countAdds = 0;
