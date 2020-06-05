@@ -1,17 +1,21 @@
 import { h, observable } from 'sinuous/jsx';
 import { tree } from '../trace';
+import { messages } from '../data/messages';
 
 const MountTest = () => {
-  const xhrFetchedCommentCount = observable('');
-  const windowSize = observable('');
+  const xhrFetchedCommentCount = observable('...');
+  const windowSize = observable('...');
 
-  const onWindowResize = () => {
+  const onWindowResize = debounce(() => {
     windowSize(`${window.innerWidth}px x ${window.innerHeight}px`);
-  };
+  }, 250);
   tree.onAttach(() => {
-    fetch('')
-      .then(r => r.text())
-      .then(count => xhrFetchedCommentCount(count));
+    // Fetch('/404')
+    //   .then(r => r.text())
+    //   .then(count => xhrFetchedCommentCount(count));
+    setTimeout(() => {
+      xhrFetchedCommentCount('50');
+    }, 500);
     onWindowResize();
     window.addEventListener('resize', onWindowResize);
   });
@@ -25,5 +29,20 @@ const MountTest = () => {
     </div>
   );
 };
+
+// NOICE>
+function debounce(func: (...args: unknown[]) => void, wait: number, immediate?: boolean) {
+  let timeout: number | null;
+  return (...args: unknown[]) => {
+    const later = () => {
+      timeout = null;
+      if (!immediate) func(...args);
+    };
+    const callNow = immediate && !timeout;
+    timeout && window.clearTimeout(timeout);
+    timeout = window.setTimeout(later, wait);
+    if (callNow) func(...args);
+  };
+}
 
 export { MountTest };

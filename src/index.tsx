@@ -1,18 +1,26 @@
-import { h, api, svgJSX } from 'sinuous/jsx';
+import { h, api, svgJSX, observable } from 'sinuous/jsx';
 import { map } from 'sinuous/map';
 
-import { trace } from './trace';
+import { trace, tree } from './trace';
 import { messages, addMessage } from './data/messages';
 
 import { LoginForm } from './components/cLoginForm';
 import { NavBar } from './components/cNavBar';
+import { MountTest } from './components/cMountTesting';
 
 // Middleware for h() and add/insert calls
 trace(api);
 
-const HelloMessage = ({ name }: { name: string }) => (
-  <span>Hello {name}</span>
-);
+const HelloMessage = ({ name }: { name: string }) => {
+  const style = observable('transition-colors duration-500 ease-in-out');
+  tree.onAttach(() => {
+    // Simulate fetch() call that takes some time...
+    setTimeout(() => {
+      style(`${style()} bg-orange-400`);
+    }, 100);
+  });
+  return <span class={style}>Hello {name}</span>;
+};
 
 const HeartIcon = () =>
   svgJSX(() =>
@@ -21,62 +29,35 @@ const HeartIcon = () =>
     </svg>
   );
 
-// Sinuous testing
-
-// const HTMLTest = () => html`
-//   <span>Hello from html\`\`</span>
-// `;
-// const SVGTest = () => svg`
-//   <svg class="FROMSVG" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-//     <path fill-rule="evenodd" d="M8 2.748l-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01L8 2.748zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143c.06.055.119.112.176.171a3.12 3.12 0 01.176-.17C12.72-3.042 23.333 4.867 8 15z" clip-rule="evenodd"/>
-//   </svg>
-// `;
+const List = () =>
+  <ul>
+    {map(messages, (text) =>
+      <li class=""><HelloMessage name={text} /></li>
+    )}
+  </ul>;
 
 const Page = () =>
-  <main className="bg-purple-100 antialiased justify-center p-8">
-    <HeartIcon />
-    {/* <HTMLTest /> */}
-    {/* <SVGTest /> */}
+  <main class="bg-purple-100 antialiased justify-center p-8">
     <NavBar items={['Docs', 'Plugins', 'Features', 'Blog']} />
     <section>
+      <HeartIcon />
+      <p>This is an example of a function that's not a component</p>
+      <p>There's {() => {
+        const x = messages().length;
+        return `${x} message${x === 1 ? '' : 's'}`;
+      }} right now
+      </p>
       <LoginForm />
+      {() => messages().length < 5
+        ? <MountTest/>
+        : <em>Gone</em>
+      }
     </section>
-    <div className="antialiased max-w-s mx-auto">
-      <div className="flex flex-col">
-        <label className="inline-flex items-center">
-          <input
-            type="checkbox"
-            className="form-checkbox text-pink-600"
-            checked
-          />
-          <span className="ml-2">Pink Checkbox</span>
-        </label>
-        <label className="inline-flex items-center">
-          <input
-            type="radio"
-            className="form-radio text-red-600"
-            checked
-          />
-          <span className="ml-2">Red Radio</span>
-        </label>
-        <label className="inline-flex items-center">
-          <input
-            type="radio"
-            className="form-radio text-green-600"
-          />
-          <span className="ml-2">Green Radio</span>
-        </label>
-      </div>
-    </div>
-    <ul>
-      {map(messages, (text) =>
-        <li><HelloMessage name={text} /></li>
-      )}
-    </ul>
+    <List />
   </main>;
 
 const { body } = document;
-body.insertBefore(Page(), body.firstChild);
+body.insertBefore(<Page/>, body.firstChild);
 
 setTimeout(() => {
   addMessage('Everyone');
