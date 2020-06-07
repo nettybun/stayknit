@@ -1,7 +1,7 @@
 import { h, api, svgJSX, observable } from 'sinuous/jsx';
 import { map } from 'sinuous/map';
 
-import { trace, tree } from './trace';
+import { trace, tree, callAttachForTree } from './trace';
 import { messages, addMessage } from './data/messages';
 
 import { LoginForm } from './components/cLoginForm';
@@ -29,12 +29,14 @@ const HeartIcon = () =>
     </svg>
   );
 
-const List = () =>
+const ListUsingMap = () =>
   <ul>
     {map(messages, (text) =>
       <li class=""><HelloMessage name={text} /></li>
     )}
   </ul>;
+
+const renderedMountTest = <MountTest/>;
 
 const Page = () =>
   <main class="bg-purple-100 antialiased justify-center p-8">
@@ -49,15 +51,17 @@ const Page = () =>
       </p>
       <LoginForm />
       {() => messages().length < 5
-        ? <MountTest/>
+        ? renderedMountTest
         : <em>Gone</em>
       }
     </section>
-    <List />
+    {/* <ListUsingMap /> */}
+    {() => messages().map(x => <p><HelloMessage name={x}/></p>)}
   </main>;
 
-const { body } = document;
-body.insertBefore(<Page/>, body.firstChild);
+const app = <Page/>;
+document.body.insertBefore(app, document.body.firstChild);
+callAttachForTree(app);
 
 setTimeout(() => {
   addMessage('Everyone');
