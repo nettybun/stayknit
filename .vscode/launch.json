@@ -16,7 +16,11 @@
       ],
       "skipFiles": [
         "${workspaceFolder}/serve/web_modules/**"
-      ]
+      ],
+      "clearConsoleOnReload": true,
+      "reloadOnChange": {
+        "watch": "${workspaceFolder}/serve/**",
+      }
     }
   ]
 }
