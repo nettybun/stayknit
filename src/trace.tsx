@@ -126,7 +126,7 @@ const type = (x: unknown, subcall?: boolean): string => {
     return `${tag} [${[...x.childNodes].map(n => type(n, true)).join(', ')}]`;
   }
   if (x instanceof Text)
-    return `"${x.textContent ?? ''}"`;
+    return (x.textContent && `"${x.textContent}"`) || '';
   if (typeof x === 'undefined')
     return '∅';
   if (typeof x === 'function')
