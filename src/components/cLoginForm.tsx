@@ -1,18 +1,26 @@
 import { h, o } from 'sinuous';
+import { addMessage } from '../data/messages';
+import { subscribe, computed } from 'sinuous/observable';
 
 const LoginForm = () => {
-  const Item = ({ name, error }: { name: string; error?: string }) => {
-    const count = o(0);
-    const id = name.toLowerCase();
+  type Name = 'Username' | 'Password';
+  const state = {
+    username: o(''),
+    password: o(''),
+  };
+
+  const Item = ({ name, error }: { name: Name; error?: string }) => {
+    const id = name.toLowerCase() as 'username' | 'password';
+    const count = computed(() => state[id]().length);
     return (
-      <div className="my-3">
+      <div class="my-3">
         <label
-          className="block text-grey-darker text-sm font-bold mb-2" htmlFor={id}
+          class="block text-grey-darker text-sm font-bold mb-2" htmlFor={id}
         >
           {name} ({count} chars)
         </label>
         <input
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker"
+          class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker"
           id={id}
           type="text"
           placeholder={
@@ -23,21 +31,25 @@ const LoginForm = () => {
           onInput={ev => {
             // TODO: This is nuts.
             const { target }: { target: EventTarget & { value?: string } | null } = ev;
-            if (target?.value) count(target.value.length);
+            if (target?.value) state[id](target.value);
           }}
         />
         {error
-        && <p className="mt-3 text-red-400 text-xs italic">{error}</p>}
+        && <p class="mt-3 text-red-400 text-xs italic">{error}</p>}
       </div>
     );
   };
 
   return (
-    <div className="mb-6">
+    <div class="mb-6">
       <Item name="Username" />
       <Item name="Password" error="Please choose a password" />
-      <button className="bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded" type="button">
-        Sign In
+      <button
+        class="bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded"
+        type="button"
+        onClick={() => addMessage(`${state.username()} & ${state.password()}`)}
+      >
+        Save
       </button>
     </div>
   );
