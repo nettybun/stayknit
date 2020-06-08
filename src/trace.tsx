@@ -1,4 +1,5 @@
-import type { h, SinuousApi } from 'sinuous';
+import type { SinuousApi } from 'sinuous';
+import type { _h } from 'sinuous/h';
 
 enum ComponentNameBrand { _ = '' }
 type ComponentName = ComponentNameBrand & string;
@@ -47,20 +48,21 @@ const ds = {
 // If ds.renderStack is unexpectedly empty, these will throw
 const tree = {
   /** Lifecycle. Setup during component render */
-  onAttach(callback: () => void) {
+  onAttach(callback: () => void): void {
     console.log('Installing onAttach lifecycle');
     ds.renderStack[ds.renderStack.length - 1].onAttach = callback;
   },
   /** Lifecycle. Setup during component render */
-  onDetach(callback: () => void) {
+  onDetach(callback: () => void): void {
     console.log('Installing onDetach lifecycle');
     ds.renderStack[ds.renderStack.length - 1].onDetach = callback;
   },
 };
 
 // Unlike other functions this doesn't throw since this needs to keep rendering
-const wrapReviver = (hCall: typeof h) => {
-  const wrap: typeof h = (...args: unknown[]) => {
+const wrapReviver = (hCall: typeof _h.h): typeof _h.h =>
+  // @ts-ignore DocumentFragment is not assignable to SVGElement | HTMLElement
+  (...args: unknown[]) => {
     const [fn] = args;
     if (typeof fn !== 'function') {
       // @ts-ignore
@@ -104,8 +106,6 @@ const wrapReviver = (hCall: typeof h) => {
     console.groupEnd();
     return el;
   };
-  return wrap;
-};
 
 const type = (x: unknown, subcall?: boolean): string => {
   if (Array.isArray(x)) {
@@ -171,7 +171,7 @@ const callAttachForTree = callLifecyclesForTree('onAttach');
 const callDetachForTree = callLifecyclesForTree('onDetach');
 
 // Patch Sinuous' API to trace components into a WeakMap tree
-const trace = (api: SinuousApi) => {
+const trace = (api: SinuousApi): void => {
   const { h, insert, add } = api;
 
   api.h = wrapReviver(h);
