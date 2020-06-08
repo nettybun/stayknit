@@ -1,4 +1,4 @@
-import { h, observable } from 'sinuous/jsx';
+import { h, observable } from 'sinuous';
 import { tree } from '../trace';
 import { messages } from '../data/messages';
 

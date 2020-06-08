@@ -1,4 +1,4 @@
-import { h, o } from 'sinuous/jsx';
+import { h, o } from 'sinuous';
 
 const LoginForm = () => {
   const Item = ({ name, error }: { name: string; error?: string }) => {
