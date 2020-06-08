@@ -1,4 +1,4 @@
-import type { h, SinuousApi } from 'sinuous/jsx';
+import type { h, SinuousApi } from 'sinuous';
 
 enum ComponentNameBrand { _ = '' }
 type ComponentName = ComponentNameBrand & string;
@@ -7,9 +7,8 @@ type ComponentName = ComponentNameBrand & string;
 /** El.dataset[DATASET_TAG] = ComponentName; Also as <h1 data-DATASET_TAG /> */
 const DATASET_TAG = 'component';
 
-type El = (HTMLElement | SVGElement)
+type El = (Element | DocumentFragment)
         & { dataset?: { [DATASET_TAG]?: ComponentName } & DOMStringMap };
-
 type Component = El;
 
 type LifecycleNames =
@@ -20,7 +19,6 @@ type LifecycleMethods = {
   [K in LifecycleNames]?: () => void;
 }
 
-/** Instance information */
 type InstanceMetadata = {
   name: ComponentName;
   el: El;
@@ -35,9 +33,9 @@ const ds = {
    * component immediately after, when the function closes */
   renderStack: [] as LifecycleMethods[],
   /**
-   * Non-component elements that contain components as children are marked as
-   * guardians tell any future parent components of their existance. This marker
-   * is moved to every new non-component parent until a component is hit */
+   * Non-component elements with children components are marked as guardians so
+   * future parented components know of them. This marker is moved to every new
+   * non-component parent until a component is hit */
   guardianNodes: new WeakMap<El, { children: Set<Component> }>(),
 
   /** WeakMap a given instance (DOM element) to component metadata */
@@ -47,24 +45,18 @@ const ds = {
   componentNames: new Map<ComponentName, WeakSet<Component>>(),
 };
 
+// If ds.renderStack is unexpectedly empty, these will throw
 const tree = {
-  /** Lifecycle. Registered by calling within a component render */
+  /** Lifecycle. Setup during component render */
   onAttach(callback: () => void) {
-    console.log('Running onAttach lifecycle hook');
-    setLifecycle('onAttach', callback);
+    console.log('Installing onAttach lifecycle');
+    ds.renderStack[ds.renderStack.length - 1].onAttach = callback;
   },
-  /** Lifecycle. Registered by calling within a component render */
+  /** Lifecycle. Setup during component render */
   onDetach(callback: () => void) {
-    console.log('Running onDetach lifecycle hook');
-    setLifecycle('onDetach', callback);
+    console.log('Installing onDetach lifecycle');
+    ds.renderStack[ds.renderStack.length - 1].onDetach = callback;
   },
-};
-
-const setLifecycle = (fn: LifecycleNames, callback: () => void) => {
-  const len = ds.renderStack.length;
-  if (len === 0)
-    throw `ds.renderStack is unexpectedly empty, can't set ${fn} lifecycle`;
-  ds.renderStack[len - 1][fn] = callback;
 };
 
 // Unlike other functions this doesn't throw since this needs to keep rendering
@@ -76,32 +68,26 @@ const wrapReviver = (hCall: typeof h) => {
       return hCall(...args);
     }
     const name = fn.name as ComponentName;
-    console.group(`${name}`);
+    console.groupCollapsed(`${name}`);
     const data = {};
     ds.renderStack.push(data);
-    // This is when tree.onAttach/tree.onDetach can be called
-    // @ts-ignore
-    const ret = hCall(...args);
+    // @ts-ignore TS incorrectly destructs the overload as `&` instead of `|`
+    const el: HTMLElement | SVGElement | DocumentFragment = hCall(...args);
 
-    if (ret instanceof Node) {
+    // Match Element and DocumentFragment
+    if (el instanceof Node) {
       console.log(`${name}: ✅`);
     } else {
       console.log(`${name}: ❌`);
       ds.renderStack.pop();
-      return ret;
+      return el;
     }
     const lifecycles = ds.renderStack.pop();
-    if (!lifecycles) {
-      console.error(`${name}: ds.renderStack.pop() was empty`);
-      return ret;
-    }
     // Would only happen if someone writes to the render stack during a render
-    if (lifecycles !== data) {
-      console.error(`${name}: ds.renderStack.pop() wrong object: ${String(lifecycles)}`);
-      return ret;
+    if (!lifecycles || lifecycles !== data) {
+      console.error(`${name}: ds.renderStack.pop() was empty or wrong object`);
+      return el;
     }
-    // TODO: How is DocumentFragment supported?
-    const el = ret as HTMLElement;
     const details: InstanceMetadata = {
       name,
       el,
@@ -109,13 +95,15 @@ const wrapReviver = (hCall: typeof h) => {
       lifecycles,
     };
     ds.instanceMetadata.set(el, details);
-    el.dataset[DATASET_TAG] = name;
     const instances = ds.componentNames.get(name) ?? new WeakSet<El>();
     ds.componentNames.set(name, instances.add(el));
-
-    console.log(`${name}: Done (${Object.keys(lifecycles).length} lifecycles)`);
+    // TODO: Support DocumentFragment
+    if (!(el instanceof DocumentFragment)) {
+      el.dataset[DATASET_TAG] = name;
+    }
+    console.log(`${name}: Done. Installed lifecycles: ${Object.keys(lifecycles).length}`);
     console.groupEnd();
-    return ret;
+    return el;
   };
   return wrap;
 };
@@ -125,17 +113,18 @@ const type = (x: unknown, subcall?: boolean): string => {
     if (subcall) return 'Array[...]';
     return `Array[${x.map(n => type(n, true)).join(', ')}]`;
   }
-  if (x instanceof HTMLElement || x instanceof SVGElement) {
+  if (x instanceof Element || x instanceof DocumentFragment) {
     const inDOM = !subcall && document.body.contains(x) ? '📶' : '';
-    const meta = ds.instanceMetadata.get(x);
-    const tag = meta
-      ? `<${meta.name}/>${inDOM}`
-      : `${ds.guardianNodes.has(x) ? 'Guard' : ''}<${x.tagName.toLowerCase()}>${inDOM}`;
+    const comp = ds.instanceMetadata.get(x);
+    const tagName = x instanceof Element
+      ? `<${x.tagName.toLowerCase()}>`
+      : '[Fragment]';
+    const tag = comp
+      ? `<${comp.name}/>${inDOM}`
+      : `${ds.guardianNodes.has(x) ? 'Guard' : ''}${tagName}${inDOM}`;
     if (subcall || x.childNodes.length === 0) return tag;
     return `${tag} [${[...x.childNodes].map(n => type(n, true)).join(', ')}]`;
   }
-  if (x instanceof DocumentFragment)
-    return '[Fragment]';
   if (x instanceof Text)
     return `"${x.textContent ?? ''}"`;
   if (typeof x === 'undefined')
@@ -157,7 +146,7 @@ const callLifecyclesForTree = (fn: LifecycleNames) =>
 
       const call = meta.lifecycles[fn];
       if (call) {
-        console.log(`${type(el)}:${fn}`, meta.lifecycles);
+        console.log(`${type(el)}:${fn}`, call);
         callCount++;
         call();
       }
@@ -188,17 +177,22 @@ const trace = (api: SinuousApi) => {
 
   api.h = wrapReviver(h);
 
-  api.insert = function<T>(el: Node, value: T, endMark?: Node, current?: T, startNode?: Node) {
+  api.insert = (el, value, endMark, current, startNode) => {
     console.log(`Insert (current:) ${type(current)} (into:) ${type(value)}`);
     return insert(el, value, endMark, current, startNode);
   };
 
-  api.add = (parent: El, value: string | DocumentFragment | El, endMark?: El) => {
+  api.add = (parent: El, value, endMark) => {
     console.log(`${type(parent)}\n    ⬅ ${type(value)}`);
 
+    // Tracing can only handle Element types, while api.add receives datatypes
+    // like Arrays and Fragments (see h/index.d.ts#Value). Thankfully these are
+    // unrolled and eventually sent back to api.add (this function)
+    const retAdd = add(parent, value, endMark);
+    if (!(value instanceof Element)) return retAdd;
+
     // Here's where guardians are actually used...
-    const val = value as El;
-    const isComp = (el: El) => ds.instanceMetadata.has(el);
+    const isComp = (el: Element) => ds.instanceMetadata.has(el);
     // If comp(or guard)<-el, no action
     // If comp(or guard)<-comp, parent also guards val
     // If comp(or guard)<-guard, parent also guards val's children and val is no longer a guard
@@ -207,33 +201,28 @@ const trace = (api: SinuousApi) => {
     // If el<-guard, parent is now a guard of val's children and val is no longer a guard
     const parentCompOrGuard
       = ds.instanceMetadata.get(parent) ?? ds.guardianNodes.get(parent);
-    let valGuard;
+    let valueGuard;
     if (parentCompOrGuard) {
-      if (isComp(val)) parentCompOrGuard.children.add(val);
+      if (isComp(value)) parentCompOrGuard.children.add(value);
       // eslint-disable-next-line no-cond-assign
-      else if (valGuard = ds.guardianNodes.get(val)) {
-        valGuard.children.forEach(x => parentCompOrGuard.children.add(x));
-        ds.guardianNodes.delete(val);
+      else if (valueGuard = ds.guardianNodes.get(value)) {
+        valueGuard.children.forEach(x => parentCompOrGuard.children.add(x));
+        ds.guardianNodes.delete(value);
       }
     } else {
-      valGuard = ds.guardianNodes.get(val);
-      if (isComp(val) || valGuard) {
-        const children = valGuard ? valGuard.children : new Set([val]);
+      valueGuard = ds.guardianNodes.get(value);
+      if (isComp(value) || valueGuard) {
+        const children = valueGuard ? valueGuard.children : new Set([value]);
         ds.guardianNodes.set(parent, { children });
       }
-      if (valGuard) ds.guardianNodes.delete(val);
+      if (valueGuard) ds.guardianNodes.delete(value);
     }
 
-    const el = add(parent, value, endMark);
-    if (parent.isConnected && !val.isConnected) {
+    if (parent.isConnected && !value.isConnected) {
       console.log('%conAttach', 'background: lightgreen', parent, value);
-      // TODO: This is weird and I don't like arrays...
-      if (Array.isArray(value))
-        value.forEach(callAttachForTree);
-      else
-        callAttachForTree(val);
+      callAttachForTree(value);
     }
-    return el;
+    return retAdd;
   };
 
   api.rm = (parent: El, startNode: El, endMark: El) => {
