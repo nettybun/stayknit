@@ -59,9 +59,7 @@ const Page = () =>
     {() => messages().map(x => <p><HelloMessage name={x}/></p>)}
   </main>;
 
-const app = <Page/>;
-document.body.insertBefore(app, document.body.firstChild);
-callAttachForTree(app);
+api.add(document.body, <Page/>, document.body.firstChild as Node);
 
 // If this is actually the only way to leave elements alive during ternary calls
 // then it's a great usecase for onAttach
