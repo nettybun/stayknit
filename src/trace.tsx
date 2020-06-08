@@ -33,9 +33,8 @@ const ds = {
    * component immediately after, when the function closes */
   renderStack: [] as LifecycleMethods[],
   /**
-   * Non-component elements with children components are marked as guardians so
-   * future parented components know of them. This marker is moved to every new
-   * non-component parent until a component is hit */
+   * Non-components that have children components. Helps to-be parent components
+   * register children. There's only ever one guardian per tree (it's moved) */
   guardianNodes: new WeakMap<El, { children: Set<Component> }>(),
 
   /** WeakMap a given instance (DOM element) to component metadata */

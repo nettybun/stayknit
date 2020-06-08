@@ -1,8 +1,9 @@
-import { h, api, svgJSX, observable } from 'sinuous/jsx';
+import { h, api } from 'sinuous';
+import { observable, subscribe } from 'sinuous/observable';
 import { map } from 'sinuous/map';
 
 import { trace, tree, callAttachForTree } from './trace';
-import { messages, addMessage } from './data/messages';
+import { messages } from './data/messages';
 
 import { LoginForm } from './components/cLoginForm';
 import { NavBar } from './components/cNavBar';
@@ -23,7 +24,7 @@ const HelloMessage = ({ name }: { name: string }) => {
 };
 
 const HeartIcon = () =>
-  svgJSX(() =>
+  api.hs(() =>
     <svg class="bi bi-heart" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
       <path fill-rule="evenodd" d="M8 2.748l-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01L8 2.748zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143c.06.055.119.112.176.171a3.12 3.12 0 01.176-.17C12.72-3.042 23.333 4.867 8 15z" clip-rule="evenodd"/>
     </svg>
@@ -36,7 +37,9 @@ const ListUsingMap = () =>
     )}
   </ul>;
 
-const renderedMountTest = <MountTest/>;
+const renderSwapA = <MountTest/>;
+const renderSwapB = <em>Gone</em>;
+const renderSwapMarker = document.createTextNode('');
 
 const Page = () =>
   <main class="bg-purple-100 antialiased justify-center p-8">
@@ -50,10 +53,7 @@ const Page = () =>
       }} right now
       </p>
       <LoginForm />
-      {() => messages().length < 5
-        ? renderedMountTest
-        : <em>Gone</em>
-      }
+      {renderSwapMarker}
     </section>
     {/* <ListUsingMap /> */}
     {() => messages().map(x => <p><HelloMessage name={x}/></p>)}
@@ -63,10 +63,17 @@ const app = <Page/>;
 document.body.insertBefore(app, document.body.firstChild);
 callAttachForTree(app);
 
-setTimeout(() => {
-  addMessage('Everyone');
-}, 1000);
+// If this is actually the only way to leave elements alive during ternary calls
+// then it's a great usecase for onAttach
+subscribe(() => {
+  const parent = renderSwapMarker.parentElement;
+  if (!parent) throw 'No parent for renderSwapMarker';
 
-setTimeout(() => {
-  addMessage('Friends');
-}, 2000);
+  if (messages().length < 5) {
+    if (renderSwapB.isConnected) api.rm(parent, renderSwapB, renderSwapMarker);
+    api.add(parent, renderSwapA, renderSwapMarker);
+  } else {
+    if (renderSwapA.isConnected) api.rm(parent, renderSwapA, renderSwapMarker);
+    api.add(parent, renderSwapB, renderSwapMarker);
+  }
+});
