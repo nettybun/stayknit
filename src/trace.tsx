@@ -119,19 +119,19 @@ const type = (x: unknown, subcall?: boolean): string => {
       ? `<${x.tagName.toLowerCase()}>`
       : '[Fragment]';
     const tag = comp
-      ? `<${comp.name}/>${inDOM}`
-      : `${ds.guardianNodes.has(x) ? 'Guard' : ''}${tagName}${inDOM}`;
+      ? `<${comp.name}/> ${inDOM}`
+      : `${ds.guardianNodes.has(x) ? 'Guard' : ''}${tagName} ${inDOM}`;
     if (subcall || x.childNodes.length === 0) return tag;
     return `${tag} [${[...x.childNodes].map(n => type(n, true)).join(', ')}]`;
   }
   if (x instanceof Text)
-    return (x.textContent && `"${x.textContent}"`) || '';
+    return (x.textContent && `"${x.textContent.trim()}"`) || '';
   if (typeof x === 'undefined')
     return '∅';
   if (typeof x === 'function')
     return '[Function]';
   // Default to [object DataType]
-  return `"${String(x)}"`;
+  return `"${String(x).trim()}"`;
 };
 
 const callLifecyclesForTree = (fn: LifecycleNames) =>
