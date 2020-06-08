@@ -19,7 +19,7 @@
                 "useNativeSpread": true
             }
         ],
-        "snowpack/assets/babel-plugin.js",
+        "@snowpack/babel-plugin-package-import",
         "./tools/import-ext-patch-babel.js"
     ]
 }

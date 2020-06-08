@@ -11,15 +11,11 @@
   "author": "Gen Hames",
   "main": "src/index.tsx",
   "scripts": {
-    "snowpack:A": "sed -i 's|\"snowpack.*|//&|' .babelrc.json",
-    "snowpack:B": "run-s build:ts",
-    "snowpack:C": "snowpack --include 'serve/**/*.js' --exclude 'serve/web_modules/**'",
-    "snowpack:D": "sed -i 's|//\"snowpack|\"snowpack|' .babelrc.json",
     "build:ts": "babel src --out-dir serve --extensions \".tsx\" --source-maps",
     "build:static": "mkdir -p serve && cp -r ./static/* ./web_modules serve/",
-    "setup": "run-s snowpack tailwind build",
-    "snowpack": "run-s snowpack:*",
     "tailwind": "tailwindcss build src/styles.css --output static/tailwind.css",
+    "snowpack": "mkdir -p web_modules && snowpack --include 'src/**/*.tsx'",
+    "setup": "run-s snowpack build tailwind",
     "build": "run-p build:*",
     "serve": "servor ./serve --reload",
     "start": "run-p \"build:ts -- --watch\" serve"
@@ -33,6 +29,7 @@
     "@babel/core": "^7.9.6",
     "@babel/plugin-transform-react-jsx": "^7.9.4",
     "@babel/plugin-transform-typescript": "^7.9.6",
+    "@snowpack/babel-plugin-package-import": "^1.0.0",
     "@typescript-eslint/eslint-plugin": "^3.0.1",
     "@typescript-eslint/parser": "^3.0.1",
     "eslint": "^7.1.0",
@@ -40,7 +37,7 @@
     "eslint-plugin-react": "^7.20.0",
     "npm-run-all": "^4.1.5",
     "servor": "^4.0.2",
-    "snowpack": "^1.7.1",
+    "snowpack": "^2.3.1",
     "typescript": "^3.9.3"
   }
 }
