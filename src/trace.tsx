@@ -69,7 +69,7 @@ const wrapReviver = (hCall: typeof _h.h): typeof _h.h =>
       return hCall(...args);
     }
     const name = fn.name as ComponentName;
-    console.groupCollapsed(`${name}`);
+    console.group(`${name}`);
     const data = {};
     ds.renderStack.push(data);
     // @ts-ignore TS incorrectly destructs the overload as `&` instead of `|`
@@ -89,10 +89,23 @@ const wrapReviver = (hCall: typeof _h.h): typeof _h.h =>
       console.error(`${name}: ds.renderStack.pop() was empty or wrong object`);
       return el;
     }
+
+    // Elements become components _after_ all their children have been added...
+    // Which means they're guardians by then if they had any children
+    // Neato
+    const elGuard = ds.guardianNodes.get(el);
+    const children = elGuard
+      ? elGuard.children
+      : new Set<El>();
+    if (elGuard) {
+      console.log('Found a guard that is actually a component');
+      ds.guardianNodes.delete(el);
+    }
+
     const details: InstanceMetadata = {
       name,
       el,
-      children: new Set<El>(),
+      children,
       lifecycles,
     };
     ds.instanceMetadata.set(el, details);
@@ -181,14 +194,25 @@ const trace = (api: SinuousApi): void => {
     return insert(el, value, endMark, current, startNode);
   };
 
-  api.add = (parent: El, value, endMark) => {
+  api.add = (parent: El, value: El, endMark) => {
     console.log(`${type(parent)}\n    ⬅ ${type(value)}`);
 
     // Tracing can only handle Element types, while api.add receives datatypes
     // like Arrays and Fragments (see h/index.d.ts#Value). Thankfully these are
     // unrolled and eventually sent back to api.add (this function)
+    const valueWasNotPreviouslyConnected = !value.isConnected;
     const retAdd = add(parent, value, endMark);
     if (!(value instanceof Element)) return retAdd;
+
+    const retAddMaybeAttach = () => {
+      console.log('Parent attached', parent.isConnected);
+      console.log('Value attached', !valueWasNotPreviouslyConnected);
+      if (parent.isConnected && valueWasNotPreviouslyConnected) {
+        console.log('%conAttach', 'background: lightgreen', parent, value);
+        callAttachForTree(value);
+      }
+      return retAdd;
+    };
 
     // Here's where guardians are actually used...
     const isComp = (el: Element) => ds.instanceMetadata.has(el);
@@ -208,20 +232,38 @@ const trace = (api: SinuousApi): void => {
         valueGuard.children.forEach(x => parentCompOrGuard.children.add(x));
         ds.guardianNodes.delete(value);
       }
-    } else {
-      valueGuard = ds.guardianNodes.get(value);
-      if (isComp(value) || valueGuard) {
-        const children = valueGuard ? valueGuard.children : new Set([value]);
-        ds.guardianNodes.set(parent, { children });
-      }
-      if (valueGuard) ds.guardianNodes.delete(value);
+      return retAddMaybeAttach();
     }
 
-    if (parent.isConnected && !value.isConnected) {
-      console.log('%conAttach', 'background: lightgreen', parent, value);
-      callAttachForTree(value);
+    // Else parent is non-component
+    valueGuard = ds.guardianNodes.get(value);
+    if (isComp(value) || valueGuard) {
+      const children = valueGuard ? valueGuard.children : new Set([value]);
+      // There's a chance that a comp/guard is being api.add()'d into an
+      // existing tree that is live and actually does have a comp/guard parent
+      if (!parent.parentElement || parent === document.body) {
+        ds.guardianNodes.set(parent, { children });
+        return retAddMaybeAttach();
+      }
+      let cursor: El | null = parent;
+      // eslint-disable-next-line no-cond-assign
+      while (cursor = cursor.parentElement) {
+        console.log('Trying', type(cursor));
+        const container
+          = ds.instanceMetadata.get(cursor)
+            ?? ds.guardianNodes.get(cursor);
+        if (container) {
+          console.log('Found', container);
+          children.forEach(x => container.children.add(x));
+          break;
+        }
+      }
+      if (!cursor) {
+        throw 'Was never able to find a component or guard walking up tree';
+      }
     }
-    return retAdd;
+    if (valueGuard) ds.guardianNodes.delete(value);
+    return retAddMaybeAttach();
   };
 
   api.rm = (parent: El, startNode: El, endMark: El) => {
