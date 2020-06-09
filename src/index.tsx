@@ -2,7 +2,7 @@ import { h, api } from 'sinuous';
 import { observable, subscribe } from 'sinuous/observable';
 import { map } from 'sinuous/map';
 
-import { trace, tree, callAttachForTree } from './trace';
+import { trace, tree } from './trace/index';
 import { messages } from './data/messages';
 
 import { LoginForm } from './components/cLoginForm';

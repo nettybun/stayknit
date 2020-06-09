@@ -1,5 +1,5 @@
 import { h, observable } from 'sinuous';
-import { tree } from '../trace';
+import { tree } from '../trace/index';
 
 const MountTest = (): h.JSX.Element => {
   const xhrFetchedCommentCount = observable('...');
