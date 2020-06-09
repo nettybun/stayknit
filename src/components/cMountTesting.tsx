@@ -1,8 +1,7 @@
 import { h, observable } from 'sinuous';
 import { tree } from '../trace';
-import { messages } from '../data/messages';
 
-const MountTest = () => {
+const MountTest = (): h.JSX.Element => {
   const xhrFetchedCommentCount = observable('...');
   const windowSize = observable('...');
 

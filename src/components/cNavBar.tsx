@@ -1,7 +1,7 @@
 import { h } from 'sinuous';
 import { addMessage } from '../data/messages';
 
-const NavBar = ({ items }: { items: string[] }) =>
+const NavBar = ({ items }: { items: string[] }): h.JSX.Element =>
   <div className="flex mb-2 border-t border-r border-l text-sm rounded">
     {items.map(text =>
       <a

@@ -1,8 +1,8 @@
 import { h, o } from 'sinuous';
 import { addMessage } from '../data/messages';
-import { subscribe, computed } from 'sinuous/observable';
+import { computed } from 'sinuous/observable';
 
-const LoginForm = () => {
+const LoginForm = (): h.JSX.Element => {
   type Name = 'Username' | 'Password';
   const state = {
     username: o(''),
