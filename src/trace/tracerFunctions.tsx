@@ -71,10 +71,13 @@ const addTracer = (addCall: typeof api.add): typeof api.add =>
   (parent: El, value: El, endMark) => {
     const log = `api.add(parent:${type(parent)}, value:${type(value)})`;
     console.group(log);
-    // Tracing can only handle Element types, while api.add receives datatypes
-    // like Arrays and Fragments (see h/index.d.ts#Value). I don't know if
-    // they're one layer deep or not. So only trust Fragments. Array become
-    // Fragments eventually.
+
+    // TODO: Learned that api.add is not purely a sub-function of api.h. It
+    // calls api.h if it's given an array and then converts it to a fragment
+    // internally such that we never see it. Re-entrant functions are super hard
+    // to reason about... It's not worth it. I'll either re-implement everything
+    // as done in api.rm or I'll fork Sinuous
+
     const valueWasNotPreviouslyConnected = !value.isConnected;
     const retAdd = addCall(parent, value, endMark);
 
