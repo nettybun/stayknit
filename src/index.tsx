@@ -68,10 +68,14 @@ subscribe(() => {
   if (!parent) throw 'No parent for renderSwapMarker';
 
   if (messages().length < 5) {
-    if (renderSwapB.isConnected) api.rm(parent, renderSwapB, renderSwapMarker);
+    if (renderSwapB.isConnected)
+      api.rm(parent, renderSwapB, renderSwapMarker);
+    if (!renderSwapA.isConnected)
     api.add(parent, renderSwapA, renderSwapMarker);
   } else {
-    if (renderSwapA.isConnected) api.rm(parent, renderSwapA, renderSwapMarker);
+    if (renderSwapA.isConnected)
+      api.rm(parent, renderSwapA, renderSwapMarker);
+    if (!renderSwapB.isConnected)
     api.add(parent, renderSwapB, renderSwapMarker);
   }
 });
