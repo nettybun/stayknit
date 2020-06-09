@@ -55,6 +55,7 @@ const Page = () =>
       <LoginForm />
       {renderSwapMarker}
     </section>
+    <HelloMessage name="I'm not in the messages() array"/>
     {/* <ListUsingMap /> */}
     {() => messages().map(x => <p><HelloMessage name={x}/></p>)}
   </main>;
@@ -71,11 +72,11 @@ subscribe(() => {
     if (renderSwapB.isConnected)
       api.rm(parent, renderSwapB, renderSwapMarker);
     if (!renderSwapA.isConnected)
-    api.add(parent, renderSwapA, renderSwapMarker);
+      api.add(parent, renderSwapA, renderSwapMarker);
   } else {
     if (renderSwapA.isConnected)
       api.rm(parent, renderSwapA, renderSwapMarker);
     if (!renderSwapB.isConnected)
-    api.add(parent, renderSwapB, renderSwapMarker);
+      api.add(parent, renderSwapB, renderSwapMarker);
   }
 });
