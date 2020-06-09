@@ -36,13 +36,13 @@ const ds = {
   /**
    * Non-components that have children components. Helps to-be parent components
    * register children. There's only ever one guardian per tree (it's moved) */
-  guardianNodes: new WeakMap<El, { children: Set<Component> }>(),
+  guardMeta: new WeakMap<El, { children: Set<Component> }>(),
 
   /** WeakMap a given instance (DOM element) to component metadata */
-  instanceMetadata: new WeakMap<Component, InstanceMetadata>(),
+  compMeta: new WeakMap<Component, InstanceMetadata>(),
 
   /** Map a component name to all of its instances (DOM elements) */
-  componentNames: new Map<ComponentName, WeakSet<Component>>(),
+  compNames: new Map<ComponentName, WeakSet<Component>>(),
 };
 
 // If ds.renderStack is unexpectedly empty, these will throw
@@ -60,13 +60,13 @@ const tree = {
 };
 
 const callLifecyclesForTree = (fn: LifecycleNames) =>
-  (root: Element) => {
+  (root: Element | DocumentFragment) => {
     let callCount = 0;
     const callLifecycleForEl = (el: El) => {
-      const meta = ds.instanceMetadata.get(el);
+      const meta = ds.compMeta.get(el);
       // If it's not a component but it could be a guardian element
       if (!meta)
-        return ds.guardianNodes.get(el);
+        return ds.guardMeta.get(el);
 
       const call = meta.lifecycles[fn];
       if (call) {
@@ -80,6 +80,7 @@ const callLifecyclesForTree = (fn: LifecycleNames) =>
     // If not be a component or a guardian, or have nothing else to do
     if (!meta || meta.children.size === 0) {
       console.log(`${type(root)}:${fn} stopped at root. Calls: ${callCount}`);
+      console.log('Meta:', meta);
       return;
     }
     const childSetStack = [meta.children];

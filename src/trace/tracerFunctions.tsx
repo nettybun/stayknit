@@ -4,7 +4,7 @@ import type { El, ComponentName } from './index';
 import { ds, callAttachForTree, DATASET_TAG } from './index';
 import { type } from './utils';
 
-const sharedDocumentFragmentReference: DocumentFragment[] = [];
+const refDF: DocumentFragment[] = [];
 
 // Unlike other functions this doesn't throw since it needs to keep rendering
 const hTracer = (hCall: typeof _h.h): typeof _h.h =>
@@ -19,7 +19,7 @@ const hTracer = (hCall: typeof _h.h): typeof _h.h =>
       const retH = hCall(...args);
       if (retH instanceof DocumentFragment) {
         console.log('hTracer returning DocumentFragment. Has children:', retH.hasChildNodes());
-        sharedDocumentFragmentReference.push(retH);
+        refDF.push(retH);
       }
       return retH;
     }
@@ -52,15 +52,15 @@ const hTracer = (hCall: typeof _h.h): typeof _h.h =>
     }
     // Elements become components _after_ all their children have been added...
     // Which means they'll be guardians by then if they had any children
-    const elGuard = ds.guardianNodes.get(el);
+    const elGuard = ds.guardMeta.get(el);
     const children = elGuard?.children ?? new Set<El>();
     if (elGuard) {
       console.log('Upgrading guard to component');
-      ds.guardianNodes.delete(el);
+      ds.guardMeta.delete(el);
     }
-    ds.instanceMetadata.set(el, { name, children, lifecycles });
-    const instances = ds.componentNames.get(name) ?? new WeakSet<El>();
-    ds.componentNames.set(name, instances.add(el));
+    ds.compMeta.set(el, { name, children, lifecycles });
+    const instances = ds.compNames.get(name) ?? new WeakSet<El>();
+    ds.compNames.set(name, instances.add(el));
     // TODO: Support DocumentFragment
     if (!(el instanceof DocumentFragment)) {
       el.dataset[DATASET_TAG] = name;
@@ -70,98 +70,90 @@ const hTracer = (hCall: typeof _h.h): typeof _h.h =>
     return el;
   };
 
+// In Sinuous, api.add is not purely a sub-function of api.h. It will call api.h
+// if given an array and then converts it to a fragment internally so we never
+// see the fragment. That's why hTracer sets refDF to be used here. It will be
+// empty (parent.insertBefore in api.add clears it) but the object ref is OK
 const addTracer = (addCall: typeof api.add): typeof api.add =>
   (parent: El, value: El, endMark) => {
-    const log = `api.add(parent:${type(parent)}, value:${type(value)})`;
-    console.group(log);
-
-    // TODO: Learned that api.add is not purely a sub-function of api.h. It
-    // calls api.h if it's given an array and then converts it to a fragment
-    // internally such that we never see it. Re-entrant functions are super hard
-    // to reason about... It's not worth it. I'll either re-implement everything
-    // as done in api.rm or I'll fork Sinuous
-
-    // WAITWAITWAIT. Yes a DF is emptied on parent.insertBefore but... is it the
-    // same object? Can I still look up its children in ds.guardianNodes? If so
-    // that's the answer. Update: It is ✨✨✨
+    console.group(`api.add(parent:${type(parent)}, value:${type(value)})`);
 
     const valueWasNotPreviouslyConnected = !value.isConnected;
     const retAdd = addCall(parent, value, endMark);
 
-    // Ok the children have been added. Our value->DF is empty.
-    if (Array.isArray(value) && sharedDocumentFragmentReference.length) {
-      // @ts-ignore TS bug
-      const frag: DocumentFragment = sharedDocumentFragmentReference.pop();
-      console.log('Recaptured DF:', frag);
-      console.log('Is guardian?', ds.guardianNodes.get(frag));
-    }
-
-    if (!(value instanceof Element)) {
-      console.log(`Not Element: ${type(value)}. Returning`, retAdd);
+    // @ts-ignore TS bug says undefined after checking length?
+    if (Array.isArray(value) && refDF.length) value = refDF.pop();
+    if (!(value instanceof Element || value instanceof DocumentFragment)) {
+      console.log(`Not Element or DF: ${type(value)}. Returning`, retAdd);
       console.groupEnd();
       return retAdd;
     }
 
-    const retAddMaybeAttach = () => {
+    const maybeAttach = (): void => {
       const e = (x: boolean) => x ? '✅' : '❌';
       console.log(`Attached? Parent ${e(parent.isConnected)}. Value ${e(!valueWasNotPreviouslyConnected)}`);
       if (parent.isConnected && valueWasNotPreviouslyConnected) {
         console.log('%conAttach', 'background: lightgreen', 'for value');
         callAttachForTree(value);
       }
-      console.groupEnd();
-      return retAdd;
     };
 
-    // Here's where guardians are actually used...
-    const isComp = (el: Element) => ds.instanceMetadata.has(el);
+    // TODO: This could replace all the if/else below? (c: El | Set<El>) =>
+    const walkUpToPlaceChildren = (children: Set<El>) => {
+      let cursor: El | null = parent;
+      // eslint-disable-next-line no-cond-assign
+      while (cursor = cursor.parentElement) {
+        console.log('Trying', type(cursor));
+        const container = ds.compMeta.get(cursor) ?? ds.guardMeta.get(cursor);
+        if (container) {
+          console.log(`Found ${type(cursor)}`);
+          // If (children instanceof Set) || container.children.add(children);
+          children.forEach(x => container.children.add(x));
+          break;
+        }
+        // Didn't find a component or guard walking up tree. Default to <body/>
+        if (cursor === document.body) {
+          ds.guardMeta.set(parent, { children });
+          break;
+        }
+      }
+    };
+
+    const parentCompOrGuard = ds.compMeta.get(parent) ?? ds.guardMeta.get(parent);
     // If comp(or guard)<-el, no action
     // If comp(or guard)<-comp, parent also guards val
     // If comp(or guard)<-guard, parent also guards val's children and val is no longer a guard
     // If el<-el, no action
     // If el<-comp, parent is now a guard of val
     // If el<-guard, parent is now a guard of val's children and val is no longer a guard
-    const parentCompOrGuard
-      = ds.instanceMetadata.get(parent) ?? ds.guardianNodes.get(parent);
-    let valueGuard;
+
+    const valueCompMeta = ds.compMeta.get(value);
+    const valueGuardMeta = ds.guardMeta.get(value);
+    // No action case:
+    if (!valueCompMeta && !valueGuardMeta) {
+      maybeAttach();
+      console.groupEnd();
+      return retAdd;
+    }
+
     if (parentCompOrGuard) {
-      if (isComp(value)) parentCompOrGuard.children.add(value);
-      // eslint-disable-next-line no-cond-assign
-      else if (valueGuard = ds.guardianNodes.get(value)) {
-        valueGuard.children.forEach(x => parentCompOrGuard.children.add(x));
-        ds.guardianNodes.delete(value);
-      }
-      return retAddMaybeAttach();
+      if (valueCompMeta)
+        parentCompOrGuard.children.add(value);
+      else if (valueGuardMeta)
+        valueGuardMeta.children.forEach(x => parentCompOrGuard.children.add(x));
+    } else {
+      const children = valueGuardMeta?.children ?? new Set([value]);
+      if (!parent.parentElement || parent === document.body)
+        ds.guardMeta.set(parent, { children });
+      else
+        // Being add()'d into a connected tree. Look for a comp/guard parent
+        walkUpToPlaceChildren(children);
     }
-    // Else parent is non-component
-    valueGuard = ds.guardianNodes.get(value);
-    if (isComp(value) || valueGuard) {
-      const children = valueGuard?.children ?? new Set([value]);
-      // There's a chance that a comp/guard is being api.add()'d into an
-      // existing tree that is live and actually does have a comp/guard parent
-      if (!parent.parentElement || parent === document.body) {
-        ds.guardianNodes.set(parent, { children });
-      } else {
-        let cursor: El | null = parent;
-        // eslint-disable-next-line no-cond-assign
-        while (cursor = cursor.parentElement) {
-          console.log('Trying', type(cursor));
-          const container
-            = ds.instanceMetadata.get(cursor)
-              ?? ds.guardianNodes.get(cursor);
-          if (container) {
-            console.log(`Found ${type(cursor)}`);
-            children.forEach(x => container.children.add(x));
-            break;
-          }
-        }
-        if (!cursor) {
-          throw 'Was never able to find a component or guard walking up tree';
-        }
-      }
-    }
-    if (valueGuard) ds.guardianNodes.delete(value);
-    return retAddMaybeAttach();
+    maybeAttach();
+    // Delete _after_ attaching
+    if (valueGuardMeta) ds.guardMeta.delete(value);
+    console.groupEnd();
+    return retAdd;
   };
 
 const insertTracer = (insertCall: typeof api.insert): typeof api.insert =>

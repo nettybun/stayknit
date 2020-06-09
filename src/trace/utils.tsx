@@ -9,8 +9,8 @@ const type = (x: unknown, subcall?: boolean): string => {
 
   if (x instanceof Element || x instanceof DocumentFragment) {
     let str = '';
-    const isComp = ds.instanceMetadata.get(x);
-    const isGuard = ds.guardianNodes.get(x);
+    const isComp = ds.compMeta.get(x);
+    const isGuard = ds.guardMeta.get(x);
     if (isComp) {
       str = `<${isComp.name}/>`;
     } else {
