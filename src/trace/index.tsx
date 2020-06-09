@@ -1,28 +1,28 @@
-import type { SinuousApi } from 'sinuous';
-import type { _h } from 'sinuous/h';
+import type { _h, HyperscriptApi } from 'sinuous/h';
+
+import { type } from './utils';
+import { hTracer, insertTracer, addTracer } from './tracerFunctions';
 
 enum ComponentNameBrand { _ = '' }
-type ComponentName = ComponentNameBrand & string;
+export type ComponentName = ComponentNameBrand & string;
 
 // Not actually used, only to provide hints in DevTools
 /** El.dataset[DATASET_TAG] = ComponentName; Also as <h1 data-DATASET_TAG /> */
-const DATASET_TAG = 'component';
+export const DATASET_TAG = 'component';
 
-type El = (Element | DocumentFragment)
-        & { dataset?: { [DATASET_TAG]?: ComponentName } & DOMStringMap };
-type Component = El;
+export type El
+  = (Element | DocumentFragment)
+  & { dataset?: { [DATASET_TAG]?: ComponentName } & DOMStringMap };
+export type Component = El;
 
-type LifecycleNames =
+export type LifecycleNames =
   | 'onAttach'
   | 'onDetach'
 
-type LifecycleMethods = {
-  [K in LifecycleNames]?: () => void;
-}
+export type LifecycleMethods = { [K in LifecycleNames]?: () => void; }
 
-type InstanceMetadata = {
+export type InstanceMetadata = {
   name: ComponentName;
-  el: El;
   children: Set<El>;
   lifecycles: LifecycleMethods;
   // TODO: Add timing, rerender count, etc
@@ -57,94 +57,6 @@ const tree = {
     console.log('Installing onDetach lifecycle');
     ds.renderStack[ds.renderStack.length - 1].onDetach = callback;
   },
-};
-
-// Unlike other functions this doesn't throw since this needs to keep rendering
-const wrapReviver = (hCall: typeof _h.h): typeof _h.h =>
-  // @ts-ignore DocumentFragment is not assignable to SVGElement | HTMLElement
-  (...args: unknown[]) => {
-    const [fn] = args;
-    if (typeof fn !== 'function') {
-      // @ts-ignore
-      return hCall(...args);
-    }
-    const name = fn.name as ComponentName;
-    console.group(`${name}`);
-    const data = {};
-    ds.renderStack.push(data);
-    // @ts-ignore TS incorrectly destructs the overload as `&` instead of `|`
-    const el: HTMLElement | SVGElement | DocumentFragment = hCall(...args);
-
-    // Match Element and DocumentFragment
-    if (el instanceof Node) {
-      console.log(`${name}: ✅`);
-    } else {
-      console.log(`${name}: ❌`);
-      ds.renderStack.pop();
-      return el;
-    }
-    const lifecycles = ds.renderStack.pop();
-    // Would only happen if someone writes to the render stack during a render
-    if (!lifecycles || lifecycles !== data) {
-      console.error(`${name}: ds.renderStack.pop() was empty or wrong object`);
-      return el;
-    }
-
-    // Elements become components _after_ all their children have been added...
-    // Which means they're guardians by then if they had any children
-    // Neato
-    const elGuard = ds.guardianNodes.get(el);
-    const children = elGuard
-      ? elGuard.children
-      : new Set<El>();
-    if (elGuard) {
-      console.log('Found a guard that is actually a component');
-      ds.guardianNodes.delete(el);
-    }
-
-    const details: InstanceMetadata = {
-      name,
-      el,
-      children,
-      lifecycles,
-    };
-    ds.instanceMetadata.set(el, details);
-    const instances = ds.componentNames.get(name) ?? new WeakSet<El>();
-    ds.componentNames.set(name, instances.add(el));
-    // TODO: Support DocumentFragment
-    if (!(el instanceof DocumentFragment)) {
-      el.dataset[DATASET_TAG] = name;
-    }
-    console.log(`${name}: Done. Installed lifecycles: ${Object.keys(lifecycles).length}`);
-    console.groupEnd();
-    return el;
-  };
-
-const type = (x: unknown, subcall?: boolean): string => {
-  if (Array.isArray(x)) {
-    if (subcall) return 'Array[...]';
-    return `Array[${x.map(n => type(n, true)).join(', ')}]`;
-  }
-  if (x instanceof Element || x instanceof DocumentFragment) {
-    const inDOM = !subcall && document.body.contains(x) ? '📶' : '';
-    const comp = ds.instanceMetadata.get(x);
-    const tagName = x instanceof Element
-      ? `<${x.tagName.toLowerCase()}>`
-      : '[Fragment]';
-    const tag = comp
-      ? `<${comp.name}/> ${inDOM}`
-      : `${ds.guardianNodes.has(x) ? 'Guard' : ''}${tagName} ${inDOM}`;
-    if (subcall || x.childNodes.length === 0) return tag;
-    return `${tag} [${[...x.childNodes].map(n => type(n, true)).join(', ')}]`;
-  }
-  if (x instanceof Text)
-    return (x.textContent && `"${x.textContent.trim()}"`) || '';
-  if (typeof x === 'undefined')
-    return '∅';
-  if (typeof x === 'function')
-    return '[Function]';
-  // Default to [object DataType]
-  return `"${String(x).trim()}"`;
 };
 
 const callLifecyclesForTree = (fn: LifecycleNames) =>
@@ -184,88 +96,14 @@ const callAttachForTree = callLifecyclesForTree('onAttach');
 const callDetachForTree = callLifecyclesForTree('onDetach');
 
 // Patch Sinuous' API to trace components into a WeakMap tree
-const trace = (api: SinuousApi): void => {
+const trace = (api: HyperscriptApi): void => {
   const { h, insert, add } = api;
 
-  api.h = wrapReviver(h);
+  api.h = hTracer(h);
+  api.insert = insertTracer(insert);
+  api.add = addTracer(add);
 
-  api.insert = (el, value, endMark, current, startNode) => {
-    console.log(`Insert (current:) ${type(current)} (into:) ${type(value)}`);
-    return insert(el, value, endMark, current, startNode);
-  };
-
-  api.add = (parent: El, value: El, endMark) => {
-    console.log(`${type(parent)}\n    ⬅ ${type(value)}`);
-
-    // Tracing can only handle Element types, while api.add receives datatypes
-    // like Arrays and Fragments (see h/index.d.ts#Value). Thankfully these are
-    // unrolled and eventually sent back to api.add (this function)
-    const valueWasNotPreviouslyConnected = !value.isConnected;
-    const retAdd = add(parent, value, endMark);
-    if (!(value instanceof Element)) return retAdd;
-
-    const retAddMaybeAttach = () => {
-      console.log('Parent attached', parent.isConnected);
-      console.log('Value attached', !valueWasNotPreviouslyConnected);
-      if (parent.isConnected && valueWasNotPreviouslyConnected) {
-        console.log('%conAttach', 'background: lightgreen', parent, value);
-        callAttachForTree(value);
-      }
-      return retAdd;
-    };
-
-    // Here's where guardians are actually used...
-    const isComp = (el: Element) => ds.instanceMetadata.has(el);
-    // If comp(or guard)<-el, no action
-    // If comp(or guard)<-comp, parent also guards val
-    // If comp(or guard)<-guard, parent also guards val's children and val is no longer a guard
-    // If el<-el, no action
-    // If el<-comp, parent is now a guard of val
-    // If el<-guard, parent is now a guard of val's children and val is no longer a guard
-    const parentCompOrGuard
-      = ds.instanceMetadata.get(parent) ?? ds.guardianNodes.get(parent);
-    let valueGuard;
-    if (parentCompOrGuard) {
-      if (isComp(value)) parentCompOrGuard.children.add(value);
-      // eslint-disable-next-line no-cond-assign
-      else if (valueGuard = ds.guardianNodes.get(value)) {
-        valueGuard.children.forEach(x => parentCompOrGuard.children.add(x));
-        ds.guardianNodes.delete(value);
-      }
-      return retAddMaybeAttach();
-    }
-
-    // Else parent is non-component
-    valueGuard = ds.guardianNodes.get(value);
-    if (isComp(value) || valueGuard) {
-      const children = valueGuard ? valueGuard.children : new Set([value]);
-      // There's a chance that a comp/guard is being api.add()'d into an
-      // existing tree that is live and actually does have a comp/guard parent
-      if (!parent.parentElement || parent === document.body) {
-        ds.guardianNodes.set(parent, { children });
-        return retAddMaybeAttach();
-      }
-      let cursor: El | null = parent;
-      // eslint-disable-next-line no-cond-assign
-      while (cursor = cursor.parentElement) {
-        console.log('Trying', type(cursor));
-        const container
-          = ds.instanceMetadata.get(cursor)
-            ?? ds.guardianNodes.get(cursor);
-        if (container) {
-          console.log('Found', container);
-          children.forEach(x => container.children.add(x));
-          break;
-        }
-      }
-      if (!cursor) {
-        throw 'Was never able to find a component or guard walking up tree';
-      }
-    }
-    if (valueGuard) ds.guardianNodes.delete(value);
-    return retAddMaybeAttach();
-  };
-
+  // This is a full reimplementation of api.rm that doesn't need a tracer
   api.rm = (parent: El, startNode: El, endMark: El) => {
     let cursor: ChildNode | null = startNode as ChildNode;
     while (cursor && cursor !== endMark) {
@@ -273,7 +111,7 @@ const trace = (api: SinuousApi): void => {
       // Is needed in case the child was pulled out the parent before clearing.
       if (parent === cursor.parentNode) {
         if (parent.isConnected && cursor instanceof Element) {
-          console.log('%conDetach', 'background: coral', parent, cursor);
+          console.log('%conDetach', 'background: coral');
           callDetachForTree(cursor);
         }
         parent.removeChild(cursor);
