@@ -4,6 +4,8 @@ import type { El, ComponentName } from './index';
 import { ds, callAttachForTree, DATASET_TAG } from './index';
 import { type } from './utils';
 
+const sharedDocumentFragmentReference: DocumentFragment[] = [];
+
 // Unlike other functions this doesn't throw since it needs to keep rendering
 const hTracer = (hCall: typeof _h.h): typeof _h.h =>
   // @ts-ignore DocumentFragment is not assignable to SVGElement | HTMLElement
@@ -17,6 +19,7 @@ const hTracer = (hCall: typeof _h.h): typeof _h.h =>
       const retH = hCall(...args);
       if (retH instanceof DocumentFragment) {
         console.log('hTracer returning DocumentFragment. Has children:', retH.hasChildNodes());
+        sharedDocumentFragmentReference.push(retH);
       }
       return retH;
     }
@@ -78,8 +81,20 @@ const addTracer = (addCall: typeof api.add): typeof api.add =>
     // to reason about... It's not worth it. I'll either re-implement everything
     // as done in api.rm or I'll fork Sinuous
 
+    // WAITWAITWAIT. Yes a DF is emptied on parent.insertBefore but... is it the
+    // same object? Can I still look up its children in ds.guardianNodes? If so
+    // that's the answer. Update: It is ✨✨✨
+
     const valueWasNotPreviouslyConnected = !value.isConnected;
     const retAdd = addCall(parent, value, endMark);
+
+    // Ok the children have been added. Our value->DF is empty.
+    if (Array.isArray(value) && sharedDocumentFragmentReference.length) {
+      // @ts-ignore TS bug
+      const frag: DocumentFragment = sharedDocumentFragmentReference.pop();
+      console.log('Recaptured DF:', frag);
+      console.log('Is guardian?', ds.guardianNodes.get(frag));
+    }
 
     if (!(value instanceof Element)) {
       console.log(`Not Element: ${type(value)}. Returning`, retAdd);
