@@ -14,11 +14,16 @@
     "build:ts": "babel src --out-dir serve --extensions \".tsx\" --source-maps",
     "build:static": "mkdir -p serve && cp -r ./static/* ./web_modules serve/",
     "tailwind": "tailwindcss build src/styles.css --output static/tailwind.css",
-    "snowpack": "mkdir -p web_modules && snowpack --include 'src/**/*.tsx'",
-    "setup": "run-s snowpack build tailwind",
+    "snowpack": "snowpack",
+    "setup": "run-p snowpack build tailwind",
     "build": "run-p build:*",
     "serve": "servor ./serve",
     "start": "run-p \"build:ts -- --watch\" serve"
+  },
+  "snowpack": {
+    "scripts": {
+      "mount:src": "mount src"
+    }
   },
   "dependencies": {
     "sinuous": "file:sinuous/packages/sinuous",
