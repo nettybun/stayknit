@@ -15,6 +15,8 @@ pages:
     - npm install
     - npm run build
     - cd ..
+    # Fix URL since GitLab hosts at a subdomain
+    - sed -i 's|/web_modules/|/stayknit/web_modules/|' .babelrc.json
     - npm run setup
     - mv serve public
   artifacts:

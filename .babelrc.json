@@ -19,7 +19,12 @@
                 "useNativeSpread": true
             }
         ],
-        "@snowpack/babel-plugin-package-import",
+        [
+            "@snowpack/babel-plugin-package-import",
+            {
+                "webModulesUrl": "/web_modules/"
+            }
+        ],
         "./tools/import-ext-patch-babel.js"
     ]
 }
