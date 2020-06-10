@@ -22,7 +22,7 @@ const MountTest = (): h.JSX.Element => {
     window.removeEventListener('resize', onWindowResize);
   });
   return (
-    <div>
+    <div class="bg-gray-300 m-5 p-5 ml-0">
       <p>The window's size is <span>{windowSize}</span></p>
       <p>This post has {xhrFetchedCommentCount} comments</p>
     </div>

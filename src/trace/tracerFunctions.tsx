@@ -84,7 +84,7 @@ const addTracer = (addCall: typeof api.add): typeof api.add =>
     // @ts-ignore TS bug says undefined after checking length?
     if (Array.isArray(value) && refDF.length) value = refDF.pop();
     if (!(value instanceof Element || value instanceof DocumentFragment)) {
-      console.log(`Not Element or DF: ${type(value)}. Returning`, retAdd);
+      console.log(`Not Element or DF: ${type(value)}. Returning`);
       console.groupEnd();
       return retAdd;
     }

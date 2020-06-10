@@ -49,7 +49,7 @@ const LoginForm = (): h.JSX.Element => {
         type="button"
         onClick={() => addMessage(`${state.username()} & ${state.password()}`)}
       >
-        Save
+        Add fields to message list
       </button>
     </div>
   );
