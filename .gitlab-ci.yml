@@ -23,7 +23,7 @@ install-sinuous:
   stage: install
   script:
     - cd sinuous
-    - npm ci
+    - npm install
 
 setup-stayknit:
   stage: setup-stayknit
