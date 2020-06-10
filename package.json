@@ -12,9 +12,9 @@
   "main": "src/index.tsx",
   "scripts": {
     "build:ts": "babel src --out-dir serve --extensions \".tsx\" --source-maps",
-    "build:static": "mkdir -p serve && cp -r ./static/* ./web_modules serve/",
+    "build:static": "mkdir -p serve && cp -r ./static/* serve/",
     "tailwind": "tailwindcss build src/styles.css --output static/tailwind.css",
-    "snowpack": "snowpack",
+    "snowpack": "mkdir -p serve && snowpack && cp -r ./web_modules serve/",
     "setup": "run-p snowpack build tailwind",
     "build": "run-p build:*",
     "serve": "servor ./serve",
