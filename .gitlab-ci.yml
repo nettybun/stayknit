@@ -7,10 +7,12 @@ cache:
   paths:
     - node_modules/
     - sinuous/node_modules/
+    - sinuous/packages/sinuous/dist
+    - sinuous/packages/sinuous/module
 
 pages:
   script:
-    - npm ci
+    - npm install
     - cd sinuous
     - npm install
     - npm run build

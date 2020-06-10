@@ -13,7 +13,7 @@
   "scripts": {
     "build:ts": "babel src --out-dir serve --extensions \".tsx\" --source-maps",
     "build:static": "mkdir -p serve && cp -r ./static/* serve/",
-    "tailwind": "tailwindcss build src/styles.css --output static/tailwind.css",
+    "tailwind": "tailwindcss build src/styles.css --output serve/tailwind.css",
     "snowpack": "mkdir -p serve && snowpack && cp -r ./web_modules serve/",
     "setup": "run-p snowpack build tailwind",
     "build": "run-p build:*",
