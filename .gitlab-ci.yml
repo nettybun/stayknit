@@ -1,0 +1,45 @@
+image: node:latest
+
+variables:
+  GIT_SUBMODULE_STRATEGY: normal
+
+stages:
+  - install
+  - setup-sinuous
+  - setup-stayknit
+  - pages
+
+cache:
+  paths:
+    - node_modules/
+    - sinuous/node_modules/
+
+install-stayknit:
+  stage: install
+  script:
+    - npm ci
+
+install-sinuous:
+  stage: install
+  script:
+    - cd sinuous
+    - npm ci
+
+setup-stayknit:
+  stage: setup-stayknit
+  script:
+    - npm run setup
+
+setup-sinuous:
+  stage: setup-sinuous
+  script:
+    - cd sinuous
+    - npm run build
+
+pages:
+  stage: pages
+  script:
+    - mv serve public
+  artifacts:
+    paths:
+      - public/
