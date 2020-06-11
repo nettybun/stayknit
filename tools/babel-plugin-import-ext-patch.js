@@ -19,10 +19,10 @@ function rewriteImport(imp) {
   return imp;
 }
 
-module.exports = function importExtPatch({ types: t, env }) {
+module.exports = function importExtPatch({ types: t }) {
   return {
     visitor: {
-      CallExpression(path, { file, opts }) {
+      CallExpression(path) {
         if (path.node.callee.type !== 'Import') {
           return;
         }
@@ -33,7 +33,7 @@ module.exports = function importExtPatch({ types: t, env }) {
         }
         source.replaceWith(t.stringLiteral(rewriteImport(source.node.value)));
       },
-      'ImportDeclaration|ExportNamedDeclaration|ExportAllDeclaration'(path, { file, opts }) {
+      'ImportDeclaration|ExportNamedDeclaration|ExportAllDeclaration'(path) {
         const source = path.get('source');
         // An export without a 'from' clause
         if (!source.node) {

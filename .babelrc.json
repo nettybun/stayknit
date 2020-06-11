@@ -25,6 +25,6 @@
                 "webModulesUrl": "/web_modules/"
             }
         ],
-        "./tools/import-ext-patch-babel.js"
+        "./tools/babel-plugin-import-ext-patch.js"
     ]
 }
