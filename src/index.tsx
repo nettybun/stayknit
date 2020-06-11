@@ -45,6 +45,17 @@ const renderSwapA = <MountTest/>;
 const renderSwapB = <em>Gone</em>;
 const renderSwapMarker = document.createTextNode('');
 
+// Styled components with syntax highlighting, error checking, & autogen classes
+// const styPage = css`
+//   margin-bottom: 10px;
+// `;
+//
+// cssGlobal`
+//   body {
+//     background-color: #555;
+//   }
+// `;
+
 const Page = () =>
   <main
     class="bg-purple-100 antialiased justify-center p-8"
