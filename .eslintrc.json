@@ -29,6 +29,12 @@
             "ignoreRestArgs": false
           }
         ],
+        "@typescript-eslint/no-floating-promises": [
+          "error",
+          {
+            "ignoreIIFE": true
+          }
+        ],
         "@typescript-eslint/no-unused-vars": "off",
         "@typescript-eslint/unbound-method": "off",
         "@typescript-eslint/no-unnecessary-condition": [
@@ -66,6 +72,25 @@
     "react": {
       "pragma": "h",
       "createClass": ""
+    },
+    "import/parsers": {
+      "@typescript-eslint/parser": [
+        ".ts",
+        ".tsx"
+      ]
+    },
+    "import/resolver": {
+      "node": {
+        "extensions": [
+          ".js",
+          ".jsx",
+          ".ts",
+          ".tsx"
+        ]
+      },
+      "typescript": {
+        "directory": "./"
+      }
     }
   },
   "rules": {
@@ -99,6 +124,15 @@
       "error",
       2
     ],
+    "import/extensions": [
+      "error",
+      "always",
+      {
+        "ignorePackages": true
+      }
+    ],
+    // Doesn't understand Typescript's resolver that allows .js for .ts/.tsx
+    "import/no-unresolved": "off",
     "key-spacing": [
       "error",
       {

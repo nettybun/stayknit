@@ -1,5 +1,5 @@
 import { h, o } from 'sinuous';
-import { addMessage } from '../data/messages';
+import { addMessage } from '../data/messages.js';
 import { computed } from 'sinuous/observable';
 
 const LoginForm = (): h.JSX.Element => {

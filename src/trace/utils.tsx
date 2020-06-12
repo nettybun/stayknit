@@ -1,4 +1,4 @@
-import { ds } from './index';
+import { ds } from './index.js';
 
 /** Return a pretty printed string for debugging */
 const type = (x: unknown, subcall?: boolean): string => {

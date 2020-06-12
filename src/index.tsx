@@ -2,13 +2,13 @@ import { h, api } from 'sinuous';
 import { observable, subscribe } from 'sinuous/observable';
 import { map } from 'sinuous/map';
 
-import { trace, tree } from './trace/index';
-import { messages } from './data/messages';
-import { svgSize } from './data/svgSize';
+import { trace, tree } from './trace/index.js';
+import { messages } from './data/messages.js';
+import { svgSize } from './data/svgSize.js';
 
-import { LoginForm } from './components/cLoginForm';
-import { NavBar } from './components/cNavBar';
-import { MountTest } from './components/cMountTesting';
+import { LoginForm } from './components/cLoginForm.js';
+import { NavBar } from './components/cNavBar.js';
+import { MountTest } from './components/cMountTesting.js';
 
 // Middleware for h() and add/insert calls
 trace(api);

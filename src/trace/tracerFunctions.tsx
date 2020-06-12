@@ -1,8 +1,8 @@
 import type { _h, api } from 'sinuous/h';
-import type { El, ComponentName } from './index';
+import type { El, ComponentName } from './index.js';
 
-import { ds, callAttachForTree, DATASET_TAG } from './index';
-import { type } from './utils';
+import { ds, callAttachForTree, DATASET_TAG } from './index.js';
+import { type } from './utils.js';
 
 const refDF: DocumentFragment[] = [];
 

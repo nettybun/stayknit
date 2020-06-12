@@ -24,7 +24,8 @@
             {
                 "webModulesUrl": "/web_modules/"
             }
-        ],
-        "./tools/babel-plugin-import-ext-patch.js"
+        ]
+        // Using VSCode's "Import Module Specifier Ending" and ESLint instead
+        // "./tools/babel-plugin-import-ext-patch.js"
     ]
 }
