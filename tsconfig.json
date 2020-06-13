@@ -6,9 +6,10 @@
     "noEmit": true,
     "strict": true,
     "esModuleInterop": true,
-    "outDir": "lib",
     "pretty": true,
     "jsx": "preserve",
     "jsxFactory": "h"
   }
+  // I've never been able to get include/exclude working for VSCode, but checkJS
+  // allows skipping JS files temporarily
 }

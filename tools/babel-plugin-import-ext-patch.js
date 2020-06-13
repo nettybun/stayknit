@@ -8,7 +8,6 @@
 // "ts:import-patch": "find build -name '*.js' -exec sed -i '/^import.*\\.js\";/ ! s/\\(^import.*\\)\";/\\1.js\";/' {} \\;",
 // "build:ts": "run-s ts:babel ts:import-patch",
 
-/* eslint-disable @typescript-eslint/no-var-requires */
 const path = require('path');
 
 function rewriteImport(imp) {

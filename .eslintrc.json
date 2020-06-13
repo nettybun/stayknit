@@ -56,6 +56,7 @@
     }
   ],
   "env": {
+    "es6": true,
     "browser": true,
     "node": true
   },
@@ -123,7 +124,10 @@
     "eqeqeq": "error",
     "indent": [
       "error",
-      2
+      2,
+      {
+        "SwitchCase": 1
+      }
     ],
     "import/extensions": [
       "error",
@@ -157,6 +161,8 @@
     ],
     "no-tabs": "error",
     "no-trailing-spaces": "error",
+    // Switch this as needed, otherwise too much noise
+    "no-unused-vars": "off",
     "no-useless-concat": "error",
     "object-curly-spacing": [
       "error",

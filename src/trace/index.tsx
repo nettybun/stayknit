@@ -124,4 +124,6 @@ const trace = (api: HyperscriptApi): void => {
 
 export { tree, trace, ds, callAttachForTree, callDetachForTree };
 // Global
-Object.assign(window, { tree, trace, ds, callAttachForTree, callDetachForTree });
+if (typeof window !== 'undefined') {
+  Object.assign(window, { tree, trace, ds, callAttachForTree, callDetachForTree });
+}

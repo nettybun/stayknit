@@ -21,7 +21,7 @@ const type = (x: unknown, subcall?: boolean): string => {
         ? `Guard${elName}`
         : elName;
     }
-    const isAttached = !subcall && document.body.contains(x);
+    const isAttached = !subcall && typeof window !== 'undefined' && document.body.contains(x);
     if (isAttached) str = `📶${str}`;
 
     if (subcall || x.childNodes.length === 0) return str;

@@ -160,7 +160,6 @@ const insertTracer = (insertCall: typeof api.insert): typeof api.insert =>
   (el, value, endMark, current, startNode) => {
     console.group(`api.insert(el:${type(el)}, value:${type(value)}, current:${type(current)}`);
     const retInsert = insertCall(el, value, endMark, current, startNode);
-    console.log('Returning', retInsert);
     console.groupEnd();
     return retInsert;
   };
