@@ -54,21 +54,22 @@ function serialize(el) {
         ? `<${tag}${attrs}/>`
         : `<${tag}${attrs}>${el.childNodes.map(serialize).join('')}</${tag}>`;
     }
-
     case NODE_TYPES.DOCUMENT_FRAGMENT_NODE: {
-      return `[Fragment]${el.childNodes.map(serialize).join('')}[/Fragment]`;
+      // As easy as pretending fragments don't exist at all
+      return el.childNodes.map(serialize).join('');
     }
-
-    // Not going to support NODE_TYPES.DOCUMENT_NODE for <!DOCTYPE...>
-    // Just inline the body into an HTML file. Safer.
+    // Not going to support NODE_TYPES.DOCUMENT_NODE for <!DOCTYPE...> etc.
     default: {
       console.log(el);
       throw new Error(`No serializer for NODE_TYPES "${el.nodeType}"`);
     }
   }
 }
+const escapeMap = {
+  '&': '&amp;', '<': '&lt;', '>': '&gt;', '\'': '&#39;', '"': '&quot;',
+};
 const encodeAttribute = a => ` ${a.name}="${encodeTextSafe(a.value)}"`;
-const encodeTextSafe = s => s.replace(/[&'"<>]/g, a => `&#${a};`);
+const encodeTextSafe = s => s.replace(/[&<>'"]/g, m => escapeMap[m]);
 
 class Node {
   constructor(nodeType, nodeName) {
@@ -211,11 +212,11 @@ class Element extends Node {
     return Boolean(l);
   }
 
-  get innerHTML() {
+  get outerHTML() {
     return serialize(this);
   }
-  set innerHTML(html) {
-    throw 'Node.prototype.innerHTML not implemented';
+  get innerHTML() {
+    return this.childNodes.map(serialize).join('');
   }
 }
 
