@@ -1,6 +1,11 @@
 // Adapted from UnDOM (minimal DOM) and Domino (spec compliant DOM)
 // They're amazing projects
 
+// Missing things:
+// - DocumentFragment doesn't handle moving children properly on insertBefore
+// - Setting attributes via el[name] = value doesn't work unless defined
+// - No support for data-* attribute / el.dataset
+
 const NODE_TYPES = {
   ELEMENT_NODE: 1,
   ATTRIBUTE_NODE: 2,
@@ -152,9 +157,13 @@ class Element extends Node {
     this.attributes = [];
     this.__handlers = {};
     this.style = {};
+    initializeAttributeAccessors(this, nodeName);
   }
 
   get tagName() { return this.nodeName; }
+
+  get id() { return this.getAttribute('id'); }
+  set id(val) { this.setAttribute('id', val); }
 
   get className() { return this.getAttribute('class'); }
   set className(val) { this.setAttribute('class', val); }
@@ -265,6 +274,23 @@ class Event {
   }
   preventDefault() {
     this.defaultPrevented = true;
+  }
+}
+
+// Note that these attributes don't exist on Element and there's no further
+// distinctions such as HTMLAnchorElement, so tack on accessors generically:
+// https://github.com/fgnass/domino/blob/master/lib/htmlelts.js
+const elementAttributes = {
+  a: ['href'],
+  img: ['src'],
+};
+function initializeAttributeAccessors(instance, nodeName) {
+  const attributes = elementAttributes[nodeName.toLowerCase()] ?? [];
+  for (const attr of attributes) {
+    Object.defineProperty(instance, attr, {
+      get: function() { return instance.getAttribute(attr); },
+      set: function(val) { instance.setAttribute(attr, val); },
+    });
   }
 }
 
