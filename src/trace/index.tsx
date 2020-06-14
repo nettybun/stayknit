@@ -69,6 +69,10 @@ const callLifecyclesForTree = (fn: LifecycleNames) =>
         return ds.guardMeta.get(el);
 
       const call = meta.lifecycles[fn];
+      if (typeof window === 'undefined') {
+        console.log(`${type(el)}:${fn} Skipped by SSR`);
+        return meta;
+      }
       if (call) {
         console.log(`${type(el)}:${fn}`, call);
         callCount++;
