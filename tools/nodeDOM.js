@@ -97,6 +97,11 @@ class Node {
   get parentElement() {
     return this.parentNode;
   }
+  get isConnected() {
+    let p = this.parentNode;
+    while (p) { if (p.nodeName === 'BODY') return true; p = p.parentNode; }
+    return this.nodeName === 'BODY';
+  }
   hasChildNodes() {
     return this.childNodes.length > 0;
   }
