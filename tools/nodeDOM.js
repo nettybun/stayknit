@@ -6,6 +6,10 @@
 // - Setting attributes via el[name] = value doesn't work unless defined
 // - No support for data-* attribute / el.dataset
 
+import { promises as fs } from 'fs';
+import path from 'path';
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
+
 const NODE_TYPES = {
   ELEMENT_NODE: 1,
   ATTRIBUTE_NODE: 2,
@@ -250,7 +254,6 @@ class Document extends Element {
     return element;
   }
 
-
   createTextNode(text) {
     return new Text(text);
   }
@@ -329,6 +332,14 @@ document.documentElement.appendChild(document.body);
 // Entrypoint
 const handleError = error => console.error(error);
 (async () => {
+  console.time('Render');
   await import('../serve/index.js').catch(handleError);
-  console.log(document.body.innerHTML);
+  console.timeEnd('Render');
+  const serialized = document.body.innerHTML;
+
+  const inPath = path.resolve(__dirname, '../static/index.html');
+  const indexHTML = await fs.readFile(inPath, 'utf-8');
+  const outPath = path.resolve(__dirname, '../serve/indexSSR.html');
+  await fs.writeFile(outPath, indexHTML.replace('<!--SSR-->', serialized));
+  console.log('Written to:', outPath);
 })().catch(handleError);
