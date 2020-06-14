@@ -11,6 +11,8 @@ cache:
     - sinuous/packages/sinuous/module
 
 pages:
+  only:
+    - work
   script:
     - npm install
     - cd sinuous
