@@ -3,7 +3,7 @@ import { observable, subscribe } from 'sinuous/observable';
 import { map } from 'sinuous/map';
 
 import { trace, tree } from './trace/index.js';
-import { messages } from './data/messages.js';
+import { messages, addMessage } from './data/messages.js';
 import { svgSize } from './data/svgSize.js';
 
 import { LoginForm } from './components/cLoginForm.js';
@@ -129,3 +129,9 @@ subscribe(() => {
       api.add(parent, renderSwapB, renderSwapMarker);
   }
 });
+
+// This doesn't work in SSR because the previous fragments aren't removed
+// Returns "1", "1, 2", "1, 2, 3" all in one <div/> by the end
+addMessage('Hey 1');
+addMessage('Hey 2');
+addMessage('Hey 3');
