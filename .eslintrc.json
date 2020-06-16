@@ -97,14 +97,6 @@
   },
   "rules": {
     "block-spacing": "error",
-    "capitalized-comments": [
-      "error",
-      "always",
-      {
-        "ignoreConsecutiveComments": true,
-        "ignoreInlineComments": false
-      }
-    ],
     "comma-dangle": [
       "error",
       {
