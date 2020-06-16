@@ -10,6 +10,14 @@ import { LoginForm } from './components/cLoginForm.js';
 import { NavBar } from './components/cNavBar.js';
 import { MountTest } from './components/cMountTesting.js';
 
+// TODO: When eventually defining a JSX-fork for Sinuous as a local file
+// declare namespace JSX {
+//   // This forbids children on components that don't declare them explicitly
+//   interface IntrinsicAttributes {
+//     children?: never;
+//   }
+// }
+
 // Middleware for h() and add/insert calls
 trace(api);
 
