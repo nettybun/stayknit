@@ -29,6 +29,8 @@ const hTracer = (hCall: typeof _h.h): typeof _h.h =>
     console.group(`🔶 ${name}`);
     const data = {};
     ds.renderStack.push(data);
+    // args[0] = (...args) => fn(...args, {}) ??? How to talk to hydratables...
+    // Honestly... probably calling `sendHydrations({ ... })` in the component
     // @ts-ignore TS incorrectly destructs the overload as `&` instead of `|`
     const el: HTMLElement | SVGElement | DocumentFragment = hCall(...args);
     if (el instanceof DocumentFragment) {
@@ -54,6 +56,11 @@ const hTracer = (hCall: typeof _h.h): typeof _h.h =>
 
     // FIXME: Oh shit. Without a stack children of the same function will share
     // an object. Ugh. That doesn't work...
+
+    // I still stand by the idea that spying on observables is _probably_ a bad
+    // idea. Nested computeds, chaining, side effects outside of the function...
+    // If React has shown anything, component authors will do far worse evils
+    // than the simple local state AttachTest does
     const hydrations: { [k: string]: Observable<unknown> } = {};
     const { hydrations: hydTmp } = fn as HydratableComponent;
     if (typeof hydTmp !== 'undefined') {
