@@ -2,7 +2,7 @@ import type { _h, HyperscriptApi } from 'sinuous/h';
 import type { Observable } from 'sinuous/observable';
 
 import { type } from './utils.js';
-import { hTracer, insertTracer, addTracer } from './tracerFunctions.js';
+import { hTracer, insertTracer, addTracer } from './tracer.js';
 
 enum ComponentNameBrand { _ = '' }
 export type ComponentName = ComponentNameBrand & string;

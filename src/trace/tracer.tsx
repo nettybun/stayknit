@@ -1,5 +1,4 @@
 import type { _h, api } from 'sinuous/h';
-import type { Observable } from 'sinuous/observable';
 import type { El, ComponentName } from './index.js';
 
 import { ds, callLifecycleForTree, DATASET_TAG } from './index.js';
