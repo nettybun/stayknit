@@ -35,7 +35,9 @@ const type = (x: unknown, subcall?: boolean): string => {
     return '∅';
 
   if (typeof x === 'function')
-    return '[Function]';
+    return '$o' in x
+      ? '[Observable]'
+      : '[Function]';
 
   // Try to show a startMark (key is minified)
   const o = x as Record<string, unknown>;
