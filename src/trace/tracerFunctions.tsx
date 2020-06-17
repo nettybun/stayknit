@@ -51,6 +51,9 @@ const hTracer = (hCall: typeof _h.h): typeof _h.h =>
     // on a convention where components promise to write their observables into
     // a public object. This would be shared across all instances, so it's
     // cleared out here during tracing.
+
+    // FIXME: Oh shit. Without a stack children of the same function will share
+    // an object. Ugh. That doesn't work...
     const hydrations: { [k: string]: Observable<unknown> } = {};
     const { hydrations: hydTmp } = fn as HydratableComponent;
     if (typeof hydTmp !== 'undefined') {
