@@ -16,91 +16,80 @@ export type El
   & { dataset?: { [DATASET_TAG]?: ComponentName } & DOMStringMap };
 export type Component = El;
 
-export type LifecycleNames =
+export type Lifecycle =
   | 'onAttach'
   | 'onDetach'
 
-export type LifecycleMethods = { [K in LifecycleNames]?: () => void; }
+export type LifecycleRefs = { [k in Lifecycle]?: () => void; }
+export type HydrationRefs = { [k in string]?: Observable<unknown>; }
 
 export type InstanceMetadata = {
   name: ComponentName;
   children: Set<El>;
-  lifecycles: LifecycleMethods;
-  hydrations: Record<string, Observable<unknown>>;
+  lifecycles: LifecycleRefs;
+  hydrations: HydrationRefs;
   // TODO: Add timing, rerender count, etc
 };
 
 const ds = {
-  /**
-   * Lifecycle methods set during render are stored here. They're bound to their
-   * component immediately after, when the function closes */
-  renderStack: [] as LifecycleMethods[],
-  /**
-   * Non-components that have children components. Helps to-be parent components
-   * register children. There's only ever one guardian per tree (it's moved) */
+  /** Any data set via effects during component render */
+  renderStack: [] as { lifecycles: LifecycleRefs, hydrations: HydrationRefs }[],
+  /** Non-components with component children. Moved up with each re-parenting */
   guardMeta: new WeakMap<El, { children: Set<Component> }>(),
-
   /** WeakMap a given instance (DOM element) to component metadata */
   compMeta: new WeakMap<Component, InstanceMetadata>(),
-
   /** Map a component name to all of its instances (DOM elements) */
   compNames: new Map<ComponentName, WeakSet<Component>>(),
 };
 
-// If ds.renderStack is unexpectedly empty, these will throw
-const tree = {
-  /** Lifecycle. Setup during component render */
-  onAttach(callback: () => void): void {
-    console.log('Installing onAttach lifecycle');
-    ds.renderStack[ds.renderStack.length - 1].onAttach = callback;
-  },
-  /** Lifecycle. Setup during component render */
-  onDetach(callback: () => void): void {
-    console.log('Installing onDetach lifecycle');
-    ds.renderStack[ds.renderStack.length - 1].onDetach = callback;
-  },
+const sendLifecycleGenerator = (fn: Lifecycle) => (callback: () => void) => {
+  ds.renderStack[ds.renderStack.length - 1].lifecycles[fn] = callback;
+};
+const sendHydrations = (observables: HydrationRefs): void => {
+  ds.renderStack[ds.renderStack.length - 1].hydrations = observables;
 };
 
-const callLifecyclesForTree = (fn: LifecycleNames) =>
-  (root: Element | DocumentFragment) => {
-    let callCount = 0;
-    const callLifecycleForEl = (el: El) => {
-      const meta = ds.compMeta.get(el);
-      // If it's not a component but it could be a guardian element
-      if (!meta)
-        return ds.guardMeta.get(el);
+const tree = {
+  onAttach: sendLifecycleGenerator('onAttach'),
+  onDetach: sendLifecycleGenerator('onDetach'),
+  sendHydrations,
+};
 
-      const call = meta.lifecycles[fn];
-      if (typeof window === 'undefined') {
-        console.log(`${type(el)}:${fn} Skipped by SSR`);
-        return meta;
-      }
-      if (call) {
-        console.log(`${type(el)}:${fn}`, call);
-        callCount++;
-        call();
-      }
+const callLifecycleForTree = (fn: Lifecycle, root: Node): void => {
+  let callCount = 0;
+  const callForEl = (el: El) => {
+    const meta = ds.compMeta.get(el);
+    // If it's not a component but it could be a guardian element
+    if (!meta)
+      return ds.guardMeta.get(el);
+
+    const call = meta.lifecycles[fn];
+    if (typeof window === 'undefined') {
+      console.log(`${type(el)}:${fn} Skipped by SSR`);
       return meta;
-    };
-    const meta = callLifecycleForEl(root as El);
-    // If not be a component or a guardian, or have nothing else to do
-    if (!meta || meta.children.size === 0) {
-      console.log(`${type(root)}:${fn} stopped at root. Calls: ${callCount}`);
-      console.log('Meta:', meta);
-      return;
     }
-    const childSetStack = [meta.children];
-    while (childSetStack.length) {
-      (childSetStack.shift() as Set<El>).forEach(el => { // TS bug
-        const meta = callLifecycleForEl(el);
-        if (meta && meta.children.size > 0) childSetStack.push(meta.children);
-      });
+    if (call) {
+      console.log(`${type(el)}:${fn}`, call);
+      callCount++;
+      call();
     }
-    console.log(`${type(root)}:${fn} had children. Calls: ${callCount}`);
+    return meta;
   };
-
-const callAttachForTree = callLifecyclesForTree('onAttach');
-const callDetachForTree = callLifecyclesForTree('onDetach');
+  const meta = callForEl(root as El);
+  // If not be a component or a guardian, or have nothing else to do
+  if (!meta || meta.children.size === 0) {
+    console.log(`${type(root)}:${fn} stopped at root. Calls: ${callCount}`);
+    return;
+  }
+  const childSetStack = [meta.children];
+  while (childSetStack.length) {
+    (childSetStack.shift() as Set<El>).forEach(el => { // TS bug
+      const meta = callForEl(el);
+      if (meta && meta.children.size > 0) childSetStack.push(meta.children);
+    });
+  }
+  console.log(`${type(root)}:${fn} had children. Calls: ${callCount}`);
+};
 
 // Patch Sinuous' API to trace components into a WeakMap tree
 const trace = (api: HyperscriptApi): void => {
@@ -119,7 +108,7 @@ const trace = (api: HyperscriptApi): void => {
       if (parent === cursor.parentNode) {
         if (parent.isConnected && cursor instanceof Element) {
           console.log('%conDetach', 'background: coral');
-          callDetachForTree(cursor);
+          callLifecycleForTree('onDetach', cursor);
         }
         parent.removeChild(cursor);
       }
@@ -128,8 +117,8 @@ const trace = (api: HyperscriptApi): void => {
   };
 };
 
-export { tree, trace, ds, callAttachForTree, callDetachForTree };
+export { tree, trace, ds, callLifecycleForTree };
 // Global
 if (typeof window !== 'undefined') {
-  Object.assign(window, { tree, trace, ds, callAttachForTree, callDetachForTree });
+  Object.assign(window, { tree, trace, ds, callLifecycleForTree });
 }

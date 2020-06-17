@@ -2,7 +2,7 @@ import type { _h, api } from 'sinuous/h';
 import type { Observable } from 'sinuous/observable';
 import type { El, ComponentName } from './index.js';
 
-import { ds, callAttachForTree, DATASET_TAG } from './index.js';
+import { ds, callLifecycleForTree, DATASET_TAG } from './index.js';
 import { type } from './utils.js';
 
 const refDF: DocumentFragment[] = [];
@@ -27,10 +27,8 @@ const hTracer = (hCall: typeof _h.h): typeof _h.h =>
 
     const name = fn.name as ComponentName;
     console.group(`🔶 ${name}`);
-    const data = {};
+    const data = { lifecycles: {}, hydrations: {} };
     ds.renderStack.push(data);
-    // args[0] = (...args) => fn(...args, {}) ??? How to talk to hydratables...
-    // Honestly... probably calling `sendHydrations({ ... })` in the component
     // @ts-ignore TS incorrectly destructs the overload as `&` instead of `|`
     const el: HTMLElement | SVGElement | DocumentFragment = hCall(...args);
     if (el instanceof DocumentFragment) {
@@ -47,34 +45,9 @@ const hTracer = (hCall: typeof _h.h): typeof _h.h =>
       return el;
     }
 
-    // Tracing lifecycles is done by listening, but not for Observables... It
-    // doesn't have a tapable API like sinuous/h does, so without forking the
-    // code it's hard to know when they run. Instead, tracing observables relies
-    // on a convention where components promise to write their observables into
-    // a public object. This would be shared across all instances, so it's
-    // cleared out here during tracing.
-
-    // FIXME: Oh shit. Without a stack children of the same function will share
-    // an object. Ugh. That doesn't work...
-
-    // I still stand by the idea that spying on observables is _probably_ a bad
-    // idea. Nested computeds, chaining, side effects outside of the function...
-    // If React has shown anything, component authors will do far worse evils
-    // than the simple local state AttachTest does
-    const hydrations: { [k: string]: Observable<unknown> } = {};
-    const { hydrations: hydTmp } = fn as HydratableComponent;
-    if (typeof hydTmp !== 'undefined') {
-      console.log(`💧 ${Object.keys(hydTmp).length} hydrations`);
-      // Could assign/spread hydrations but I need to delete them anyway...
-      for (const key in hydTmp) {
-        hydrations[key] = hydTmp[key];
-        delete hydTmp[key];
-      }
-    }
-
-    const lifecycles = ds.renderStack.pop();
+    const renderData = ds.renderStack.pop();
     // Would only happen if someone writes to the render stack during a render
-    if (!lifecycles || lifecycles !== data) {
+    if (!renderData || renderData !== data) {
       console.error(`${name}: ds.renderStack.pop() was empty or wrong object`);
       console.groupEnd();
       return el;
@@ -83,18 +56,17 @@ const hTracer = (hCall: typeof _h.h): typeof _h.h =>
     // Which means they'll be guardians by then if they had any children
     const elGuard = ds.guardMeta.get(el);
     const children = elGuard?.children ?? new Set<El>();
-    if (elGuard) {
-      console.log('Upgrading guard to component');
-      ds.guardMeta.delete(el);
-    }
-    ds.compMeta.set(el, { name, children, lifecycles, hydrations });
+    // Upgrading guard to component
+    if (elGuard) ds.guardMeta.delete(el);
+    ds.compMeta.set(el, { name, children, ...renderData });
     const instances = ds.compNames.get(name) ?? new WeakSet<El>();
     ds.compNames.set(name, instances.add(el));
     // TODO: Support DocumentFragment
     if (!(el instanceof DocumentFragment)) {
       el.dataset[DATASET_TAG] = name;
     }
-    console.log(`${name}: Done. Installed lifecycles: ${Object.keys(lifecycles).length}`);
+    console.log(`${name}: Done`);
+    console.log('Render data:', renderData);
     console.groupEnd();
     return el;
   };
@@ -105,7 +77,8 @@ const hTracer = (hCall: typeof _h.h): typeof _h.h =>
 // empty (parent.insertBefore in api.add clears it) but the object ref is OK
 const addTracer = (addCall: typeof api.add): typeof api.add =>
   (parent: El, value: El, endMark) => {
-    console.group(`api.add(parent:${type(parent)}, value:${type(value)})`);
+    console.group('api.add()');
+    console.log(`parent:${type(parent)}, value:${type(value)}`);
 
     const valueWasNotPreviouslyConnected = !value.isConnected;
     const retAdd = addCall(parent, value, endMark);
@@ -123,7 +96,7 @@ const addTracer = (addCall: typeof api.add): typeof api.add =>
       console.log(`Attached? Parent ${e(parent.isConnected)}. Value ${e(!valueWasNotPreviouslyConnected)}`);
       if (parent.isConnected && valueWasNotPreviouslyConnected) {
         console.log('%conAttach', 'background: lightgreen', 'for value');
-        callAttachForTree(value);
+        callLifecycleForTree('onAttach', value);
       }
     };
 
@@ -187,7 +160,8 @@ const addTracer = (addCall: typeof api.add): typeof api.add =>
 
 const insertTracer = (insertCall: typeof api.insert): typeof api.insert =>
   (el, value, endMark, current, startNode) => {
-    console.group(`api.insert(el:${type(el)}, value:${type(value)}, current:${type(current)}`);
+    console.group('api.insert()');
+    console.log(`el:${type(el)}, value:${type(value)}, current:${type(current)}`);
     const retInsert = insertCall(el, value, endMark, current, startNode);
     console.groupEnd();
     return retInsert;

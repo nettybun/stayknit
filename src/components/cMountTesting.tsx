@@ -1,5 +1,6 @@
 import { h, observable } from 'sinuous';
 import { tree, ds } from '../trace/index.js';
+import { JSXEl } from '../types/index.js';
 
 // XXX: Automate this
 // At least the generic observable splicing, event reg, and tree methods.
@@ -8,35 +9,26 @@ import { tree, ds } from '../trace/index.js';
 // if (!meta) throw `No meta for ${el.tagName}`;
 // meta.observableLocationMarkers.forEach::subscribe(() => api.insert());
 
-// XXX: Not allowed to return an ObservableCollection...
-// Instead of having the hydration function call MyComp.hydrate I might need to
-// pass in a ~~special prop~~ function argument to provide type safety.
-// Considering I'm opinionated about component children, I'd like to type check
-// that all components are void elements (no children) and can change the
-// definition of Component to (props: {}, hydrate)
+// XXX: This assumes that _ALL_ instances of a component that is hydratable will
+// be hydrating, globally, on initial render. There won't be some instances
+// rendering on the initial pass, during hydration, that don't need hydration...
 
-// A lot of this comes down to functions not being able to inspect their own...
-// self? I suppose it's `this` but () => {} doesn't have `this`
+// I think that's safe to assume. Hydration is always first and atomic (single
+// threaded web, afterall)
 
-const AttachTest: HydratableComponent = () => {
-  // This is now just a calling convention (rather than explicit data passing
-  // within the tracer). To be a HydratableComponent means you promise to put
-  // all observables in this object for later
-  const s = AttachTest.hydrations;
-  s.xhrFetchedCommentCount = observable('...');
-  s.windowSize = observable('...');
-
+const AttachTest = (): JSXEl => {
+  const s = {
+    xhrFetchedCommentCount: observable('...'),
+    windowSize: observable('...'),
+  };
   const onWindowResize = debounce(() => {
     s.windowSize(`${window.innerWidth}px x ${window.innerHeight}px`);
   }, 250);
   const fetchController = new AbortController();
   tree.onAttach(() => {
-    void fetch('/404', { signal: fetchController.signal })
+    void fetch('/fetchData.txt', { signal: fetchController.signal })
       .then(r => r.text())
       .then(count => s.xhrFetchedCommentCount(count));
-    setTimeout(() => {
-      s.xhrFetchedCommentCount('50');
-    }, 500);
     onWindowResize();
     window.addEventListener('resize', onWindowResize);
   });
@@ -44,7 +36,7 @@ const AttachTest: HydratableComponent = () => {
     fetchController.abort();
     window.removeEventListener('resize', onWindowResize);
   });
-
+  tree.sendHydrations(s);
   // Short circuit render. Observables will be patched into existing DOM
   if (window.hydrating) return null;
 
@@ -57,7 +49,6 @@ const AttachTest: HydratableComponent = () => {
     </div>
   );
 };
-AttachTest.hydrations = {};
 
 // NOICE.
 function debounce(func: (...args: unknown[]) => void, wait: number, immediate?: boolean) {
