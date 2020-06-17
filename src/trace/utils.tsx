@@ -27,10 +27,16 @@ const type = (x: unknown, subcall?: boolean): string => {
     if (subcall || x.childNodes.length === 0) return str;
     return `${str}[${[...x.childNodes].map(n => type(n, true)).join(', ')}]`;
   }
-
-  if (x instanceof Text)
-    return (x.textContent && `"${x.textContent.trim()}"`) || '';
-
+  const str = (s: string) => {
+    s = s.trim();
+    return s.length <= 10
+      ? `"${s}"`
+      : `"${s.slice(0, 10)}"+${s.length - 10}`;
+  };
+  if (x instanceof Text) {
+    if (!x.textContent) return '';
+    return str(x.textContent);
+  }
   if (typeof x === 'undefined')
     return '∅';
 
@@ -46,7 +52,7 @@ const type = (x: unknown, subcall?: boolean): string => {
     return '[StartMark]';
 
   // Default to [object DataType]
-  return `"${String(x).trim()}"`;
+  return str(String(x));
 };
 
 export { type };

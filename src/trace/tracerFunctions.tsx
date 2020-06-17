@@ -86,14 +86,12 @@ const addTracer = (addCall: typeof api.add): typeof api.add =>
     // @ts-ignore TS bug says undefined after checking length?
     if (Array.isArray(value) && refDF.length) value = refDF.pop();
     if (!(value instanceof Element || value instanceof DocumentFragment)) {
-      console.log(`Not Element or DF: ${type(value)}. Returning`);
       console.groupEnd();
       return retAdd;
     }
 
     const maybeAttach = (): void => {
       const e = (x: boolean) => x ? '✅' : '❌';
-      console.log(`Attached? Parent ${e(parent.isConnected)}. Value ${e(!valueWasNotPreviouslyConnected)}`);
       if (parent.isConnected && valueWasNotPreviouslyConnected) {
         console.log('%conAttach', 'background: lightgreen', 'for value');
         callLifecycleForTree('onAttach', value);
