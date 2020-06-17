@@ -1,5 +1,5 @@
 import { h } from 'sinuous';
-import { addMessage } from '../state/messages.jsx';
+import { addMessage } from '../state/messages.js';
 
 const NavBar = ({ items }: { items: string[] }): h.JSX.Element =>
   <div className="flex mb-2 border-t border-r border-l text-sm rounded">
