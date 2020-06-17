@@ -1,4 +1,5 @@
 import type { _h, HyperscriptApi } from 'sinuous/h';
+import type { Observable } from 'sinuous/observable';
 
 import { type } from './utils.js';
 import { hTracer, insertTracer, addTracer } from './tracerFunctions.js';
@@ -25,6 +26,7 @@ export type InstanceMetadata = {
   name: ComponentName;
   children: Set<El>;
   lifecycles: LifecycleMethods;
+  hydrations: Record<string, Observable<unknown>>;
   // TODO: Add timing, rerender count, etc
 };
 

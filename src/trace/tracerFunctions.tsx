@@ -1,4 +1,5 @@
 import type { _h, api } from 'sinuous/h';
+import type { Observable } from 'sinuous/observable';
 import type { El, ComponentName } from './index.js';
 
 import { ds, callAttachForTree, DATASET_TAG } from './index.js';
@@ -25,12 +26,7 @@ const hTracer = (hCall: typeof _h.h): typeof _h.h =>
     }
 
     const name = fn.name as ComponentName;
-    const { hydrations } = fn as HydratableComponent;
-    console.group(
-      typeof hydrations === 'undefined'
-        ? `🔶 ${name}`
-        : `🔶 ${name} w/ 💧 ${Object.keys(hydrations).length} hydrations`
-    );
+    console.group(`🔶 ${name}`);
     const data = {};
     ds.renderStack.push(data);
     // @ts-ignore TS incorrectly destructs the overload as `&` instead of `|`
@@ -48,6 +44,24 @@ const hTracer = (hCall: typeof _h.h): typeof _h.h =>
       console.groupEnd();
       return el;
     }
+
+    // Tracing lifecycles is done by listening, but not for Observables... It
+    // doesn't have a tapable API like sinuous/h does, so without forking the
+    // code it's hard to know when they run. Instead, tracing observables relies
+    // on a convention where components promise to write their observables into
+    // a public object. This would be shared across all instances, so it's
+    // cleared out here during tracing.
+    const hydrations: { [k: string]: Observable<unknown> } = {};
+    const { hydrations: hydTmp } = fn as HydratableComponent;
+    if (typeof hydTmp !== 'undefined') {
+      console.log(`💧 ${Object.keys(hydTmp).length} hydrations`);
+      // Could assign/spread hydrations but I need to delete them anyway...
+      for (const key in hydTmp) {
+        hydrations[key] = hydTmp[key];
+        delete hydTmp[key];
+      }
+    }
+
     const lifecycles = ds.renderStack.pop();
     // Would only happen if someone writes to the render stack during a render
     if (!lifecycles || lifecycles !== data) {
@@ -63,7 +77,7 @@ const hTracer = (hCall: typeof _h.h): typeof _h.h =>
       console.log('Upgrading guard to component');
       ds.guardMeta.delete(el);
     }
-    ds.compMeta.set(el, { name, children, lifecycles });
+    ds.compMeta.set(el, { name, children, lifecycles, hydrations });
     const instances = ds.compNames.get(name) ?? new WeakSet<El>();
     ds.compNames.set(name, instances.add(el));
     // TODO: Support DocumentFragment
