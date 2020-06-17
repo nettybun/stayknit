@@ -18,7 +18,11 @@ import { tree, ds } from '../trace/index.js';
 // A lot of this comes down to functions not being able to inspect their own...
 // self? I suppose it's `this` but () => {} doesn't have `this`
 
-const AttachTest: HydratableComponent = (_, s = {}) => {
+const AttachTest: HydratableComponent = () => {
+  // This is now just a calling convention (rather than explicit data passing
+  // within the tracer). To be a HydratableComponent means you promise to put
+  // all observables in this object for later
+  const s = AttachTest.hydrations;
   s.xhrFetchedCommentCount = observable('...');
   s.windowSize = observable('...');
 
@@ -53,6 +57,7 @@ const AttachTest: HydratableComponent = (_, s = {}) => {
     </div>
   );
 };
+AttachTest.hydrations = {};
 
 // NOICE.
 function debounce(func: (...args: unknown[]) => void, wait: number, immediate?: boolean) {

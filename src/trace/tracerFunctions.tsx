@@ -25,7 +25,12 @@ const hTracer = (hCall: typeof _h.h): typeof _h.h =>
     }
 
     const name = fn.name as ComponentName;
-    console.group(`🔶${name}`);
+    const { hydrations } = fn as HydratableComponent;
+    console.group(
+      typeof hydrations === 'undefined'
+        ? `🔶 ${name}`
+        : `🔶 ${name} w/ 💧 ${Object.keys(hydrations).length} hydrations`
+    );
     const data = {};
     ds.renderStack.push(data);
     // @ts-ignore TS incorrectly destructs the overload as `&` instead of `|`

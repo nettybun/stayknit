@@ -27,8 +27,10 @@ declare global {
   // I'll lie to TS a bit. This definition will be for client JS only. In the
   // server I'll pass in a collection object
 
-  // FIXME: How to change JSX typechecking to forbid children on _all_ components?
-  type HydratableComponent = (props: JSXProp & { children?: never }, s: ObservableRefs) => JSXEl
+  interface HydratableComponent {
+    (props: JSXProp & { children?: never }): JSXEl
+    hydrations: ObservableRefs
+  }
 
   // XXX: Why aren't there are type hints for this? Using `props` is `any` type
   // type Component =
