@@ -3,12 +3,12 @@ import { observable, subscribe } from 'sinuous/observable';
 import { map } from 'sinuous/map';
 
 import { trace, tree } from './trace/index.js';
-import { messages, addMessage } from './data/messages.js';
-import { svgSize } from './data/svgSize.js';
+import { messages, addMessage } from './state/messages.js';
+import { svgSize } from './state/svgSize.js';
 
 import { LoginForm } from './components/cLoginForm.js';
 import { NavBar } from './components/cNavBar.js';
-import { MountTest } from './components/cMountTesting.js';
+import { AttachTest } from './components/cMountTesting.js';
 
 // TODO: When eventually defining a JSX-fork for Sinuous as a local file
 // declare namespace JSX {
@@ -49,7 +49,7 @@ const ListUsingMap = () =>
 const Link = ({ to }: {to: string}) =>
   <a href={to}>{to}</a>;
 
-const renderSwapA = <MountTest/>;
+const renderSwapA = <AttachTest/>;
 const renderSwapB = <em>Gone</em>;
 const renderSwapMarker = document.createTextNode('');
 

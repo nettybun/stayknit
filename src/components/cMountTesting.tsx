@@ -18,7 +18,7 @@ import { tree, ds } from '../trace/index.js';
 // A lot of this comes down to functions not being able to inspect their own...
 // self? I suppose it's `this` but () => {} doesn't have `this`
 
-const MountTest: HydratableComponent = (_, s = {}) => {
+const AttachTest: HydratableComponent = (_, s = {}) => {
   s.xhrFetchedCommentCount = observable('...');
   s.windowSize = observable('...');
 
@@ -69,4 +69,4 @@ function debounce(func: (...args: unknown[]) => void, wait: number, immediate?: 
   };
 }
 
-export { MountTest };
+export { AttachTest };
