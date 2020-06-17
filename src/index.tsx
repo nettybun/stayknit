@@ -8,7 +8,7 @@ import { svgSize } from './state/svgSize.js';
 
 import { LoginForm } from './components/cLoginForm.js';
 import { NavBar } from './components/cNavBar.js';
-import { AttachTest } from './components/cAttachTest.jsx';
+import { AttachTest } from './components/cAttachTest.js';
 
 // TODO: When eventually defining a JSX-fork for Sinuous as a local file
 // declare namespace JSX {

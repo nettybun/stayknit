@@ -1,5 +1,5 @@
 import { h, observable } from 'sinuous';
-import { tree, ds } from '../trace/index.jsx';
+import { tree, ds } from '../trace/index.js';
 import { JSXEl } from '../types/index.js';
 
 // XXX: Automate this
