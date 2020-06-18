@@ -1,71 +1,53 @@
 import type { _h, api } from 'sinuous/h';
 import type { El, ComponentName } from './index.js';
 
-import { ds, callLifecycleForTree, DATASET_TAG } from './index.js';
+import { ds, callLifecycleForTree } from './index.js';
 import { type } from './utils.js';
 
 const refDF: DocumentFragment[] = [];
 
-// Unlike other functions this doesn't throw since it needs to keep rendering
 const hTracer = (hCall: typeof _h.h): typeof _h.h =>
   // @ts-ignore DocumentFragment is not assignable to SVGElement | HTMLElement
   (...args: unknown[]) => {
     const [fn] = args;
     if (typeof fn !== 'function') {
-      if (Array.isArray(fn)) {
-        console.log('hTracer: Creating DocumentFragment');
-      }
       // @ts-ignore TS doesn't understand ...args
       const retH = hCall(...args);
-      if (retH instanceof DocumentFragment) {
-        console.log('hTracer returning DocumentFragment. Has children:', retH.hasChildNodes());
-        refDF.push(retH);
-      }
+      if (retH instanceof DocumentFragment) refDF.push(retH);
       return retH;
     }
 
     const name = fn.name as ComponentName;
     console.group(`🔶 ${name}`);
-    const data = { lifecycles: {}, hydrations: {} };
-    ds.renderStack.push(data);
-    // @ts-ignore TS incorrectly destructs the overload as `&` instead of `|`
+
+    const renderData = { lifecycles: {}, hydrations: {} };
+    ds.stack.push(renderData);
+    // @ts-ignore TS bug? Destructs overload as `&` not `|`
     const el: HTMLElement | SVGElement | DocumentFragment = hCall(...args);
-    if (el instanceof DocumentFragment) {
-      console.log('hTracer DocumentFragment from component:', name);
-    }
+    ds.stack.pop();
 
-    // Match Element and DocumentFragment
-    if (el instanceof Node) {
-      console.log(`${name}: isComp ✅`);
-    } else {
-      console.log(`${name}: isComp ❌`);
-      ds.renderStack.pop();
+    // Not Element or DocumentFragment
+    if (!(el instanceof Node)) {
+      console.log(`${name}: Function but not component ❌`);
       console.groupEnd();
       return el;
     }
 
-    const renderData = ds.renderStack.pop();
-    // Would only happen if someone writes to the render stack during a render
-    if (!renderData || renderData !== data) {
-      console.error(`${name}: ds.renderStack.pop() was empty or wrong object`);
-      console.groupEnd();
-      return el;
-    }
-    // Elements become components _after_ all their children have been added...
-    // Which means they'll be guardians by then if they had any children
+    // Elements become components _after_ all children are added, so they
+    // will be guardians by now if they had children. Guard->Component
     const elGuard = ds.guardMeta.get(el);
     const children = elGuard?.children ?? new Set<El>();
-    // Upgrading guard to component
     if (elGuard) ds.guardMeta.delete(el);
+
+    // Register as a component
     ds.compMeta.set(el, { name, children, ...renderData });
-    const instances = ds.compNames.get(name) ?? new WeakSet<El>();
-    ds.compNames.set(name, instances.add(el));
-    // TODO: Support DocumentFragment
-    if (!(el instanceof DocumentFragment)) {
-      el.dataset[DATASET_TAG] = name;
-    }
-    console.log(`${name}: Done`);
-    console.log('Render data:', renderData);
+
+    // Provide visual in DevTools
+    const DATASET_TAG = 'component';
+    if (el instanceof Element) el.dataset[DATASET_TAG] = name;
+    else el.childNodes.forEach(x => { (x as HTMLElement).dataset[DATASET_TAG] = name })
+
+    console.log(`${name}: Done. Render data:`, renderData);
     console.groupEnd();
     return el;
   };

@@ -7,15 +7,7 @@ import { hTracer, insertTracer, addTracer } from './tracer.js';
 enum ComponentNameBrand { _ = '' }
 export type ComponentName = ComponentNameBrand & string;
 
-// Not actually used, only to provide hints in DevTools
-/** El.dataset[DATASET_TAG] = ComponentName; Also as <h1 data-DATASET_TAG /> */
-export const DATASET_TAG = 'component';
-
-export type El
-  = (Element | DocumentFragment)
-  & { dataset?: { [DATASET_TAG]?: ComponentName } & DOMStringMap };
-export type Component = El;
-
+export type El = Element | DocumentFragment
 export type Lifecycle =
   | 'onAttach'
   | 'onDetach'
@@ -31,22 +23,22 @@ export type InstanceMetadata = {
   // TODO: Add timing, rerender count, etc
 };
 
+type RenderStack = { lifecycles: LifecycleRefs, hydrations: HydrationRefs }[];
+
 const ds = {
-  /** Any data set via effects during component render */
-  renderStack: [] as { lifecycles: LifecycleRefs, hydrations: HydrationRefs }[],
+  /** Functions write here during render. Data is moved to ds.meta after */
+  stack: [] as RenderStack,
   /** Non-components with component children. Moved up with each re-parenting */
-  guardMeta: new WeakMap<El, { children: Set<Component> }>(),
+  guardMeta: new WeakMap<El, { children: Set<El> }>(),
   /** WeakMap a given instance (DOM element) to component metadata */
-  compMeta: new WeakMap<Component, InstanceMetadata>(),
-  /** Map a component name to all of its instances (DOM elements) */
-  compNames: new Map<ComponentName, WeakSet<Component>>(),
+  compMeta: new WeakMap<El, InstanceMetadata>(),
 };
 
 const sendLifecycleGenerator = (fn: Lifecycle) => (callback: () => void) => {
-  ds.renderStack[ds.renderStack.length - 1].lifecycles[fn] = callback;
+  ds.stack[ds.stack.length - 1].lifecycles[fn] = callback;
 };
 const sendHydrations = (observables: HydrationRefs): void => {
-  ds.renderStack[ds.renderStack.length - 1].hydrations = observables;
+  ds.stack[ds.stack.length - 1].hydrations = observables;
 };
 
 const tree = {
