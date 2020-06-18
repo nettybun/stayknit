@@ -110,7 +110,6 @@ const addTracer = (addCall: typeof api.add): typeof api.add =>
     const valueGuardMeta = ds.guardMeta.get(value);
     // No action case:
     if (!valueCompMeta && !valueGuardMeta) {
-      maybeAttach();
       console.groupEnd();
       return retAdd;
     }
