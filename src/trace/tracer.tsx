@@ -73,24 +73,20 @@ const addTracer = (addCall: typeof api.add): typeof api.add =>
         callLifecycleForTree('onAttach', value);
     };
 
-    // TODO: This could replace all the if/else below? (c: El | Set<El>) =>
     const walkUpToPlaceChildren = (children: Set<El>) => {
       let cursor: El | null = parent;
       // eslint-disable-next-line no-cond-assign
       while (cursor = cursor.parentElement) {
-        const container = ds.tree.get(cursor);
-        if (container) {
-          console.log(`Found ${type(cursor)}`);
-          // If (children instanceof Set) || container.add(children);
-          children.forEach(x => container.add(x));
-          break;
-        }
-        // Didn't find a component or guard walking up tree. Default to <body/>
-        if (cursor === document.body) {
-          ds.tree.set(parent, children);
-          break;
-        }
+        const c = ds.tree.get(cursor);
+        if (!c) continue;
+        console.log(`Found adoptive parent ${type(cursor)}`);
+        children.forEach(x => c.add(x));
+        return;
       }
+      // Didn't find a suitable parent walking up tree. Default to <body/>
+      const body = ds.tree.get(document.body);
+      if (body) children.forEach(x => body.add(x));
+      else ds.tree.set(document.body, children);
     };
 
     const parentChildren = ds.tree.get(parent);
