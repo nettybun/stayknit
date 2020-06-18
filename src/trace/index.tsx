@@ -110,7 +110,3 @@ const trace = (api: HyperscriptApi): void => {
 };
 
 export { tree, trace, ds, callLifecycleForTree };
-// Global
-if (typeof window !== 'undefined') {
-  Object.assign(window, { tree, trace, ds, callLifecycleForTree });
-}

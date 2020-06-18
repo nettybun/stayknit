@@ -11,7 +11,3 @@ const addMessage = (text: string): void => {
 };
 
 export { messages, addMessage };
-// Global
-if (typeof window !== 'undefined') {
-  Object.assign(window, { messages, addMessage });
-}
