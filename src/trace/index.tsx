@@ -4,9 +4,6 @@ import type { Observable } from 'sinuous/observable';
 import { type } from './utils.js';
 import { hTracer, insertTracer, addTracer, rmTracer } from './tracer.js';
 
-enum ComponentNameBrand { _ = '' }
-export type ComponentName = ComponentNameBrand & string;
-
 export type El = Element | DocumentFragment
 export type Lifecycle =
   | 'onAttach'

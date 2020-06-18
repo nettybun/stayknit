@@ -1,5 +1,5 @@
 import type { _h, api } from 'sinuous/h';
-import type { El, ComponentName } from './index.js';
+import type { El } from './index.js';
 
 import { ds, callLifecycleForTree } from './index.js';
 import { type } from './utils.js';
@@ -17,7 +17,7 @@ const hTracer = (hCall: typeof _h.h): typeof _h.h =>
       if (retH instanceof DocumentFragment) refDF.push(retH);
       return retH;
     }
-    const name = fn.name as ComponentName;
+    const { name } = fn;
     console.group(`🔶 ${name}`);
 
     const renderData = { lifecycles: {}, hydrations: {} };
@@ -49,10 +49,9 @@ const hTracer = (hCall: typeof _h.h): typeof _h.h =>
     return el;
   };
 
-// In Sinuous, api.add is not purely a sub-function of api.h. It will call api.h
-// if given an array and then converts it to a fragment internally so we never
-// see the fragment. That's why hTracer sets refDF to be used here. It will be
-// empty (parent.insertBefore clears childNodes) but the object ref is OK
+// Sinuous' api.add isn't purely a subcall of api.h. If given an array, it will
+// call api.h again to create a fragment (never returned). To see the fragment
+// here, hTracer sets refDF. It's empty since insertBefore() clears child nodes
 const addTracer = (addCall: typeof api.add): typeof api.add =>
   (parent: El, value: El, endMark) => {
     console.group('api.add()');
