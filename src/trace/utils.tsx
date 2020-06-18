@@ -9,10 +9,10 @@ const type = (x: unknown, subcall?: boolean): string => {
 
   if (x instanceof Element || x instanceof DocumentFragment) {
     let str = '';
-    const isComp = ds.compMeta.get(x);
-    const isGuard = ds.guardMeta.get(x);
+    const isComp = ds.meta.get(x);
+    const isGuard = ds.tree.get(x) && !isComp;
     if (isComp) {
-      str = `<${isComp.name}/>`;
+      str = `<${isComp.fn.name}/>`;
     } else {
       const elName = x instanceof Element
         ? `<${x.tagName.toLowerCase()}>`

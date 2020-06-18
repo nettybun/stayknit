@@ -6,17 +6,17 @@ import { type } from './utils.js';
 
 const refDF: DocumentFragment[] = [];
 
+// FIXME: Try removing these @ts-ignore once the framework file redefine's h()
 const hTracer = (hCall: typeof _h.h): typeof _h.h =>
   // @ts-ignore DocumentFragment is not assignable to SVGElement | HTMLElement
   (...args: unknown[]) => {
-    const [fn] = args;
+    const fn = args[0] as () => El;
     if (typeof fn !== 'function') {
       // @ts-ignore TS doesn't understand ...args
       const retH = hCall(...args);
       if (retH instanceof DocumentFragment) refDF.push(retH);
       return retH;
     }
-
     const name = fn.name as ComponentName;
     console.group(`🔶 ${name}`);
 
@@ -33,19 +33,16 @@ const hTracer = (hCall: typeof _h.h): typeof _h.h =>
       return el;
     }
 
-    // Elements become components _after_ all children are added, so they
-    // will be guardians by now if they had children. Guard->Component
-    const elGuard = ds.guardMeta.get(el);
-    const children = elGuard?.children ?? new Set<El>();
-    if (elGuard) ds.guardMeta.delete(el);
+    // Elements will already be in the tree if they had any children
+    if (!ds.tree.has(el)) ds.tree.set(el, new Set<El>());
 
     // Register as a component
-    ds.compMeta.set(el, { name, children, ...renderData });
+    ds.meta.set(el, { fn, ...renderData });
 
     // Provide visual in DevTools
     const DATASET_TAG = 'component';
     if (el instanceof Element) el.dataset[DATASET_TAG] = name;
-    else el.childNodes.forEach(x => { (x as HTMLElement).dataset[DATASET_TAG] = name })
+    else el.childNodes.forEach(x => { (x as HTMLElement).dataset[DATASET_TAG] = name; });
 
     console.log(`${name}: Done. Render data:`, renderData);
     console.groupEnd();
@@ -82,54 +79,51 @@ const addTracer = (addCall: typeof api.add): typeof api.add =>
       let cursor: El | null = parent;
       // eslint-disable-next-line no-cond-assign
       while (cursor = cursor.parentElement) {
-        console.log('Trying', type(cursor));
-        const container = ds.compMeta.get(cursor) ?? ds.guardMeta.get(cursor);
+        const container = ds.tree.get(cursor);
         if (container) {
           console.log(`Found ${type(cursor)}`);
-          // If (children instanceof Set) || container.children.add(children);
-          children.forEach(x => container.children.add(x));
+          // If (children instanceof Set) || container.add(children);
+          children.forEach(x => container.add(x));
           break;
         }
         // Didn't find a component or guard walking up tree. Default to <body/>
         if (cursor === document.body) {
-          ds.guardMeta.set(parent, { children });
+          ds.tree.set(parent, children);
           break;
         }
       }
     };
 
-    const parentCompOrGuard = ds.compMeta.get(parent) ?? ds.guardMeta.get(parent);
-    // If comp(or guard)<-el, no action
-    // If comp(or guard)<-comp, parent also guards val
-    // If comp(or guard)<-guard, parent also guards val's children and val is no longer a guard
-    // If el<-el, no action
-    // If el<-comp, parent is now a guard of val
-    // If el<-guard, parent is now a guard of val's children and val is no longer a guard
+    const parentChildren = ds.tree.get(parent);
+    const valueChildren = ds.tree.get(value);
+    // If <Any><-El, no action
+    // If inTree<-Comp, parent also guards val
+    // If inTree<-Guard, parent also guards val's children and val is no longer a guard
+    // If El<-Comp, parent is now a guard of val
+    // If El<-Guard, parent is now a guard of val's children and val is no longer a guard
 
-    const valueCompMeta = ds.compMeta.get(value);
-    const valueGuardMeta = ds.guardMeta.get(value);
-    // No action case:
-    if (!valueCompMeta && !valueGuardMeta) {
+    // No action case, value is not in ds.tree
+    if (!valueChildren) {
       console.groupEnd();
       return retAdd;
     }
-
-    if (parentCompOrGuard) {
-      if (valueCompMeta)
-        parentCompOrGuard.children.add(value);
-      else if (valueGuardMeta)
-        valueGuardMeta.children.forEach(x => parentCompOrGuard.children.add(x));
-    } else {
-      const children = valueGuardMeta?.children ?? new Set([value]);
-      if (!parent.parentElement || parent === document.body)
-        ds.guardMeta.set(parent, { children });
+    const valueComp = ds.meta.has(value);
+    if (parentChildren) {
+      if (valueComp)
+        parentChildren.add(value);
       else
-        // Being add()'d into a connected tree. Look for a comp/guard parent
+        valueChildren.forEach(x => parentChildren.add(x));
+    } else {
+      const children = valueComp ? new Set([value]) : valueChildren;
+      if (!parent.parentElement || parent === document.body)
+        ds.tree.set(parent, children);
+      else
+        // Value is being added to a connected tree. Look for a ds.tree parent
         walkUpToPlaceChildren(children);
     }
     maybeAttach();
-    // Delete _after_ attaching
-    if (valueGuardMeta) ds.guardMeta.delete(value);
+    // Delete _after_ attaching. Value wasn't a component
+    if (!valueComp) ds.tree.delete(value);
     console.groupEnd();
     return retAdd;
   };
@@ -144,15 +138,20 @@ const insertTracer = (insertCall: typeof api.insert): typeof api.insert =>
   };
 
 const rmTracer = (rmCall: typeof api.rm): typeof api.rm =>
+  // TODO: Factor out into tree version (delete) and lifecycle version (detach)
+  // One is if (parent.isConnected) {} and other is if (meta) {}
   (parent, start: ChildNode, end) => {
-    console.group('api.rm()')
+    console.group('api.rm()');
     if (parent.isConnected) {
-      for (let c: ChildNode | null = start; c && c !== end; c = c.nextSibling)
+      const children = ds.tree.get(parent as El);
+      for (let c: ChildNode | null = start; c && c !== end; c = c.nextSibling) {
         callLifecycleForTree('onDetach', c);
+        if (children) children.delete(c as El);
+      }
     }
     const retRm = rmCall(parent, start, end);
     console.groupEnd();
     return retRm;
-  }
+  };
 
 export { hTracer, addTracer, insertTracer, rmTracer };

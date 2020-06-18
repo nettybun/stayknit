@@ -16,8 +16,8 @@ export type LifecycleRefs = { [k in Lifecycle]?: () => void; }
 export type HydrationRefs = { [k in string]?: Observable<unknown>; }
 
 export type InstanceMetadata = {
-  name: ComponentName;
-  children: Set<El>;
+  // TODO: Memory leak regarding function scope?
+  fn: () => El;
   lifecycles: LifecycleRefs;
   hydrations: HydrationRefs;
   // TODO: Add timing, rerender count, etc
@@ -25,13 +25,17 @@ export type InstanceMetadata = {
 
 type RenderStack = { lifecycles: LifecycleRefs, hydrations: HydrationRefs }[];
 
+// The tree keeps all connections between components and children. Elements that
+// aren't components but have component children must also be kept the tree so
+// the component children can be re-parented to a parent component later on.
+// Components that have no children are still in the tree.
 const ds = {
   /** Functions write here during render. Data is moved to ds.meta after */
   stack: [] as RenderStack,
-  /** Non-components with component children. Moved up with each re-parenting */
-  guardMeta: new WeakMap<El, { children: Set<El> }>(),
-  /** WeakMap a given instance (DOM element) to component metadata */
-  compMeta: new WeakMap<El, InstanceMetadata>(),
+  /** Tree of all connections (Components+Guards) */
+  tree: new WeakMap<El, Set<El>>(),
+  /** Component metadata */
+  meta: new WeakMap<El, InstanceMetadata>(),
 };
 
 const sendLifecycleGenerator = (fn: Lifecycle) => (callback: () => void) => {
@@ -50,35 +54,23 @@ const tree = {
 const callLifecycleForTree = (fn: Lifecycle, root: Node): void => {
   console.log(`%c${fn}`, 'background: coral');
   let callCount = 0;
-  const callForEl = (el: El) => {
-    const meta = ds.compMeta.get(el);
-    // If it's not a component but it could be a guardian element
-    if (!meta)
-      return ds.guardMeta.get(el);
-
-    const call = meta.lifecycles[fn];
-    if (typeof window === 'undefined') {
-      console.log(`${type(el)}:${fn} Skipped by SSR`);
-      return meta;
-    }
+  const callRetChildren = (el: El) => {
+    const meta = ds.meta.get(el);
+    const call = meta?.lifecycles[fn];
     if (call) {
       console.log(`${type(el)}:${fn}`, call);
       callCount++;
       call();
     }
-    return meta;
+    return ds.tree.get(el);
   };
-  const meta = callForEl(root as El);
-  // If not be a component or a guardian, or have nothing else to do
-  if (!meta || meta.children.size === 0) {
-    console.log(`${type(root)}:${fn} stopped at root. Calls: ${callCount}`);
-    return;
-  }
-  const childSetStack = [meta.children];
-  while (childSetStack.length) {
-    (childSetStack.shift() as Set<El>).forEach(el => { // TS bug
-      const meta = callForEl(el);
-      if (meta && meta.children.size > 0) childSetStack.push(meta.children);
+  const set = callRetChildren(root as El);
+  if (!set) return;
+  const stack = [set];
+  while (stack.length > 0) {
+    (stack.shift() as Set<El>).forEach(el => {
+      const elChildren = callRetChildren(el);
+      if (elChildren && elChildren.size > 0) stack.push(elChildren);
     });
   }
   console.log(`${type(root)}:${fn} had children. Calls: ${callCount}`);
