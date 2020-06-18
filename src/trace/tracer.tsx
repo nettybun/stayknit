@@ -73,7 +73,7 @@ const addTracer = (addCall: typeof api.add): typeof api.add =>
         callLifecycleForTree('onAttach', value);
     };
 
-    const walkUpToPlaceChildren = (children: Set<El>) => {
+    const searchForAdoptiveParent = (children: Set<El>) => {
       let cursor: El | null = parent;
       // eslint-disable-next-line no-cond-assign
       while (cursor = cursor.parentElement) {
@@ -114,7 +114,7 @@ const addTracer = (addCall: typeof api.add): typeof api.add =>
         ds.tree.set(parent, children);
       else
         // Value is being added to a connected tree. Look for a ds.tree parent
-        walkUpToPlaceChildren(children);
+        searchForAdoptiveParent(children);
     }
     maybeAttach();
     // Delete _after_ attaching. Value wasn't a component
