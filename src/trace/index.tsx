@@ -2,7 +2,7 @@ import type { _h, HyperscriptApi } from 'sinuous/h';
 import type { Observable } from 'sinuous/observable';
 
 import { type } from './utils.js';
-import { hTracer, insertTracer, addTracer } from './tracer.js';
+import { hTracer, insertTracer, addTracer, rmTracer } from './tracer.js';
 
 enum ComponentNameBrand { _ = '' }
 export type ComponentName = ComponentNameBrand & string;
@@ -48,6 +48,7 @@ const tree = {
 };
 
 const callLifecycleForTree = (fn: Lifecycle, root: Node): void => {
+  console.log(`%c${fn}`, 'background: coral');
   let callCount = 0;
   const callForEl = (el: El) => {
     const meta = ds.compMeta.get(el);
@@ -85,28 +86,10 @@ const callLifecycleForTree = (fn: Lifecycle, root: Node): void => {
 
 // Patch Sinuous' API to trace components into a WeakMap tree
 const trace = (api: HyperscriptApi): void => {
-  const { h, insert, add } = api;
-
-  api.h = hTracer(h);
-  api.insert = insertTracer(insert);
-  api.add = addTracer(add);
-
-  // This is a full reimplementation of api.rm that doesn't need a tracer
-  api.rm = (parent: El, startNode: El, endMark: El) => {
-    let cursor: ChildNode | null = startNode as ChildNode;
-    while (cursor && cursor !== endMark) {
-      const next: ChildNode | null = cursor.nextSibling;
-      // Is needed in case the child was pulled out the parent before clearing.
-      if (parent === cursor.parentNode) {
-        if (parent.isConnected && cursor instanceof Element) {
-          console.log('%conDetach', 'background: coral');
-          callLifecycleForTree('onDetach', cursor);
-        }
-        parent.removeChild(cursor);
-      }
-      cursor = next;
-    }
-  };
+  api.h = hTracer(api.h);
+  api.insert = insertTracer(api.insert);
+  api.add = addTracer(api.add);
+  api.rm = rmTracer(api.rm);
 };
 
 export { tree, trace, ds, callLifecycleForTree };

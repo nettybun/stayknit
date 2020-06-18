@@ -55,16 +55,17 @@ const hTracer = (hCall: typeof _h.h): typeof _h.h =>
 // In Sinuous, api.add is not purely a sub-function of api.h. It will call api.h
 // if given an array and then converts it to a fragment internally so we never
 // see the fragment. That's why hTracer sets refDF to be used here. It will be
-// empty (parent.insertBefore in api.add clears it) but the object ref is OK
+// empty (parent.insertBefore clears childNodes) but the object ref is OK
 const addTracer = (addCall: typeof api.add): typeof api.add =>
   (parent: El, value: El, endMark) => {
     console.group('api.add()');
     console.log(`parent:${type(parent)}, value:${type(value)}`);
 
+    // Save this value before addCall()
     const valueWasNotPreviouslyConnected = !value.isConnected;
     const retAdd = addCall(parent, value, endMark);
 
-    // @ts-ignore TS bug says undefined after checking length?
+    // @ts-ignore TS bug? Undefined after checking length
     if (Array.isArray(value) && refDF.length) value = refDF.pop();
     if (!(value instanceof Element || value instanceof DocumentFragment)) {
       console.groupEnd();
@@ -72,11 +73,8 @@ const addTracer = (addCall: typeof api.add): typeof api.add =>
     }
 
     const maybeAttach = (): void => {
-      const e = (x: boolean) => x ? '✅' : '❌';
-      if (parent.isConnected && valueWasNotPreviouslyConnected) {
-        console.log('%conAttach', 'background: lightgreen', 'for value');
+      if (parent.isConnected && valueWasNotPreviouslyConnected)
         callLifecycleForTree('onAttach', value);
-      }
     };
 
     // TODO: This could replace all the if/else below? (c: El | Set<El>) =>
@@ -146,4 +144,16 @@ const insertTracer = (insertCall: typeof api.insert): typeof api.insert =>
     return retInsert;
   };
 
-export { hTracer, addTracer, insertTracer };
+const rmTracer = (rmCall: typeof api.rm): typeof api.rm =>
+  (parent, start: ChildNode, end) => {
+    console.group('api.rm()')
+    if (parent.isConnected) {
+      for (let c: ChildNode | null = start; c && c !== end; c = c.nextSibling)
+        callLifecycleForTree('onDetach', c);
+    }
+    const retRm = rmCall(parent, start, end);
+    console.groupEnd();
+    return retRm;
+  }
+
+export { hTracer, addTracer, insertTracer, rmTracer };
