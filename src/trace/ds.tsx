@@ -6,7 +6,7 @@ import type { HydrationStackFrameKey } from './tree-plugin-hydration.jsx';
 // the component children can be re-parented to a parent component later. All
 // components are in the tree, even those with no children.
 
-type El = Element | DocumentFragment
+type El = Element | DocumentFragment | Node
 
 // Modify these to the plugins you want to use. Follow the type errors
 type RenderStackFrame =
@@ -16,6 +16,11 @@ type RenderStackFrame =
 
 // FUTURE: Add timing, rerender count, etc
 type InstanceMetadata = { fn: () => El } & RenderStackFrame;
+
+// Expected call signatures for plugins
+type PluginAdd = (parent: El, value: El) => void
+type PluginRm = (parent: El, start: El | null, end: El | null) => void
+type Plugin = PluginAdd | PluginRm
 
 const ds = {
   /** Functions write here during render. Data is moved to ds.meta after */
@@ -30,5 +35,5 @@ const createStackFrame = (): RenderStackFrame => {
   return { hydrations: {}, lifecycles: {} };
 };
 
-export { El, InstanceMetadata }; // Types
+export { El, InstanceMetadata, Plugin, PluginAdd, PluginRm }; // Types
 export { ds, createStackFrame };

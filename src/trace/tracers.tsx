@@ -1,13 +1,19 @@
 import type { _h, api } from 'sinuous/h';
-import type { El } from './ds.js';
+import type { El, Plugin, PluginAdd, PluginRm } from './ds.js';
 
 import { ds, createStackFrame } from './ds.js';
 import { log } from './log.js';
 
+type Wrapper<T> = { (call: T): T }
+type PluggableWrapper<T, P> = Wrapper<T> & { pre?: P[]; post?: P[] }
+
+const callPlugins = <P extends Plugin>(plugins?: P[], ...args: Parameters<P>) => {
+  // @ts-ignore ...args "Expected 3 arguments but got 0 or more"?
+  if (plugins) plugins.forEach(plugin => plugin(...args));
+};
 const refDF: DocumentFragment[] = [];
 
-// FIXME: Try removing these @ts-ignore once the framework file redefine's h()
-const h = (hCall: typeof _h.h): typeof _h.h =>
+const h: Wrapper<typeof _h.h> = hCall =>
   // @ts-ignore DocumentFragment is not assignable to SVGElement | HTMLElement
   (...args: unknown[]) => {
     const fn = args[0] as () => El;
@@ -52,10 +58,11 @@ const h = (hCall: typeof _h.h): typeof _h.h =>
 // Sinuous' api.add isn't purely a subcall of api.h. If given an array, it will
 // call api.h again to create a fragment (never returned). To see the fragment
 // here, tracer.h sets refDF. It's empty since insertBefore() clears child nodes
-const add = (addCall: typeof api.add): typeof api.add =>
+const add: PluggableWrapper<typeof api.add, PluginAdd> = addCall =>
   (parent: El, value: El, endMark) => {
     console.group('api.add()');
     console.log(`parent:${log(parent)}, value:${log(value)}`);
+    callPlugins(add.pre, parent, value);
     const retAdd = addCall(parent, value, endMark);
 
     // @ts-ignore TS bug? Undefined after checking length
@@ -108,15 +115,14 @@ const add = (addCall: typeof api.add): typeof api.add =>
         // Value is being added to a connected tree. Look for a ds.tree parent
         searchForAdoptiveParent(children);
     }
-    // TODO:
-    // maybeAttach();
+    callPlugins(add.post, parent, value);
     // Delete _after_ attaching. Value wasn't a component
     if (!valueComp) ds.tree.delete(value);
     console.groupEnd();
     return retAdd;
   };
 
-const insert = (insertCall: typeof api.insert): typeof api.insert =>
+const insert: Wrapper<typeof api.insert> = insertCall =>
   (el, value, endMark, current, startNode) => {
     console.group('api.insert()');
     console.log(`el:${log(el)}, value:${log(value)}, current:${log(current)}`);
@@ -125,15 +131,17 @@ const insert = (insertCall: typeof api.insert): typeof api.insert =>
     return retInsert;
   };
 
-const rm = (rmCall: typeof api.rm): typeof api.rm =>
+const rm: PluggableWrapper<typeof api.rm, PluginRm> = rmCall =>
   (parent, start: ChildNode, end) => {
     console.group('api.rm()');
+    callPlugins(rm.pre, parent, start, end);
     const children = ds.tree.get(parent as El);
     if (children) {
       for (let c: ChildNode | null = start; c && c !== end; c = c.nextSibling)
         children.delete(c as El);
     }
     const retRm = rmCall(parent, start, end);
+    callPlugins(rm.post, parent, start, end);
     console.groupEnd();
     return retRm;
   };

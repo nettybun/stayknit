@@ -1,5 +1,4 @@
-import type { api } from 'sinuous/h';
-import type { El } from './ds.js';
+import type { El, PluginAdd, PluginRm } from './ds.js';
 
 import { ds } from './ds.js';
 import { log } from './log.js';
@@ -41,32 +40,32 @@ const callLifecycleForTree = (fn: Lifecycle, root: Node): void => {
   console.log(`${log(root)}:${fn} had children. Calls: ${callCount}`);
 };
 
-const add = (addCall: typeof api.add): typeof api.add =>
-  (parent: El, value: El, endMark) => {
-    console.log ('Lifecycle plugin: api.add()');
-    const valueConnectedBeforeAdd = value.isConnected;
-    const retAdd = addCall(parent, value, endMark);
-    if (parent.isConnected && !valueConnectedBeforeAdd)
-      callLifecycleForTree('onAttach', value);
-    return retAdd;
-  };
+// State for addPlugin
+let valueAlreadyConnected: boolean | undefined = undefined;
 
-const rm = (rmCall: typeof api.rm): typeof api.rm =>
-  (parent, start: ChildNode, end) => {
-    console.log('Lifecycle plugin: api.rm()');
-    if (parent.isConnected) {
-      for (let c: ChildNode | null = start; c && c !== end; c = c.nextSibling)
-        callLifecycleForTree('onDetach', c);
-    }
-    return rmCall(parent, start, end);
-  };
+const preAdd: PluginAdd = (parent, value) => {
+  valueAlreadyConnected = value.isConnected;
+};
+
+const postAdd: PluginAdd = (parent, value) => {
+  if (parent.isConnected && !valueAlreadyConnected)
+    callLifecycleForTree('onAttach', value);
+  valueAlreadyConnected = undefined;
+};
+
+const preRm: PluginRm = (parent, start, end) => {
+  if (parent.isConnected) {
+    for (let c = start; c && c !== end; c = c.nextSibling as El | null)
+      callLifecycleForTree('onDetach', c);
+  }
+};
 
 const tree = {
   onAttach: saveLifecycle('onAttach'),
   onDetach: saveLifecycle('onDetach'),
 };
 
-const tracers = { add, rm };
+const plugins = { preAdd, postAdd, preRm };
 
 export { LifecycleStackFrameKey }; // Types
-export { tree, tracers };
+export { tree, plugins };
