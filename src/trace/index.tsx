@@ -1,7 +1,7 @@
 import type { _h, HyperscriptApi } from 'sinuous/h';
 import type { Observable } from 'sinuous/observable';
 
-import { type } from './utils.js';
+import { print } from './print.js';
 import { hTracer, insertTracer, addTracer, rmTracer } from './tracer.js';
 
 export type El = Element | DocumentFragment
@@ -55,7 +55,7 @@ const callLifecycleForTree = (fn: Lifecycle, root: Node): void => {
     const meta = ds.meta.get(el);
     const call = meta?.lifecycles[fn];
     if (call) {
-      console.log(`${type(el)}:${fn}`, call);
+      console.log(`${print(el)}:${fn}`, call);
       callCount++;
       call();
     }
@@ -70,7 +70,7 @@ const callLifecycleForTree = (fn: Lifecycle, root: Node): void => {
       if (elChildren && elChildren.size > 0) stack.push(elChildren);
     });
   }
-  console.log(`${type(root)}:${fn} had children. Calls: ${callCount}`);
+  console.log(`${print(root)}:${fn} had children. Calls: ${callCount}`);
 };
 
 // Patch Sinuous' API to trace components into a WeakMap tree

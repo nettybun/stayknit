@@ -2,7 +2,7 @@ import type { _h, api } from 'sinuous/h';
 import type { El } from './index.js';
 
 import { ds, callLifecycleForTree } from './index.js';
-import { type } from './utils.js';
+import { print } from './print.js';
 
 const refDF: DocumentFragment[] = [];
 
@@ -55,7 +55,7 @@ const hTracer = (hCall: typeof _h.h): typeof _h.h =>
 const addTracer = (addCall: typeof api.add): typeof api.add =>
   (parent: El, value: El, endMark) => {
     console.group('api.add()');
-    console.log(`parent:${type(parent)}, value:${type(value)}`);
+    console.log(`parent:${print(parent)}, value:${print(value)}`);
 
     // Save this value before addCall()
     const valueWasNotPreviouslyConnected = !value.isConnected;
@@ -79,7 +79,7 @@ const addTracer = (addCall: typeof api.add): typeof api.add =>
       while (cursor = cursor.parentElement) {
         const c = ds.tree.get(cursor);
         if (!c) continue;
-        console.log(`Found adoptive parent ${type(cursor)}`);
+        console.log(`Found adoptive parent ${print(cursor)}`);
         children.forEach(x => c.add(x));
         return;
       }
@@ -126,7 +126,7 @@ const addTracer = (addCall: typeof api.add): typeof api.add =>
 const insertTracer = (insertCall: typeof api.insert): typeof api.insert =>
   (el, value, endMark, current, startNode) => {
     console.group('api.insert()');
-    console.log(`el:${type(el)}, value:${type(value)}, current:${type(current)}`);
+    console.log(`el:${print(el)}, value:${print(value)}, current:${print(current)}`);
     const retInsert = insertCall(el, value, endMark, current, startNode);
     console.groupEnd();
     return retInsert;
