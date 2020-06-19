@@ -1,133 +1,84 @@
 import type { _h, HyperscriptApi } from 'sinuous/h';
+import type { Observable } from 'sinuous/observable';
 
 import { type } from './utils.js';
-import { hTracer, insertTracer, addTracer } from './tracerFunctions.js';
+import { hTracer, insertTracer, addTracer, rmTracer } from './tracer.js';
 
-enum ComponentNameBrand { _ = '' }
-export type ComponentName = ComponentNameBrand & string;
-
-// Not actually used, only to provide hints in DevTools
-/** El.dataset[DATASET_TAG] = ComponentName; Also as <h1 data-DATASET_TAG /> */
-export const DATASET_TAG = 'component';
-
-export type El
-  = (Element | DocumentFragment)
-  & { dataset?: { [DATASET_TAG]?: ComponentName } & DOMStringMap };
-export type Component = El;
-
-export type LifecycleNames =
+export type El = Element | DocumentFragment
+export type Lifecycle =
   | 'onAttach'
   | 'onDetach'
 
-export type LifecycleMethods = { [K in LifecycleNames]?: () => void; }
+export type LifecycleRefs = { [k in Lifecycle]?: () => void; }
+export type HydrationRefs = { [k in string]?: Observable<unknown>; }
 
 export type InstanceMetadata = {
-  name: ComponentName;
-  children: Set<El>;
-  lifecycles: LifecycleMethods;
+  // TODO: Memory leak regarding function scope?
+  fn: () => El;
+  lifecycles: LifecycleRefs;
+  hydrations: HydrationRefs;
   // TODO: Add timing, rerender count, etc
 };
 
+type RenderStack = { lifecycles: LifecycleRefs, hydrations: HydrationRefs }[];
+
+// The tree keeps all connections between components and children. Elements that
+// aren't components but have component children must also be kept the tree so
+// the component children can be re-parented to a parent component later on.
+// Components that have no children are still in the tree.
 const ds = {
-  /**
-   * Lifecycle methods set during render are stored here. They're bound to their
-   * component immediately after, when the function closes */
-  renderStack: [] as LifecycleMethods[],
-  /**
-   * Non-components that have children components. Helps to-be parent components
-   * register children. There's only ever one guardian per tree (it's moved) */
-  guardMeta: new WeakMap<El, { children: Set<Component> }>(),
-
-  /** WeakMap a given instance (DOM element) to component metadata */
-  compMeta: new WeakMap<Component, InstanceMetadata>(),
-
-  /** Map a component name to all of its instances (DOM elements) */
-  compNames: new Map<ComponentName, WeakSet<Component>>(),
+  /** Functions write here during render. Data is moved to ds.meta after */
+  stack: [] as RenderStack,
+  /** Tree of all connections (Components+Guards) */
+  tree: new WeakMap<El, Set<El>>(),
+  /** Component metadata */
+  meta: new WeakMap<El, InstanceMetadata>(),
 };
 
-// If ds.renderStack is unexpectedly empty, these will throw
+const sendLifecycleGenerator = (fn: Lifecycle) => (callback: () => void) => {
+  ds.stack[ds.stack.length - 1].lifecycles[fn] = callback;
+};
+const sendHydrations = (observables: HydrationRefs): void => {
+  ds.stack[ds.stack.length - 1].hydrations = observables;
+};
+
 const tree = {
-  /** Lifecycle. Setup during component render */
-  onAttach(callback: () => void): void {
-    console.log('Installing onAttach lifecycle');
-    ds.renderStack[ds.renderStack.length - 1].onAttach = callback;
-  },
-  /** Lifecycle. Setup during component render */
-  onDetach(callback: () => void): void {
-    console.log('Installing onDetach lifecycle');
-    ds.renderStack[ds.renderStack.length - 1].onDetach = callback;
-  },
+  onAttach: sendLifecycleGenerator('onAttach'),
+  onDetach: sendLifecycleGenerator('onDetach'),
+  sendHydrations,
 };
 
-const callLifecyclesForTree = (fn: LifecycleNames) =>
-  (root: Element | DocumentFragment) => {
-    let callCount = 0;
-    const callLifecycleForEl = (el: El) => {
-      const meta = ds.compMeta.get(el);
-      // If it's not a component but it could be a guardian element
-      if (!meta)
-        return ds.guardMeta.get(el);
-
-      const call = meta.lifecycles[fn];
-      if (typeof window === 'undefined') {
-        console.log(`${type(el)}:${fn} Skipped by SSR`);
-        return meta;
-      }
-      if (call) {
-        console.log(`${type(el)}:${fn}`, call);
-        callCount++;
-        call();
-      }
-      return meta;
-    };
-    const meta = callLifecycleForEl(root as El);
-    // If not be a component or a guardian, or have nothing else to do
-    if (!meta || meta.children.size === 0) {
-      console.log(`${type(root)}:${fn} stopped at root. Calls: ${callCount}`);
-      console.log('Meta:', meta);
-      return;
+const callLifecycleForTree = (fn: Lifecycle, root: Node): void => {
+  console.log(`%c${fn}`, 'background: coral');
+  let callCount = 0;
+  const callRetChildren = (el: El) => {
+    const meta = ds.meta.get(el);
+    const call = meta?.lifecycles[fn];
+    if (call) {
+      console.log(`${type(el)}:${fn}`, call);
+      callCount++;
+      call();
     }
-    const childSetStack = [meta.children];
-    while (childSetStack.length) {
-      (childSetStack.shift() as Set<El>).forEach(el => { // TS bug
-        const meta = callLifecycleForEl(el);
-        if (meta && meta.children.size > 0) childSetStack.push(meta.children);
-      });
-    }
-    console.log(`${type(root)}:${fn} had children. Calls: ${callCount}`);
+    return ds.tree.get(el);
   };
-
-const callAttachForTree = callLifecyclesForTree('onAttach');
-const callDetachForTree = callLifecyclesForTree('onDetach');
+  const set = callRetChildren(root as El);
+  if (!set) return;
+  const stack = [set];
+  while (stack.length > 0) {
+    (stack.shift() as Set<El>).forEach(el => {
+      const elChildren = callRetChildren(el);
+      if (elChildren && elChildren.size > 0) stack.push(elChildren);
+    });
+  }
+  console.log(`${type(root)}:${fn} had children. Calls: ${callCount}`);
+};
 
 // Patch Sinuous' API to trace components into a WeakMap tree
 const trace = (api: HyperscriptApi): void => {
-  const { h, insert, add } = api;
-
-  api.h = hTracer(h);
-  api.insert = insertTracer(insert);
-  api.add = addTracer(add);
-
-  // This is a full reimplementation of api.rm that doesn't need a tracer
-  api.rm = (parent: El, startNode: El, endMark: El) => {
-    let cursor: ChildNode | null = startNode as ChildNode;
-    while (cursor && cursor !== endMark) {
-      const next: ChildNode | null = cursor.nextSibling;
-      // Is needed in case the child was pulled out the parent before clearing.
-      if (parent === cursor.parentNode) {
-        if (parent.isConnected && cursor instanceof Element) {
-          console.log('%conDetach', 'background: coral');
-          callDetachForTree(cursor);
-        }
-        parent.removeChild(cursor);
-      }
-      cursor = next;
-    }
-  };
+  api.h = hTracer(api.h);
+  api.insert = insertTracer(api.insert);
+  api.add = addTracer(api.add);
+  api.rm = rmTracer(api.rm);
 };
 
-export { tree, trace, ds, callAttachForTree, callDetachForTree };
-// Global
-if (typeof window !== 'undefined') {
-  Object.assign(window, { tree, trace, ds, callAttachForTree, callDetachForTree });
-}
+export { tree, trace, ds, callLifecycleForTree };

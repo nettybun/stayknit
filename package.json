@@ -17,6 +17,7 @@
     "tailwind": "tailwindcss build src/styles.css --output serve/tailwind.css",
     "snowpack": "mkdir -p serve && snowpack && cp -r ./web_modules serve/",
     "ssr": "node --experimental-loader ./tools/web-root-loader.mjs ./tools/nodeDOM.js",
+    "trace-size": "rollup serve/trace/index.js -o bundle.js -f iife -p 'terser={compress:{drop_console:true}}'",
     "setup": "run-p snowpack build tailwind",
     "build": "run-p build:*",
     "serve": "servor ./serve",

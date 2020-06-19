@@ -9,10 +9,10 @@ const type = (x: unknown, subcall?: boolean): string => {
 
   if (x instanceof Element || x instanceof DocumentFragment) {
     let str = '';
-    const isComp = ds.compMeta.get(x);
-    const isGuard = ds.guardMeta.get(x);
+    const isComp = ds.meta.get(x);
+    const isGuard = ds.tree.get(x) && !isComp;
     if (isComp) {
-      str = `<${isComp.name}/>`;
+      str = `<${isComp.fn.name}/>`;
     } else {
       const elName = x instanceof Element
         ? `<${x.tagName.toLowerCase()}>`
@@ -27,15 +27,23 @@ const type = (x: unknown, subcall?: boolean): string => {
     if (subcall || x.childNodes.length === 0) return str;
     return `${str}[${[...x.childNodes].map(n => type(n, true)).join(', ')}]`;
   }
-
-  if (x instanceof Text)
-    return (x.textContent && `"${x.textContent.trim()}"`) || '';
-
+  const str = (s: string) => {
+    s = s.trim();
+    return s.length <= 10
+      ? `"${s}"`
+      : `"${s.slice(0, 10)}"+${s.length - 10}`;
+  };
+  if (x instanceof Text) {
+    if (!x.textContent) return '';
+    return str(x.textContent);
+  }
   if (typeof x === 'undefined')
     return '∅';
 
   if (typeof x === 'function')
-    return '[Function]';
+    return '$o' in x
+      ? '[Observable]'
+      : '[Function]';
 
   // Try to show a startMark (key is minified)
   const o = x as Record<string, unknown>;
@@ -44,7 +52,7 @@ const type = (x: unknown, subcall?: boolean): string => {
     return '[StartMark]';
 
   // Default to [object DataType]
-  return `"${String(x).trim()}"`;
+  return str(String(x));
 };
 
 export { type };

@@ -1,17 +1,23 @@
 import { h, o } from 'sinuous';
-import { addMessage } from '../data/messages.js';
+import { addMessage } from '../state/messages.js';
 import { computed } from 'sinuous/observable';
+import { tree } from '../trace/index.js';
+import type { JSXEl } from '../types/index.js';
 
-const LoginForm = (): h.JSX.Element => {
+const LoginForm = (): JSXEl => {
   type Name = 'Username' | 'Password';
-  const state = {
+  const s = {
     username: o(''),
     password: o(''),
   };
 
   const Item = ({ name, error }: { name: Name; error?: string }) => {
     const id = name.toLowerCase() as 'username' | 'password';
-    const count = computed(() => state[id]().length);
+    const count = computed(() => s[id]().length);
+    // Whoa! This won't work. Neat!
+    // tree.sendHydrations({ [id]: s[id] });
+    if (window.hydrating) return null;
+
     return (
       <div class="my-3">
         <label
@@ -31,7 +37,7 @@ const LoginForm = (): h.JSX.Element => {
           onInput={ev => {
             // TODO: This is nuts.
             const { target }: { target: EventTarget & { value?: string } | null } = ev;
-            if (target?.value) state[id](target.value);
+            if (target?.value) s[id](target.value);
           }}
         />
         {error
@@ -40,6 +46,8 @@ const LoginForm = (): h.JSX.Element => {
     );
   };
 
+  tree.sendHydrations(s);
+  if (window.hydrating) return null;
   return (
     <div class="mb-6">
       <Item name="Username" />
@@ -47,7 +55,7 @@ const LoginForm = (): h.JSX.Element => {
       <button
         class="bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded"
         type="button"
-        onClick={() => addMessage(`${state.username()} & ${state.password()}`)}
+        onClick={() => addMessage(`${s.username()} & ${s.password()}`)}
       >
         Add fields to message list
       </button>
