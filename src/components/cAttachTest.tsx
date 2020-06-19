@@ -1,6 +1,6 @@
 import { h, observable } from 'sinuous';
-import { tree, ds } from '../trace/index.js';
-import { JSXEl } from '../types/index.js';
+import { tree } from '../trace/index.js';
+import type { JSXEl } from '../types/index.js';
 
 // XXX: Automate this
 // At least the generic observable splicing, event reg, and tree methods.
@@ -8,13 +8,6 @@ import { JSXEl } from '../types/index.js';
 // const meta = ds.compMeta.get(el /* From the SSR run / querySelector */);
 // if (!meta) throw `No meta for ${el.tagName}`;
 // meta.observableLocationMarkers.forEach::subscribe(() => api.insert());
-
-// XXX: This assumes that _ALL_ instances of a component that is hydratable will
-// be hydrating, globally, on initial render. There won't be some instances
-// rendering on the initial pass, during hydration, that don't need hydration...
-
-// I think that's safe to assume. Hydration is always first and atomic (single
-// threaded web, afterall)
 
 const AttachTest = (): JSXEl => {
   const s = {
@@ -36,7 +29,7 @@ const AttachTest = (): JSXEl => {
     fetchController.abort();
     window.removeEventListener('resize', onWindowResize);
   });
-  tree.sendHydrations(s);
+  tree.saveHydrations(s);
   // Short circuit render. Observables will be patched into existing DOM
   if (window.hydrating) return null;
 

@@ -46,7 +46,7 @@ const LoginForm = (): JSXEl => {
     );
   };
 
-  tree.sendHydrations(s);
+  tree.saveHydrations(s);
   if (window.hydrating) return null;
   return (
     <div class="mb-6">
