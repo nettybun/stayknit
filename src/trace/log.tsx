@@ -2,10 +2,12 @@ import { ds } from './ds.js';
 
 /** Return a pretty printed string for debugging */
 const log = (x: unknown, subcall?: boolean): string => {
-  if (Array.isArray(x))
-    return subcall
-      ? 'Array[...]'
-      : `Array[${x.map(n => log(n, true)).join(', ')}]`;
+  if (Array.isArray(x)) {
+    if (subcall) return 'Array[...]';
+    return x.length <= 3
+      ? `Array[${x.map(n => log(n, true)).join(',')}]`
+      : `Array[${x.slice(0, 3).map(n => log(n, true)).join(',')},+${x.length - 3}]`;
+  }
 
   if (x instanceof Element || x instanceof DocumentFragment) {
     let str = '';
@@ -25,7 +27,10 @@ const log = (x: unknown, subcall?: boolean): string => {
     if (isAttached) str = `📶${str}`;
 
     if (subcall || x.childNodes.length === 0) return str;
-    return `${str}[${[...x.childNodes].map(n => log(n, true)).join(', ')}]`;
+    const c = Array.from(x.childNodes);
+    return c.length <= 3
+      ? `${str}[${c.map(n => log(n, true)).join(',')}]`
+      : `${str}[${c.slice(0, 3).map(n => log(n, true)).join(',')},+${c.length - 3}]`;
   }
   const str = (s: string) => {
     s = s.trim();
