@@ -12,7 +12,7 @@ cache:
 
 pages:
   only:
-    - work
+    - publish
   script:
     - npm install
     - cd sinuous
