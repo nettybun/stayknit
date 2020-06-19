@@ -1,13 +1,13 @@
 import type { _h, api } from 'sinuous/h';
-import type { El } from './index.js';
+import type { El } from './ds.js';
 
-import { ds, callLifecycleForTree } from './index.js';
-import { print } from './print.js';
+import { ds, createStackFrame } from './ds.js';
+import { log } from './log.js';
 
 const refDF: DocumentFragment[] = [];
 
 // FIXME: Try removing these @ts-ignore once the framework file redefine's h()
-const hTracer = (hCall: typeof _h.h): typeof _h.h =>
+const h = (hCall: typeof _h.h): typeof _h.h =>
   // @ts-ignore DocumentFragment is not assignable to SVGElement | HTMLElement
   (...args: unknown[]) => {
     const fn = args[0] as () => El;
@@ -20,7 +20,7 @@ const hTracer = (hCall: typeof _h.h): typeof _h.h =>
     const { name } = fn;
     console.group(`🔶 ${name}`);
 
-    const renderData = { lifecycles: {}, hydrations: {} };
+    const renderData = createStackFrame();
     ds.stack.push(renderData);
     // @ts-ignore TS bug? Destructs overload as `&` not `|`
     const el: HTMLElement | SVGElement | DocumentFragment = hCall(...args);
@@ -51,14 +51,11 @@ const hTracer = (hCall: typeof _h.h): typeof _h.h =>
 
 // Sinuous' api.add isn't purely a subcall of api.h. If given an array, it will
 // call api.h again to create a fragment (never returned). To see the fragment
-// here, hTracer sets refDF. It's empty since insertBefore() clears child nodes
-const addTracer = (addCall: typeof api.add): typeof api.add =>
+// here, tracer.h sets refDF. It's empty since insertBefore() clears child nodes
+const add = (addCall: typeof api.add): typeof api.add =>
   (parent: El, value: El, endMark) => {
     console.group('api.add()');
-    console.log(`parent:${print(parent)}, value:${print(value)}`);
-
-    // Save this value before addCall()
-    const valueWasNotPreviouslyConnected = !value.isConnected;
+    console.log(`parent:${log(parent)}, value:${log(value)}`);
     const retAdd = addCall(parent, value, endMark);
 
     // @ts-ignore TS bug? Undefined after checking length
@@ -68,18 +65,13 @@ const addTracer = (addCall: typeof api.add): typeof api.add =>
       return retAdd;
     }
 
-    const maybeAttach = (): void => {
-      if (parent.isConnected && valueWasNotPreviouslyConnected)
-        callLifecycleForTree('onAttach', value);
-    };
-
     const searchForAdoptiveParent = (children: Set<El>) => {
       let cursor: El | null = parent;
       // eslint-disable-next-line no-cond-assign
       while (cursor = cursor.parentElement) {
         const c = ds.tree.get(cursor);
         if (!c) continue;
-        console.log(`Found adoptive parent ${print(cursor)}`);
+        console.log(`Found adoptive parent ${log(cursor)}`);
         children.forEach(x => c.add(x));
         return;
       }
@@ -116,37 +108,35 @@ const addTracer = (addCall: typeof api.add): typeof api.add =>
         // Value is being added to a connected tree. Look for a ds.tree parent
         searchForAdoptiveParent(children);
     }
-    maybeAttach();
+    // TODO:
+    // maybeAttach();
     // Delete _after_ attaching. Value wasn't a component
     if (!valueComp) ds.tree.delete(value);
     console.groupEnd();
     return retAdd;
   };
 
-const insertTracer = (insertCall: typeof api.insert): typeof api.insert =>
+const insert = (insertCall: typeof api.insert): typeof api.insert =>
   (el, value, endMark, current, startNode) => {
     console.group('api.insert()');
-    console.log(`el:${print(el)}, value:${print(value)}, current:${print(current)}`);
+    console.log(`el:${log(el)}, value:${log(value)}, current:${log(current)}`);
     const retInsert = insertCall(el, value, endMark, current, startNode);
     console.groupEnd();
     return retInsert;
   };
 
-const rmTracer = (rmCall: typeof api.rm): typeof api.rm =>
-  // TODO: Factor out into tree version (delete) and lifecycle version (detach)
-  // One is if (parent.isConnected) {} and other is if (meta) {}
+const rm = (rmCall: typeof api.rm): typeof api.rm =>
   (parent, start: ChildNode, end) => {
     console.group('api.rm()');
-    if (parent.isConnected) {
-      const children = ds.tree.get(parent as El);
-      for (let c: ChildNode | null = start; c && c !== end; c = c.nextSibling) {
-        callLifecycleForTree('onDetach', c);
-        if (children) children.delete(c as El);
-      }
+    const children = ds.tree.get(parent as El);
+    if (children) {
+      for (let c: ChildNode | null = start; c && c !== end; c = c.nextSibling)
+        children.delete(c as El);
     }
     const retRm = rmCall(parent, start, end);
     console.groupEnd();
     return retRm;
   };
 
-export { hTracer, addTracer, insertTracer, rmTracer };
+const tracers = { h, add, insert, rm };
+export { tracers };

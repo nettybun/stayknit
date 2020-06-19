@@ -1,11 +1,11 @@
-import { ds } from './index.jsx';
+import { ds } from './ds.js';
 
 /** Return a pretty printed string for debugging */
-const print = (x: unknown, subcall?: boolean): string => {
+const log = (x: unknown, subcall?: boolean): string => {
   if (Array.isArray(x))
     return subcall
       ? 'Array[...]'
-      : `Array[${x.map(n => print(n, true)).join(', ')}]`;
+      : `Array[${x.map(n => log(n, true)).join(', ')}]`;
 
   if (x instanceof Element || x instanceof DocumentFragment) {
     let str = '';
@@ -25,7 +25,7 @@ const print = (x: unknown, subcall?: boolean): string => {
     if (isAttached) str = `📶${str}`;
 
     if (subcall || x.childNodes.length === 0) return str;
-    return `${str}[${[...x.childNodes].map(n => print(n, true)).join(', ')}]`;
+    return `${str}[${[...x.childNodes].map(n => log(n, true)).join(', ')}]`;
   }
   const str = (s: string) => {
     s = s.trim();
@@ -55,4 +55,4 @@ const print = (x: unknown, subcall?: boolean): string => {
   return str(String(x));
 };
 
-export { print };
+export { log };
