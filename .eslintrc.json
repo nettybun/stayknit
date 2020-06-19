@@ -47,10 +47,6 @@
               },
               "Object": {
                 "message": "Actually means \"any non-nullish value\""
-              },
-              "{}": {
-                "message": "Use object instead",
-                "fixWith": "object"
               }
             },
             "extendDefaults": false
