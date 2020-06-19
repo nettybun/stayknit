@@ -67,7 +67,7 @@ const add: PluggableWrapper<typeof api.add, PluginAdd> = addCall =>
 
     // @ts-ignore TS bug? Undefined after checking length
     if (Array.isArray(value) && refDF.length) value = refDF.pop();
-    if (!(value instanceof Element || value instanceof DocumentFragment)) {
+    if (!(value instanceof Node)) {
       console.groupEnd();
       return retAdd;
     }

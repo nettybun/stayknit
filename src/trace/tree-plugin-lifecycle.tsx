@@ -20,7 +20,9 @@ const callLifecycleForTree = (fn: Lifecycle, root: Node): void => {
   let callCount = 0;
   const callRetChildren = (el: El) => {
     const meta = ds.meta.get(el);
-    const call = meta?.lifecycles[fn];
+    // FIXME: Terser throws
+    // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+    const call = meta && meta.lifecycles[fn];
     if (call) {
       console.log(`${log(el)}:${fn}`, call);
       callCount++;
