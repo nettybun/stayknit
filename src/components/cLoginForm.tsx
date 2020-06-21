@@ -1,7 +1,8 @@
 import { h, o } from 'sinuous';
 import { addMessage } from '../state/messages.js';
 import { computed } from 'sinuous/observable';
-import { tree } from '../trace/index.js';
+// FIXME: Need consumer dep.ts-like file
+// import { tree } from '../trace/index.js';
 import type { JSXEl } from '../types/index.js';
 
 const LoginForm = (): JSXEl => {
@@ -46,8 +47,8 @@ const LoginForm = (): JSXEl => {
     );
   };
 
-  tree.saveHydrations(s);
-  if (window.hydrating) return null;
+  // tree.saveHydrations(s);
+  // if (window.hydrating) return null;
   return (
     <div class="mb-6">
       <Item name="Username" />

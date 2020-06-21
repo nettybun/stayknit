@@ -1,5 +1,5 @@
 import { h, observable } from 'sinuous';
-import { tree } from '../trace/index.js';
+// import { tree } from '../trace/index.js';
 import type { JSXEl } from '../types/index.js';
 
 const AttachTest = (): JSXEl => {
@@ -11,17 +11,17 @@ const AttachTest = (): JSXEl => {
     s.windowSize(`${window.innerWidth}px x ${window.innerHeight}px`);
   }, 250);
 
-  tree.onAttach(() => {
-    void fetch('/fetchData.txt')
-      .then(r => r.text())
-      .then(count => s.xhrFetchedCommentCount(count));
-    onWindowResize();
-    window.addEventListener('resize', onWindowResize);
-  });
+  // tree.onAttach(() => {
+  //   void fetch('/fetchData.txt')
+  //     .then(r => r.text())
+  //     .then(count => s.xhrFetchedCommentCount(count));
+  //   onWindowResize();
+  //   window.addEventListener('resize', onWindowResize);
+  // });
 
-  tree.onDetach(() => {
-    window.removeEventListener('resize', onWindowResize);
-  });
+  // tree.onDetach(() => {
+  //   window.removeEventListener('resize', onWindowResize);
+  // });
 
   return (
     <div class="bg-gray-300 m-5 p-5 ml-0">
