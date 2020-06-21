@@ -64,8 +64,8 @@ const add = createTracer<typeof api.add>(addCall =>
     const exit = () => callPlugins(add.onExit, parent, value);
 
     const ret = addCall(parent, value, endMark);
-    // @ts-ignore TS bug? Undefined after checking length
-    if (Array.isArray(value) && refDF.length) value = refDF.pop();
+    if (Array.isArray(value) && refDF.length)
+      value = refDF.pop() as DocumentFragment;
     if (!(value instanceof Node)) {
       exit();
       return ret;
