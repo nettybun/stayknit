@@ -1,39 +1,34 @@
-import type { LifecycleStackFrameKey } from './tree-plugin-lifecycle.jsx';
-import type { HydrationStackFrameKey } from './tree-plugin-hydration.jsx';
-
-// The tree keeps all connections between components and children. Elements that
-// aren't components but have component children must also be kept the tree so
-// the component children can be re-parented to a parent component later. All
-// components are in the tree, even those with no children.
+// Tracer data storage
 
 type El = Element | DocumentFragment | Node
+type InstanceMetadata = RenderStackFrame
 
-// Modify these to the plugins you want to use. Follow the type errors
-type RenderStackFrame =
-  & {}
-  & LifecycleStackFrameKey
-  & HydrationStackFrameKey
+// Must be interfaces; type doesn't work for module augmentation
+interface RenderStackFrame { fn: () => El }
+interface DataStore {
+  stack: RenderStackFrame[]
+  tree: WeakMap<El, Set<El>>
+  meta: WeakMap<El, InstanceMetadata>
+}
+/** Components can manually call tree methods to store data during render */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+interface Tree {}
 
-// FUTURE: Add timing, rerender count, etc
-type InstanceMetadata = { fn: () => El } & RenderStackFrame;
-
-// Expected call signatures for plugins
-type PluginAdd = (parent: El, value: El) => void
-type PluginRm = (parent: El, start: El | null, end: El | null) => void
-type Plugin = PluginAdd | PluginRm
-
-const ds = {
+const ds: DataStore = {
   /** Functions write here during render. Data is moved to ds.meta after */
-  stack: [] as RenderStackFrame[],
+  stack: [],
   /** Tree of all connections (Components+Guards) */
-  tree: new WeakMap<El, Set<El>>(),
+  tree: new WeakMap(),
   /** Component metadata */
-  meta: new WeakMap<El, InstanceMetadata>(),
+  meta: new WeakMap(),
 };
 
-const createStackFrame = (): RenderStackFrame => {
-  return { hydrations: {}, lifecycles: {} };
-};
+// Note about ds.tree
 
-export { El, InstanceMetadata, Plugin, PluginAdd, PluginRm }; // Types
-export { ds, createStackFrame };
+// All connections between components and children are kept in ds.tree. Elements
+// that aren't components but have children who are must also be in the tree so
+// the component children can be re-parented to a parent component later on.
+// Every component is in the tree, even those with no children.
+
+export { El, RenderStackFrame, DataStore, Tree }; // Types
+export { ds };

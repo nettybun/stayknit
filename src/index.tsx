@@ -2,7 +2,10 @@ import { h, api } from 'sinuous';
 import { observable, subscribe } from 'sinuous/observable';
 import { map } from 'sinuous/map';
 
-import { trace, tree } from './trace/index.js';
+import { trace } from './trace/index.js';
+import { pluginLifecycles } from './trace/tree-plugin-lifecycle.js';
+import { pluginHydrations } from './trace/tree-plugin-hydration.js';
+
 import { messages, addMessage } from './state/messages.js';
 import { svgSize } from './state/svgSize.js';
 
@@ -18,8 +21,16 @@ import { AttachTest } from './components/cAttachTest.js';
 //   }
 // }
 
-// Middleware for h() and add/insert calls
-trace(api);
+// TODO: Place for types? +Things like Object.assign
+// TODO: Not super into module augmentation... It means every plugin(+core) sees
+// the augmented types, which causes errors
+import type { Tree } from './trace/ds.js';
+
+const tracers = trace(api);
+const tree = {} as Tree;
+pluginLifecycles(tracers, tree);
+pluginHydrations(tracers, tree);
+// pluginLogging(tracers);
 
 const HelloMessage = ({ name }: { name: string }) => {
   const style = observable('transition-colors duration-500 ease-in-out');
