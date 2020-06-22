@@ -24,7 +24,7 @@ declare module './ds.js' {
 const lifecyclesRSF = () => ds.stack[ds.stack.length - 1].lifecycles;
 
 const callLifecycleForTree = (fn: LifecycleNames, root: Node): void => {
-  console.log(`%c${fn}`, 'background: coral');
+  console.log(`%c${fn}`, 'background: coral', 'for', root);
   let callCount = 0;
   const callRetChildren = (el: El) => {
     const meta = ds.meta.get(el);
