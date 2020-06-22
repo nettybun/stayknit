@@ -1,5 +1,5 @@
 import type { api } from 'sinuous/h';
-import type { El } from './ds.js';
+import type { El, RenderStackFrame, InstanceMetadata } from './ds.js';
 
 import { ds } from './ds.js';
 
@@ -30,7 +30,7 @@ const h = createTracer<typeof api.h>(hCall =>
     }
     const { name } = fn;
     const renderData = { fn };
-    ds.stack.push(renderData);
+    ds.stack.push(renderData as RenderStackFrame);
     callPlugins(h.onEnter, ...args);
     const el = hCall(...args);
     ds.stack.pop();
@@ -44,7 +44,7 @@ const h = createTracer<typeof api.h>(hCall =>
     if (!ds.tree.has(el)) ds.tree.set(el, new Set<El>());
 
     // Register as a component
-    ds.meta.set(el, renderData);
+    ds.meta.set(el, renderData as InstanceMetadata);
 
     // Provide visual in DevTools
     const DATASET_TAG = 'component';

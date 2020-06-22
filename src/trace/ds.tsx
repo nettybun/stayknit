@@ -30,5 +30,5 @@ const ds: DataStore = {
 // the component children can be re-parented to a parent component later on.
 // Every component is in the tree, even those with no children.
 
-export { El, RenderStackFrame, DataStore, Tree }; // Types
+export { El, RenderStackFrame, InstanceMetadata, DataStore, Tree }; // Types
 export { ds };
