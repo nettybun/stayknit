@@ -10,4 +10,6 @@ const addMessage = (text: string): void => {
   messages(list);
 };
 
-export { messages, addMessage };
+const count = computed(() => messages().length);
+
+export { messages, addMessage, count };

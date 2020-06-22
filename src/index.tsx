@@ -1,12 +1,12 @@
 import { h, api } from 'sinuous';
-import { observable, subscribe } from 'sinuous/observable';
+import { observable, subscribe, root } from 'sinuous/observable';
 import { map } from 'sinuous/map';
 
 import { trace } from './trace/index.js';
 import { pluginLifecycles } from './trace/tree-plugin-lifecycle.js';
 import { pluginHydrations } from './trace/tree-plugin-hydration.js';
 
-import { messages, addMessage } from './state/messages.js';
+import { messages, addMessage, count } from './state/messages.js';
 import { svgSize } from './state/svgSize.js';
 
 import { LoginForm } from './components/cLoginForm.js';
@@ -22,8 +22,6 @@ import { AttachTest } from './components/cAttachTest.js';
 // }
 
 // TODO: Place for types? +Things like Object.assign
-// TODO: Not super into module augmentation... It means every plugin(+core) sees
-// the augmented types, which causes errors
 import type { Tree } from './trace/ds.js';
 
 const tracers = trace(api);
@@ -31,6 +29,19 @@ const tree = {} as Tree;
 pluginLifecycles(tracers, tree);
 pluginHydrations(tracers, tree);
 // pluginLogging(tracers);
+
+const when = (
+  condition: () => string,
+  views: { [k in string]?: () => Element}
+) => {
+  const rendered: { [k in string]?: Element } = {};
+  return () => {
+    const cond = condition();
+    if (!rendered[cond] && views[cond])
+      rendered[cond] = root(() => (views[cond] as () => Element)());
+    return rendered[cond];
+  };
+};
 
 const HelloMessage = ({ name }: { name: string }) => {
   const style = observable('transition-colors duration-500 ease-in-out');
@@ -59,10 +70,6 @@ const ListUsingMap = () =>
 
 const Link = ({ to }: {to: string}) =>
   <a href={to}>{to}</a>;
-
-const renderSwapA = <AttachTest/>;
-const renderSwapB = <em>Gone</em>;
-const renderSwapMarker = document.createTextNode('');
 
 // Styled components with syntax highlighting, error checking, & autogen classes
 // const styPage = css`
@@ -109,7 +116,10 @@ const Page = () =>
       </p>
       <LoginForm />
       <p>This component below will be removed after 5 messages are in the list</p>
-      {renderSwapMarker}
+      {when(() => count() < 5 ? 'T' : 'F', {
+        T: () => <AttachTest/>,
+        F: () => <em>Gone</em>,
+      })}
     </section>
     <HelloMessage name="This is a <HelloMessage/> component"/>
     <div class="my-5">
@@ -122,6 +132,17 @@ const Page = () =>
         components are created from scartch and added (onAttach).
       </p>
     </div>
+    <div>{
+      when(() => count() === 0 ? '0' : count() < 10 ? '0..10' : '>= 10', {
+        '0':
+          () => <p>There's no messages right now</p>,
+        '0..10':
+          () => <p>There's {count} messages; which is less than ten...</p>,
+        '>= 10':
+          () => <p><em>Damn.</em> There's {count} messages!</p>,
+      })
+    }
+    </div>
     <div class="my-5">
       {/* <ListUsingMap /> */}
       {() => messages().map(x => <p><HelloMessage name={x}/></p>)}
@@ -129,28 +150,3 @@ const Page = () =>
   </main>;
 
 api.add(document.body, <Page/>, document.body.firstChild as Node);
-
-// If this is actually the only way to leave elements alive during ternary calls
-// then it's a great usecase for onAttach
-subscribe(() => {
-  const parent = renderSwapMarker.parentElement;
-  if (!parent) throw 'No parent for renderSwapMarker';
-
-  if (messages().length < 5) {
-    if (renderSwapB.isConnected)
-      api.rm(parent, renderSwapB, renderSwapMarker);
-    if (!renderSwapA.isConnected)
-      api.add(parent, renderSwapA, renderSwapMarker);
-  } else {
-    if (renderSwapA.isConnected)
-      api.rm(parent, renderSwapA, renderSwapMarker);
-    if (!renderSwapB.isConnected)
-      api.add(parent, renderSwapB, renderSwapMarker);
-  }
-});
-
-// This doesn't work in SSR because the previous fragments aren't removed
-// Returns "1", "1, 2", "1, 2, 3" all in one <div/> by the end
-addMessage('Hey 1');
-addMessage('Hey 2');
-addMessage('Hey 3');
