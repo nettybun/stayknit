@@ -4,7 +4,7 @@ type El = Element | DocumentFragment | Node
 type InstanceMetadata = RenderStackFrame
 
 // Must be interfaces; type doesn't work for module augmentation
-interface RenderStackFrame { fn: () => El }
+interface RenderStackFrame { fn: () => El, el: El }
 interface DataStore {
   stack: RenderStackFrame[]
   tree: WeakMap<El, Set<El>>

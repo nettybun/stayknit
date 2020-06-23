@@ -29,11 +29,13 @@ const h = createTracer<typeof api.h>(hCall =>
       return retH;
     }
     const { name } = fn;
-    const renderData = { fn };
+    const renderData: Partial<RenderStackFrame> = { fn };
     ds.stack.push(renderData as RenderStackFrame);
     callPlugins(h.onEnter, ...args);
     const el = hCall(...args);
     ds.stack.pop();
+    // TODO: Is this getting out of hand...
+    renderData.el = el;
 
     // Not Element or DocumentFragment
     if (!(el instanceof Node)) {
