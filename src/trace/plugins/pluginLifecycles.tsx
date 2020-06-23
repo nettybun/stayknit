@@ -1,14 +1,14 @@
-import type { Tracers } from './tracers.js';
-import type { El, Tree } from './ds.js';
+import type { Tracers } from '../tracers.js';
+import type { El, Tree } from '../ds.js';
 
-import { ds } from './ds.js';
-import { log } from './log.js';
+import { ds } from '../ds.js';
+import { log } from '../log.js';
 
 type LifecycleNames =
   | 'onAttach'
   | 'onDetach'
 
-declare module './ds.js' {
+declare module '../ds.js' {
   interface RenderStackFrame {
     lifecycles: { [k in LifecycleNames]?: () => void }
   }
@@ -20,8 +20,6 @@ declare module './ds.js' {
     onDetach(callback: () => void): void
   }
 }
-
-const lifecyclesRSF = () => ds.stack[ds.stack.length - 1].lifecycles;
 
 const callLifecycleForTree = (fn: LifecycleNames, root: Node): void => {
   console.log(`%c${fn}`, 'background: coral', 'for', root);
@@ -53,27 +51,27 @@ const callLifecycleForTree = (fn: LifecycleNames, root: Node): void => {
 let valueAlreadyConnected: boolean | undefined = undefined;
 
 function pluginLifecycles(tracers: Tracers, tree: Tree): void {
-  tracers.h.onEnter.push(
-    () => { ds.stack[ds.stack.length - 1].lifecycles = {}; });
+  tracers.h.onEnter.push(() => {
+    ds.stack[ds.stack.length - 1].lifecycles = {};
+  });
 
-  tracers.add.onEnter.push(
-    (_, value) => { valueAlreadyConnected = (value as Node).isConnected; });
+  tracers.add.onEnter.push((_, value) => {
+    valueAlreadyConnected = (value as Node).isConnected;
+  });
 
-  tracers.add.onExit.push(
-    (parent, value) => {
-      if (parent.isConnected && !valueAlreadyConnected)
-        callLifecycleForTree('onAttach', value as Node);
-      valueAlreadyConnected = undefined;
-    }
-  );
-  tracers.rm.onEnter.push(
-    (parent, start: Node | null, end) => {
-      if (parent.isConnected)
-        for (let c = start; c && c !== end; c = c.nextSibling)
-          callLifecycleForTree('onDetach', c);
-    }
-  );
+  tracers.add.onExit.push((parent, value) => {
+    if (parent.isConnected && !valueAlreadyConnected)
+      callLifecycleForTree('onAttach', value as Node);
+    valueAlreadyConnected = undefined;
+  });
 
+  tracers.rm.onEnter.push((parent, start: Node | null, end) => {
+    if (parent.isConnected)
+      for (let c = start; c && c !== end; c = c.nextSibling)
+        callLifecycleForTree('onDetach', c);
+  });
+
+  const lifecyclesRSF = () => ds.stack[ds.stack.length - 1].lifecycles;
   tree.onAttach = (callback: () => void) => lifecyclesRSF().onAttach = callback;
   tree.onDetach = (callback: () => void) => lifecyclesRSF().onDetach = callback;
 }

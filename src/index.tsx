@@ -1,49 +1,15 @@
-import { h, api } from 'sinuous';
-import { observable, subscribe, root } from 'sinuous/observable';
+import { h, svg, api, tree, when } from './base.js';
+import { observable } from 'sinuous/observable';
 import { map } from 'sinuous/map';
 
-import { trace } from './trace/index.js';
-import { pluginLifecycles } from './trace/tree-plugin-lifecycle.js';
-import { pluginHydrations } from './trace/tree-plugin-hydration.js';
-
-import { messages, addMessage, count } from './state/messages.js';
+import { messages, count } from './state/messages.js';
 import { svgSize } from './state/svgSize.js';
 
 import { LoginForm } from './components/cLoginForm.js';
 import { NavBar } from './components/cNavBar.js';
 import { AttachTest } from './components/cAttachTest.js';
 
-// TODO: When eventually defining a JSX-fork for Sinuous as a local file
-// declare namespace JSX {
-//   // This forbids children on components that don't declare them explicitly
-//   interface IntrinsicAttributes {
-//     children?: never;
-//   }
-// }
-
-// TODO: Place for types? +Things like Object.assign
-import type { Tree } from './trace/ds.js';
-
-const tracers = trace(api);
-const tree = {} as Tree;
-pluginLifecycles(tracers, tree);
-pluginHydrations(tracers, tree);
-// pluginLogging(tracers);
-
-const when = (
-  condition: () => string,
-  views: { [k in string]?: () => Element}
-) => {
-  const rendered: { [k in string]?: Element } = {};
-  return () => {
-    const cond = condition();
-    if (!rendered[cond] && views[cond])
-      rendered[cond] = root(() => (views[cond] as () => Element)());
-    return rendered[cond];
-  };
-};
-
-const HelloMessage = ({ name }: { name: string }) => {
+const HelloMessage = ({ name }: { name: string }): h.JSX.Element => {
   const style = observable('transition-colors duration-500 ease-in-out');
   tree.onAttach(() => {
     // Simulate fetch() call that takes some time...
@@ -55,9 +21,9 @@ const HelloMessage = ({ name }: { name: string }) => {
 };
 
 const HeartIcon = () =>
-  api.hs(() =>
+  svg(() =>
     <svg width={svgSize} height={svgSize} viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-      <path fill-rule="evenodd" d="M8 2.748l-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01L8 2.748zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143c.06.055.119.112.176.171a3.12 3.12 0 01.176-.17C12.72-3.042 23.333 4.867 8 15z" clip-rule="evenodd"/>
+      <path fillRule="evenodd" d="M8 2.748l-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01L8 2.748zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143c.06.055.119.112.176.171a3.12 3.12 0 01.176-.17C12.72-3.042 23.333 4.867 8 15z" clip-rule="evenodd"/>
     </svg>
   );
 
