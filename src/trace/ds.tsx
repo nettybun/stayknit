@@ -10,9 +10,6 @@ interface DataStore {
   tree: WeakMap<El, Set<El>>
   meta: WeakMap<El, InstanceMetadata>
 }
-/** Components can manually call tree methods to store data during render */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface Tree {}
 
 const ds: DataStore = {
   /** Functions write here during render. Data is moved to ds.meta after */
@@ -30,5 +27,5 @@ const ds: DataStore = {
 // the component children can be re-parented to a parent component later on.
 // Every component is in the tree, even those with no children.
 
-export { El, RenderStackFrame, InstanceMetadata, DataStore, Tree }; // Types
+export { El, RenderStackFrame, InstanceMetadata, DataStore }; // Types
 export { ds };

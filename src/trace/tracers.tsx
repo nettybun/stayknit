@@ -5,17 +5,14 @@ import { ds } from './ds.js';
 
 type Api = typeof api[keyof Pick<typeof api, 'h' | 'add' | 'insert' | 'rm'>]
 type Plugin<T extends Api> = (...args: Parameters<T>) => void
-type Tracer<T extends Api, P = Plugin<T>> = { (call: T): T, onEnter: P[], onExit: P[] }
+type Tracer<T extends Api, P = Plugin<T>> = { (call: T): T, onEnter: P, onExit: P }
 
 const createTracer = <T extends Api>(fn: (call: T) => T): Tracer<T> => {
   const tfn = fn as Tracer<T>;
-  tfn.onEnter = [];
-  tfn.onExit = [];
+  tfn.onEnter = () => undefined;
+  tfn.onExit = () => undefined;
   return tfn;
 };
-const callPlugins
-  = <T extends Api>(plugins: Plugin<T>[], ...args: Parameters<Plugin<T>>) =>
-    plugins.forEach(plugin => plugin(...args));
 
 // For sharing fragments between nested h() and add() calls
 const refDF: DocumentFragment[] = [];
@@ -31,7 +28,7 @@ const h = createTracer<typeof api.h>(hCall =>
     const { name } = fn;
     const renderData: Partial<RenderStackFrame> = { fn };
     ds.stack.push(renderData as RenderStackFrame);
-    callPlugins(h.onEnter, ...args);
+    h.onEnter(...args);
     const el = hCall(...args);
     ds.stack.pop();
     // TODO: Is this getting out of hand...
@@ -39,7 +36,7 @@ const h = createTracer<typeof api.h>(hCall =>
 
     // Not Element or DocumentFragment
     if (!(el instanceof Node)) {
-      callPlugins(h.onExit, ...args);
+      h.onExit(...args);
       return el;
     }
     // Elements will already be in the tree if they had any children
@@ -48,7 +45,7 @@ const h = createTracer<typeof api.h>(hCall =>
     // Register as a component
     ds.meta.set(el, renderData as InstanceMetadata);
 
-    callPlugins(h.onExit, ...args);
+    h.onExit(...args);
     return el;
   });
 
@@ -57,8 +54,8 @@ const h = createTracer<typeof api.h>(hCall =>
 // here, tracer.h sets refDF. It's empty since insertBefore() clears child nodes
 const add = createTracer<typeof api.add>(addCall =>
   (parent: El, value: El, endMark) => {
-    callPlugins(add.onEnter, parent, value);
-    const exit = () => callPlugins(add.onExit, parent, value);
+    add.onEnter(parent, value);
+    const exit = () => add.onExit(parent, value);
 
     const ret = addCall(parent, value, endMark);
     if (Array.isArray(value) && refDF.length)
@@ -112,21 +109,21 @@ const add = createTracer<typeof api.add>(addCall =>
 
 const insert = createTracer<typeof api.insert>(insertCall =>
   (...args) => {
-    callPlugins(insert.onEnter, ...args);
+    insert.onEnter(...args);
     const ret = insertCall(...args);
-    callPlugins(insert.onExit, ...args);
+    insert.onExit(...args);
     return ret;
   });
 
 const rm = createTracer<typeof api.rm>(rmCall =>
   (parent, start: ChildNode, end) => {
-    callPlugins(rm.onEnter, parent, start, end);
+    rm.onEnter(parent, start, end);
     const children = ds.tree.get(parent as El);
     if (children)
       for (let c: ChildNode | null = start; c && c !== end; c = c.nextSibling)
         children.delete(c as El);
     const ret = rmCall(parent, start, end);
-    callPlugins(rm.onExit, parent, start, end);
+    rm.onExit(parent, start, end);
     return ret;
   });
 

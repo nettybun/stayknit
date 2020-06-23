@@ -1,5 +1,5 @@
 import type { Tracers } from '../tracers.js';
-import type { El, Tree } from '../ds.js';
+import type { El } from '../ds.js';
 
 import { ds } from '../ds.js';
 
@@ -7,13 +7,14 @@ type LifecycleNames =
   | 'onAttach'
   | 'onDetach'
 
+type ReturnMethods = {
+  onAttach(callback: () => void): void
+  onDetach(callback: () => void): void
+}
+
 declare module '../ds.js' {
   interface RenderStackFrame {
     lifecycles: { [k in LifecycleNames]?: () => void }
-  }
-  interface Tree {
-    onAttach(callback: () => void): void
-    onDetach(callback: () => void): void
   }
 }
 
@@ -47,30 +48,40 @@ const callLifecycleForTree = (fn: LifecycleNames, root: Node): void => {
 
 let valueAlreadyConnected: boolean | undefined = undefined;
 
-function pluginLifecycles(tracers: Tracers, tree: Tree): void {
-  tracers.h.onEnter.push(() => {
+function pluginLifecycles(tracers: Tracers): ReturnMethods {
+  const { onEnter: hEnter } = tracers.h;
+  const { onEnter: addEnter, onEnter: addExit } = tracers.add;
+  const { onEnter: rmEnter } = tracers.rm;
+
+  tracers.h.onEnter = (...o) => {
     ds.stack[ds.stack.length - 1].lifecycles = {};
-  });
+    hEnter(...o);
+  };
 
-  tracers.add.onEnter.push((_, value) => {
+  tracers.add.onEnter = ((parent, value, ...o) => {
     valueAlreadyConnected = (value as Node).isConnected;
+    addEnter(parent, value, ...o);
   });
 
-  tracers.add.onExit.push((parent, value) => {
+  tracers.add.onExit = ((parent, value, ...o) => {
     if (parent.isConnected && !valueAlreadyConnected)
       callLifecycleForTree('onAttach', value as Node);
     valueAlreadyConnected = undefined;
+    addExit(parent, value, ...o);
   });
 
-  tracers.rm.onEnter.push((parent, start: Node | null, end) => {
+  tracers.rm.onEnter = ((parent, start, end) => {
     if (parent.isConnected)
-      for (let c = start; c && c !== end; c = c.nextSibling)
+      for (let c: Node | null = start; c && c !== end; c = c.nextSibling)
         callLifecycleForTree('onDetach', c);
+    rmEnter(parent, start, end);
   });
 
   const lifecyclesRSF = () => ds.stack[ds.stack.length - 1].lifecycles;
-  tree.onAttach = (callback: () => void) => lifecyclesRSF().onAttach = callback;
-  tree.onDetach = (callback: () => void) => lifecyclesRSF().onDetach = callback;
+  return {
+    onAttach(callback: () => void) { lifecyclesRSF().onAttach = callback; },
+    onDetach(callback: () => void) { lifecyclesRSF().onDetach = callback; },
+  };
 }
 
 export { pluginLifecycles };

@@ -6,8 +6,6 @@ import { pluginLifecycles } from './trace/plugins/pluginLifecycles.js';
 import { pluginMapHydrations } from './trace/plugins/pluginMapHydrations.js';
 import { pluginLogs } from './trace/plugins/pluginLogs.js';
 
-import type { Tree } from './trace/ds.js';
-
 // Disallow children on components that don't declare them explicitly
 // declare module 'sinuous/jsx' {
 //   interface IntrinsicAttributes {
@@ -31,10 +29,13 @@ api.root = root;
 api.sample = sample;
 
 const tracers = trace(api);
-const tree = {} as Tree;
+
+const tree = {
+  ...pluginMapHydrations(tracers),
+  ...pluginLifecycles(tracers),
+};
+// Must be last...need to figure out Express middleware...
 pluginLogs(tracers);
-pluginLifecycles(tracers, tree);
-pluginMapHydrations(tracers, tree);
 
 const when = (
   condition: () => string,

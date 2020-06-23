@@ -1,27 +1,32 @@
 import type { Observable } from 'sinuous/observable';
 import type { Tracers } from '../tracers.js';
-import type { Tree } from '../ds.js';
 
 import { ds } from '../ds.js';
 
 type Hydrations = { [k in string]?: Observable<unknown> }
 
+type ReturnMethods = {
+  reportHydrations(observables: Hydrations): void
+}
+
 declare module '../ds.js' {
   interface RenderStackFrame {
     hydrations: Hydrations
   }
-  interface Tree {
-    reportHydrations(observables: Hydrations): void
-  }
 }
 
-function pluginMapHydrations(tracers: Tracers, tree: Tree): void {
-  tracers.h.onEnter.push(() => {
-    ds.stack[ds.stack.length - 1].hydrations = {};
-  });
+function pluginMapHydrations(tracers: Tracers): ReturnMethods {
+  const { onEnter: hEnter } = tracers.h;
 
-  tree.reportHydrations = (observables) => {
-    ds.stack[ds.stack.length - 1].hydrations = observables;
+  tracers.h.onEnter = (...o) => {
+    ds.stack[ds.stack.length - 1].hydrations = {};
+    hEnter(...o);
+  };
+
+  return {
+    reportHydrations(observables) {
+      ds.stack[ds.stack.length - 1].hydrations = observables;
+    },
   };
 }
 

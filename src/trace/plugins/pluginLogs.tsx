@@ -65,15 +65,20 @@ const log = (x: unknown, subcall?: boolean): string => {
 };
 
 let refRSF: RenderStackFrame | undefined = undefined;
-const groupEnd = () => console.groupEnd();
 
 function pluginLogs(tracers: Tracers): void {
-  tracers.h.onEnter.push(() => {
+  const { onEnter: hEnter, onExit: hExit } = tracers.h;
+  const { onEnter: addEnter, onEnter: addExit } = tracers.add;
+  const { onEnter: insertEnter, onExit: insertExit } = tracers.insert;
+  const { onEnter: rmEnter, onExit: rmExit } = tracers.rm;
+
+  tracers.h.onEnter = (...o) => {
     refRSF = ds.stack[ds.stack.length - 1];
     const { name } = refRSF.fn;
     console.group(`api.h() 🔶 ${name}`);
-  });
-  tracers.h.onExit.push(() => {
+    hEnter(...o);
+  };
+  tracers.h.onExit = (...o) => {
     const { name } = (refRSF as RenderStackFrame).fn;
     const { el } = (refRSF as RenderStackFrame);
 
@@ -88,28 +93,39 @@ function pluginLogs(tracers: Tracers): void {
     } else {
       console.log(`${name}: Function was not a component. Skipping`);
     }
+    hExit(...o);
     console.log(`${name}: Done. Render data:`, refRSF);
     console.groupEnd();
-  });
+  };
 
-  tracers.add.onEnter.push((parent, value) => {
+  tracers.add.onEnter = (parent, value, end) => {
     console.group('api.add()');
     console.log(`parent:${log(parent)}, value:${log(value)}`);
-  });
-  // Doesn't seem possible in a plugin architecture to know this:
-  // console.log(`Found adoptive parent ${log(cursor)}`);
-  tracers.add.onExit.push(groupEnd);
+    addEnter(parent, value, end);
+  };
+  tracers.add.onExit = (...o) => {
+    addExit(...o);
+    console.groupEnd();
+  };
 
-  tracers.insert.onEnter.push((el, value, endMark, current) => {
+  tracers.insert.onEnter = (el, value, endMark, current) => {
     console.group('api.insert()');
     console.log(`el:${log(el)}, value:${log(value)}, current:${log(current)}`);
-  });
-  tracers.insert.onExit.push(groupEnd);
+    insertEnter(el, value, endMark, current);
+  };
+  tracers.insert.onExit = (...o) => {
+    insertExit(...o);
+    console.groupEnd();
+  };
 
-  tracers.rm.onEnter.push(() => {
+  tracers.rm.onEnter = (...o) => {
     console.group('api.rm()');
-  });
-  tracers.rm.onExit.push(groupEnd);
+    rmEnter(...o);
+  };
+  tracers.rm.onExit = (...o) => {
+    rmExit(...o);
+    console.groupEnd();
+  };
 }
 
 export { pluginLogs };
