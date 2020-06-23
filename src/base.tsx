@@ -6,6 +6,8 @@ import { pluginLifecycles } from './trace/plugins/pluginLifecycles.js';
 import { pluginMapHydrations } from './trace/plugins/pluginMapHydrations.js';
 import { pluginLogs } from './trace/plugins/pluginLogs.js';
 
+import type { El } from './trace/ds.js';
+
 // Disallow children on components that don't declare them explicitly
 // declare module 'sinuous/jsx' {
 //   interface IntrinsicAttributes {
@@ -57,5 +59,36 @@ const svg = <T extends () => Element>(closure: T): ReturnType<T> => {
   api.s = prev;
   return el as ReturnType<T>;
 };
+
+const middleware: ((...args: unknown[]) => El)[] = [
+  (one, two) => {
+    console.log('Hey 1', one, two);
+    const el = next();
+    console.log('Bye 1');
+    return el;
+  },
+  () => {
+    console.log('Hey 2');
+    return next();
+  },
+  (one, two, three) => {
+    console.log('Hey 3');
+    const el = next();
+    console.log('Bye 3', three);
+    return el;
+  },
+  () => {
+    console.log('Hey 4');
+    return <p>Answer</p>;
+  },
+];
+let next: () => El = () => ({}) as El;
+function call(i: number, ...args: unknown[]): El {
+  next = () => call(i + 1, ...args);
+  return middleware[i](...args);
+}
+
+const answer = call(0, 4, 3, 2);
+console.log('Answer:', answer);
 
 export { h, svg, api, tree, when };
