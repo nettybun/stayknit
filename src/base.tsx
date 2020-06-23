@@ -32,9 +32,9 @@ api.sample = sample;
 
 const tracers = trace(api);
 const tree = {} as Tree;
+pluginLogs(tracers);
 pluginLifecycles(tracers, tree);
 pluginMapHydrations(tracers, tree);
-pluginLogs(tracers);
 
 const when = (
   condition: () => string,
