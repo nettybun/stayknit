@@ -46,11 +46,6 @@ const h = createTracer<typeof api.h>(hCall =>
     // Register as a component
     ds.meta.set(el, renderData as InstanceMetadata);
 
-    // Provide visual in DevTools
-    const DATASET_TAG = 'component';
-    if (el instanceof Element) el.dataset[DATASET_TAG] = name;
-    else el.childNodes.forEach(x => { (x as HTMLElement).dataset[DATASET_TAG] = name; });
-
     callPlugins(h.onExit, ...args);
     return el;
   });

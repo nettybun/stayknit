@@ -10,11 +10,8 @@ declare module '../ds.js' {
   interface RenderStackFrame {
     hydrations: Hydrations
   }
-  interface DataStore {
-    stack: RenderStackFrame[]
-  }
   interface Tree {
-    labelHydrations(observables: Hydrations): void
+    reportHydrations(observables: Hydrations): void
   }
 }
 
@@ -23,7 +20,7 @@ function pluginMapHydrations(tracers: Tracers, tree: Tree): void {
     ds.stack[ds.stack.length - 1].hydrations = {};
   });
 
-  tree.labelHydrations = (observables) => {
+  tree.reportHydrations = (observables) => {
     ds.stack[ds.stack.length - 1].hydrations = observables;
   };
 }

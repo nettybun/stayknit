@@ -1,8 +1,7 @@
-import { h, o } from 'sinuous';
+import { h, tree } from '../base.js';
+import { o, computed } from 'sinuous/observable';
 import { addMessage } from '../state/messages.js';
-import { computed } from 'sinuous/observable';
-// FIXME: Need consumer dep.ts-like file
-// import { tree } from '../trace/index.js';
+
 import type { JSXEl } from '../types/index.js';
 
 const LoginForm = (): JSXEl => {
@@ -47,8 +46,9 @@ const LoginForm = (): JSXEl => {
     );
   };
 
-  // tree.saveHydrations(s);
-  // if (window.hydrating) return null;
+  // See...this is a problem if you turn off the plugin then all the code breaks
+  // tree.reportHydrations(s);
+  if (window.hydrating) return null;
   return (
     <div class="mb-6">
       <Item name="Username" />
