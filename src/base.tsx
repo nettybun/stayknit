@@ -39,9 +39,11 @@ const treeMethods = {
   ...lifecycleMethods,
 };
 type Fns = keyof typeof treeMethods
-for (const key of Object.keys(treeMethods) as Fns[])
+for (const key of Object.keys(treeMethods) as Fns[]) {
+  const prevFn = treeMethods[key];
   // @ts-ignore Why do they make wrapping functions so incredibly hard
-  treeMethods[key] = (...args) => { !inSSR && treeMethods[key](...args); };
+  treeMethods[key] = (...args) => { !inSSR && prevFn(...args); };
+}
 
 const inSSR = typeof window === 'undefined';
 
