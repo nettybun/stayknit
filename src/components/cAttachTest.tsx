@@ -11,7 +11,7 @@ const AttachTest = (): h.JSX.Element => {
   }, 250);
 
   tree.onAttach(() => {
-    void fetch('/fetchData.txt')
+    void fetch('fetchData.txt')
       .then(r => r.text())
       .then(count => s.xhrFetchedCommentCount(count));
     onWindowResize();
