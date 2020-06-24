@@ -1,6 +1,6 @@
 import type { Observable } from 'sinuous/observable';
 
-import { ds } from '../tracers.js';
+import { tree } from '../tracers.js';
 
 type Hydrations = { [k in string]?: Observable<unknown> }
 
@@ -18,7 +18,7 @@ function pluginMapHydrations(): Methods {
   return {
     // This assumes there's only ever one call else it'll overwrite
     reportHydrations(observables) {
-      ds.stack[ds.stack.length - 1].hydrations = observables;
+      tree.stack[tree.stack.length - 1].hydrations = observables;
     },
   };
 }

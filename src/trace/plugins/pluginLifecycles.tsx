@@ -1,7 +1,7 @@
 import type { HyperscriptApi } from 'sinuous/h';
 import type { El, Tracers } from '../tracers.js';
 
-import { ds } from '../tracers.js';
+import { tree } from '../tracers.js';
 
 type LifecycleNames =
   | 'onAttach'
@@ -22,7 +22,7 @@ const callLifecycleForTree = (fn: LifecycleNames, root: Node): void => {
   console.log(`%c${fn}`, 'background: coral', 'for tree at', root);
   let callCount = 0;
   const callRetChildren = (el: El) => {
-    const meta = ds.meta.get(el);
+    const meta = tree.meta.get(el);
     // FIXME: Terser throws
     // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
     const call = meta && meta.lifecycles && meta.lifecycles[fn];
@@ -32,7 +32,7 @@ const callLifecycleForTree = (fn: LifecycleNames, root: Node): void => {
       callCount++;
       call();
     }
-    return ds.tree.get(el);
+    return tree.relations.get(el);
   };
   const set = callRetChildren(root as El);
   if (!set) return;
@@ -70,7 +70,7 @@ function pluginLifecycles(api: HyperscriptApi, tracers: Tracers): Methods {
   };
 
   const lifecyclesRSF = () => {
-    const rsf = ds.stack[ds.stack.length - 1];
+    const rsf = tree.stack[tree.stack.length - 1];
     if (!rsf.lifecycles) rsf.lifecycles = {};
     return rsf.lifecycles;
   };

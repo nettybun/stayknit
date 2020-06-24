@@ -1,7 +1,7 @@
 import type { HyperscriptApi } from 'sinuous/h';
 import type { El, Tracers, RenderStackFrame, InstanceMeta } from '../tracers.js';
 
-import { ds } from '../tracers.js';
+import { tree } from '../tracers.js';
 
 /** Return a pretty printed string for debugging */
 const log = (x: unknown, subcall?: boolean): string => {
@@ -14,8 +14,8 @@ const log = (x: unknown, subcall?: boolean): string => {
 
   if (x instanceof Element || x instanceof DocumentFragment) {
     let str = '';
-    const isComp = ds.meta.get(x);
-    const isGuard = ds.tree.get(x) && !isComp;
+    const isComp = tree.meta.get(x);
+    const isGuard = tree.relations.get(x) && !isComp;
     if (isComp) {
       str = `<${isComp.name}/>`;
     } else {
@@ -84,7 +84,7 @@ function pluginLogs(api: HyperscriptApi, tracers: Tracers): void {
     return h(fn, ...args);
   };
   tracers.h.onCreate = (_, el) => {
-    refRSF = ds.meta.get(el) as InstanceMeta;
+    refRSF = tree.meta.get(el) as InstanceMeta;
     const { name } = refRSF;
     if (el instanceof Node) {
       // Provide visual in DevTools
@@ -144,7 +144,7 @@ function pluginLogs(api: HyperscriptApi, tracers: Tracers): void {
     return retRm;
   };
   tracers.rm.onDetach = (parent, child) => {
-    console.log(`Tree attach: ${log(parent)} receives ${log(child)}`);
+    console.log(`Tree detach: ${log(parent)} receives ${log(child)}`);
     onDetach(parent, child);
   };
 }
