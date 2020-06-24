@@ -6,8 +6,6 @@ import { pluginLifecycles } from './trace/plugins/pluginLifecycles.js';
 import { pluginMapHydrations } from './trace/plugins/pluginMapHydrations.js';
 import { pluginLogs } from './trace/plugins/pluginLogs.js';
 
-import type { El } from './trace/tracers.js';
-
 // Disallow children on components that don't declare them explicitly
 // declare module 'sinuous/jsx' {
 //   interface IntrinsicAttributes {

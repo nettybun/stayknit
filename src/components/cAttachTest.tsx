@@ -1,7 +1,7 @@
 import { h, tree } from '../base.js';
 import { observable } from 'sinuous/observable';
 
-const AttachTest = (): Element => {
+const AttachTest = (): h.JSX.Element => {
   const s = {
     xhrFetchedCommentCount: observable('...'),
     windowSize: observable('...'),
