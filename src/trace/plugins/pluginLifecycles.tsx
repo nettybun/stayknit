@@ -1,20 +1,20 @@
-import type { Tracers } from '../tracers.js';
-import type { El } from '../ds.js';
+import type { HyperscriptApi } from 'sinuous/h';
+import type { El, Tracers } from '../tracers.js';
 
-import { ds } from '../ds.js';
+import { ds } from '../tracers.js';
 
 type LifecycleNames =
   | 'onAttach'
   | 'onDetach'
 
-type ReturnMethods = {
+type Methods = {
   onAttach(callback: () => void): void
   onDetach(callback: () => void): void
 }
 
-declare module '../ds.js' {
+declare module '../tracers.js' {
   interface RenderStackFrame {
-    lifecycles: { [k in LifecycleNames]?: () => void }
+    lifecycles?: { [k in LifecycleNames]?: () => void }
   }
 }
 
@@ -25,10 +25,10 @@ const callLifecycleForTree = (fn: LifecycleNames, root: Node): void => {
     const meta = ds.meta.get(el);
     // FIXME: Terser throws
     // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-    const call = meta && meta.lifecycles[fn];
+    const call = meta && meta.lifecycles && meta.lifecycles[fn];
     if (call) {
       // @ts-ignore TS is so bad at knowing when something can't be undefined
-      console.log(`<${meta.fn.name}/>:${fn}`, call);
+      console.log(`<${meta.name}/>:${fn}`, call);
       callCount++;
       call();
     }
@@ -46,38 +46,34 @@ const callLifecycleForTree = (fn: LifecycleNames, root: Node): void => {
   console.log(`Total lifecycles called for tree: ${callCount}`, root);
 };
 
-let valueAlreadyConnected: boolean | undefined = undefined;
+let childAlreadyConnected: boolean | undefined = undefined;
 
-function pluginLifecycles(tracers: Tracers): ReturnMethods {
-  const { onEnter: hEnter } = tracers.h;
-  const { onEnter: addEnter, onEnter: addExit } = tracers.add;
-  const { onEnter: rmEnter } = tracers.rm;
+function pluginLifecycles(api: HyperscriptApi, tracers: Tracers): Methods {
+  const { add } = api;
+  const { add: { onAttach }, rm: { onDetach } } = tracers;
 
-  tracers.h.onEnter = (...o) => {
-    ds.stack[ds.stack.length - 1].lifecycles = {};
-    hEnter(...o);
+  // Save state before the tracer runs
+  api.add = (parent, child, end) => {
+    childAlreadyConnected = (child as Node).isConnected;
+    return add(parent, child, end);
+  };
+  tracers.add.onAttach = (parent, child) => {
+    if (parent.isConnected && !childAlreadyConnected)
+      callLifecycleForTree('onAttach', child as Node);
+    childAlreadyConnected = undefined;
+    onAttach(parent, child);
   };
 
-  tracers.add.onEnter = ((parent, value, ...o) => {
-    valueAlreadyConnected = (value as Node).isConnected;
-    addEnter(parent, value, ...o);
-  });
+  tracers.rm.onDetach = (parent, child) => {
+    if (parent.isConnected) callLifecycleForTree('onDetach', child);
+    onDetach(parent, child);
+  };
 
-  tracers.add.onExit = ((parent, value, ...o) => {
-    if (parent.isConnected && !valueAlreadyConnected)
-      callLifecycleForTree('onAttach', value as Node);
-    valueAlreadyConnected = undefined;
-    addExit(parent, value, ...o);
-  });
-
-  tracers.rm.onEnter = ((parent, start, end) => {
-    if (parent.isConnected)
-      for (let c: Node | null = start; c && c !== end; c = c.nextSibling)
-        callLifecycleForTree('onDetach', c);
-    rmEnter(parent, start, end);
-  });
-
-  const lifecyclesRSF = () => ds.stack[ds.stack.length - 1].lifecycles;
+  const lifecyclesRSF = () => {
+    const rsf = ds.stack[ds.stack.length - 1];
+    if (!rsf.lifecycles) rsf.lifecycles = {};
+    return rsf.lifecycles;
+  };
   return {
     onAttach(callback: () => void) { lifecyclesRSF().onAttach = callback; },
     onDetach(callback: () => void) { lifecyclesRSF().onDetach = callback; },

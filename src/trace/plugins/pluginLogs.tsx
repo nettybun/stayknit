@@ -1,8 +1,7 @@
+import type { HyperscriptApi } from 'sinuous/h';
+import type { El, Tracers, RenderStackFrame, InstanceMeta } from '../tracers.js';
 
-import type { Tracers } from '../tracers.js';
-import type { RenderStackFrame } from '../ds.js';
-
-import { ds } from '../ds.js';
+import { ds } from '../tracers.js';
 
 /** Return a pretty printed string for debugging */
 const log = (x: unknown, subcall?: boolean): string => {
@@ -18,7 +17,7 @@ const log = (x: unknown, subcall?: boolean): string => {
     const isComp = ds.meta.get(x);
     const isGuard = ds.tree.get(x) && !isComp;
     if (isComp) {
-      str = `<${isComp.fn.name}/>`;
+      str = `<${isComp.name}/>`;
     } else {
       const elName = x instanceof Element
         ? `<${x.tagName.toLowerCase()}>`
@@ -55,33 +54,38 @@ const log = (x: unknown, subcall?: boolean): string => {
       : '[Function]';
 
   // Try to show a startMark (key is minified)
-  const o = x as Record<string, unknown>;
-  const k = Object.keys(o);
-  if (k.length === 1 && o[k[0]] instanceof Text)
+  const o = x as Record<string, unknown> | null;
+  const k = o && Object.keys(o);
+  // TS bug...
+  if (o && k && k.length === 1 && o[k[0]] instanceof Text)
     return '[StartMark]';
+
 
   // Default to [object DataType]
   return str(String(x));
 };
 
-let refRSF: RenderStackFrame | undefined = undefined;
+let refRSF: RenderStackFrame | undefined;
+let initialParentDuringAdd: El | undefined;
 
-function pluginLogs(tracers: Tracers): void {
-  const { onEnter: hEnter, onExit: hExit } = tracers.h;
-  const { onEnter: addEnter, onEnter: addExit } = tracers.add;
-  const { onEnter: insertEnter, onExit: insertExit } = tracers.insert;
-  const { onEnter: rmEnter, onExit: rmExit } = tracers.rm;
+function pluginLogs(api: HyperscriptApi, tracers: Tracers): void {
+  const { h, add, insert, property, rm } = api;
+  const { h: { onCreate }, add: { onAttach }, rm: { onDetach } } = tracers;
 
-  tracers.h.onEnter = (...o) => {
-    refRSF = ds.stack[ds.stack.length - 1];
-    const { name } = refRSF.fn;
-    console.group(`api.h() 🔶 ${name}`);
-    hEnter(...o);
+  api.h = (fn, ...args) => {
+    if (typeof fn === 'function') {
+      console.group(`api.h() 🔶 ${fn.name}`);
+      // During this h() the tracer will run and save the RSF
+      const retH = h(fn, ...args);
+      console.log(`${fn.name}: Done. Render data:`, refRSF);
+      console.groupEnd();
+      return retH;
+    }
+    return h(fn, ...args);
   };
-  tracers.h.onExit = (...o) => {
-    const { name } = (refRSF as RenderStackFrame).fn;
-    const { el } = (refRSF as RenderStackFrame);
-
+  tracers.h.onCreate = (_, el) => {
+    refRSF = ds.meta.get(el) as InstanceMeta;
+    const { name } = refRSF;
     if (el instanceof Node) {
       // Provide visual in DevTools
       const DATASET_TAG = 'component';
@@ -93,38 +97,55 @@ function pluginLogs(tracers: Tracers): void {
     } else {
       console.log(`${name}: Function was not a component. Skipping`);
     }
-    hExit(...o);
-    console.log(`${name}: Done. Render data:`, refRSF);
-    console.groupEnd();
+    onCreate(_, el);
   };
 
-  tracers.add.onEnter = (parent, value, end) => {
+  api.add = (parent, value, end) => {
     console.group('api.add()');
     console.log(`parent:${log(parent)}, value:${log(value)}`);
-    addEnter(parent, value, end);
-  };
-  tracers.add.onExit = (...o) => {
-    addExit(...o);
+    initialParentDuringAdd = parent;
+    // During this add() the tracer is called
+    const retAdd = add(parent, value, end);
+    initialParentDuringAdd = undefined;
     console.groupEnd();
+    return retAdd;
+  };
+  tracers.add.onAttach = (parent, child) => {
+    const msg = `Tree attach: ${log(parent)} receives ${log(child)}`;
+    console.log(
+      parent === initialParentDuringAdd
+        ? msg
+        : `${msg} (Adoptive parent)`
+    );
+    onAttach(parent, child);
   };
 
-  tracers.insert.onEnter = (el, value, endMark, current) => {
+  api.insert = (el, value, endMark, current) => {
     console.group('api.insert()');
     console.log(`el:${log(el)}, value:${log(value)}, current:${log(current)}`);
-    insertEnter(el, value, endMark, current);
-  };
-  tracers.insert.onExit = (...o) => {
-    insertExit(...o);
+    const retInsert = insert(el, value, endMark, current);
     console.groupEnd();
+    return retInsert;
   };
 
-  tracers.rm.onEnter = (...o) => {
-    console.group('api.rm()');
-    rmEnter(...o);
-  };
-  tracers.rm.onExit = (...o) => {
-    rmExit(...o);
+  api.property = (el, value, name, ...rest) => {
+    console.group('api.property()');
+    console.log(`el:${log(el)}, value:${log(value)}, name:${log(name)}`);
+    const retProperty = property(el, value, name, ...rest);
     console.groupEnd();
+    return retProperty;
+  };
+
+  api.rm = (parent, start, endMark) => {
+    console.group('api.rm()');
+    console.log(`parent:${log(parent)}, start:${log(start)}, endMark:${log(endMark)}`);
+    const retRm = rm(parent, start, endMark);
+    console.groupEnd();
+    return retRm;
+  };
+  tracers.rm.onDetach = (parent, child) => {
+    console.log(`Tree attach: ${log(parent)} receives ${log(child)}`);
+    onDetach(parent, child);
   };
 }
 

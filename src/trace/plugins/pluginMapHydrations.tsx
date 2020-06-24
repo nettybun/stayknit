@@ -1,29 +1,22 @@
 import type { Observable } from 'sinuous/observable';
-import type { Tracers } from '../tracers.js';
 
-import { ds } from '../ds.js';
+import { ds } from '../tracers.js';
 
 type Hydrations = { [k in string]?: Observable<unknown> }
 
-type ReturnMethods = {
+type Methods = {
   reportHydrations(observables: Hydrations): void
 }
 
-declare module '../ds.js' {
+declare module '../tracers.js' {
   interface RenderStackFrame {
-    hydrations: Hydrations
+    hydrations?: Hydrations
   }
 }
 
-function pluginMapHydrations(tracers: Tracers): ReturnMethods {
-  const { onEnter: hEnter } = tracers.h;
-
-  tracers.h.onEnter = (...o) => {
-    ds.stack[ds.stack.length - 1].hydrations = {};
-    hEnter(...o);
-  };
-
+function pluginMapHydrations(): Methods {
   return {
+    // This assumes there's only ever one call else it'll overwrite
     reportHydrations(observables) {
       ds.stack[ds.stack.length - 1].hydrations = observables;
     },
