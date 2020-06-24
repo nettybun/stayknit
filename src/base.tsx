@@ -38,6 +38,12 @@ const treeMethods = {
   ...hydrationMethods,
   ...lifecycleMethods,
 };
+type Fns = keyof typeof treeMethods
+for (const key of Object.keys(treeMethods) as Fns[])
+  // @ts-ignore Why do they make wrapping functions so incredibly hard
+  treeMethods[key] = (...args) => { !inSSR && treeMethods[key](...args); };
+
+const inSSR = typeof window === 'undefined';
 
 const when = (
   condition: () => string,
@@ -60,4 +66,4 @@ const svg = <T extends () => Element>(closure: T): ReturnType<T> => {
   return el as ReturnType<T>;
 };
 
-export { h, svg, api, treeMethods as tree, when };
+export { h, svg, api, treeMethods as tree, inSSR, when };

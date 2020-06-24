@@ -1,4 +1,4 @@
-import { h, tree } from '../base.js';
+import { h, tree, inSSR } from '../base.js';
 import { o, computed } from 'sinuous/observable';
 import { addMessage } from '../state/messages.js';
 
@@ -14,9 +14,7 @@ const LoginForm = (): JSXEl => {
   const Item = ({ name, error }: { name: Name; error?: string }) => {
     const id = name.toLowerCase() as 'username' | 'password';
     const count = computed(() => s[id]().length);
-    // Whoa! This won't work. Neat!
-    // tree.sendHydrations({ [id]: s[id] });
-    if (window.hydrating) return null;
+    if (!inSSR && window.hydrating) return null;
 
     return (
       <div class="my-3">
@@ -46,9 +44,8 @@ const LoginForm = (): JSXEl => {
     );
   };
 
-  // See...this is a problem if you turn off the plugin then all the code breaks
-  // tree.reportHydrations(s);
-  if (window.hydrating) return null;
+  tree.reportHydrations(s);
+  if (!inSSR && window.hydrating) return null;
   return (
     <div class="mb-6">
       <Item name="Username" />

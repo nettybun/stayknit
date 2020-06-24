@@ -3,6 +3,8 @@ import type { El, Tracers, RenderStackFrame, InstanceMeta } from '../tracers.js'
 
 import { tree } from '../tracers.js';
 
+const inSSR = typeof window === 'undefined';
+
 /** Return a pretty printed string for debugging */
 const log = (x: unknown, subcall?: boolean): string => {
   if (Array.isArray(x)) {
@@ -26,7 +28,7 @@ const log = (x: unknown, subcall?: boolean): string => {
         ? `Guard${elName}`
         : elName;
     }
-    const isAttached = !subcall && typeof window !== 'undefined' && document.body.contains(x);
+    const isAttached = !subcall && !inSSR && document.body.contains(x);
     if (isAttached) str = `📶${str}`;
 
     if (subcall || x.childNodes.length === 0) return str;
@@ -89,8 +91,8 @@ function pluginLogs(api: HyperscriptApi, tracers: Tracers): void {
     if (el instanceof Node) {
       // Provide visual in DevTools
       const DATASET_TAG = 'component';
-      if (el instanceof HTMLElement)
-        el.dataset[DATASET_TAG] = name;
+      if (el instanceof Element)
+        (el as HTMLElement).dataset[DATASET_TAG] = name;
       else el.childNodes.forEach(x => {
         (x as HTMLElement).dataset[DATASET_TAG] = `Fragment::${name}`;
       });
