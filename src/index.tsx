@@ -34,8 +34,8 @@ const ListUsingMap = () =>
     )}
   </ul>;
 
-const Link = ({ to }: {to: string}) =>
-  <a href={to}>{to}</a>;
+const Link = ({ to, name }: { to: string, name?: string }) =>
+  <a class="text-blue-400 underline" href={to}>{name ?? to}</a>;
 
 // Styled components with syntax highlighting, error checking, & autogen classes
 // const styPage = css`
@@ -55,8 +55,8 @@ const Page = () =>
   >
     <h1 class="text-4xl mb-2">Hi</h1>
     <p class="mb-4">
-      This is a testing page for <a href='https://sinuous.dev'>Sinuous</a>. You'll need a modern
-      browser. It's all ESM modules and no transpilation. I'm on Firefox 72.
+      This is a testing page for <Link to="https://sinuous.dev" name="Sinuous"/>. You'll need a
+      modern browser. It's all ESM modules and no transpilation. I'm on Firefox 72.
     </p>
     <p class="mb-4">
       I've added onAttach/onDetach lifecycles for components so they can run code once they're added
@@ -65,7 +65,19 @@ const Page = () =>
     <p class="mb-4"><strong>Open your browser's console to see the application tracing</strong></p>
     <p class="mb-4">
       The source code is here: <Link to="https://gitlab.com/nthm/stayknit"/>. The actual algorithm
-      for lifecycles is under <em>src/trace/tracerFunctions.tsx</em>
+      for lifecycles is under <em>src/trace/plugins/pluginLifecycles.tsx</em>. The `tree` is the
+      tree of all component relations - similar to a DOM tree. When components are created, added,
+      or removed, a function is called. Plugins can tap into this.
+    </p>
+    <p>There are currently 3 plugins:</p>
+    <ul class="list-disc m-4">
+      <li>pluginLifecycles: Adds onAttach/onDetach hooks</li>
+      <li>pluginLogs: Provides all the logging in your browser console</li>
+      <li>pluginMapHydrations: Is an SSR-helper (still under heavy development)</li>
+    </ul>
+    <p class="mb-4">
+      You might want to write a plugin to gather render timing information, re-render counts, or
+      provide warnings such as when a component hits a certain number of child elements.
     </p>
     <NavBar items={['A', 'B', 'C', 'D', 'E']} />
     <section>
