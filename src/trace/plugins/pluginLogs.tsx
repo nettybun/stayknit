@@ -144,7 +144,7 @@ function pluginLogs(api: HyperscriptApi, tracers: Tracers): void {
     return retRm;
   };
   tracers.rm.onDetach = (parent, child) => {
-    console.log(`Tree detach: ${log(parent)} receives ${log(child)}`);
+    console.log(`Tree detach: ${log(parent)} unlinks ${log(child)}`);
     onDetach(parent, child);
   };
 }

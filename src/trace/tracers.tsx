@@ -24,6 +24,15 @@ const emptyFn = () => {};
 // For sharing fragments between nested h() and add() calls
 const refDF: DocumentFragment[] = [];
 
+const searchForAdoptiveParent = (start: El) => {
+  let cursor: El | null = start;
+  // eslint-disable-next-line no-cond-assign
+  while (cursor = cursor.parentElement)
+    if (relations.has(cursor)) return cursor;
+  // Else <body/>
+  return document.body;
+};
+
 type hTracer = typeof api.h & { onCreate(fn: () => El, el: El): void }
 const h: hTracer = (...args) => {
   const fn = args[0] as () => El;
@@ -62,19 +71,6 @@ const add: addTracer = (parent: El, value: El, endMark) => {
   if (!(value instanceof Node)) {
     return ret;
   }
-  // TODO: Use this in onDetach/rm as well... Parent mismatch
-  const searchForAdoptiveParent = (children: Set<El>) => {
-    let cursor: El | null = parent;
-    // eslint-disable-next-line no-cond-assign
-    while (cursor = cursor.parentElement) {
-      const c = relations.get(cursor);
-      if (c) return children.forEach(x => c.add(x));
-    }
-    // Didn't find a suitable parent walking up tree. Default to <body/>
-    const body = relations.get(document.body);
-    if (body) children.forEach(x => body.add(x));
-    else relations.set(document.body, children);
-  };
   const parentChildren = relations.get(parent);
   const valueChildren = relations.get(value);
   // If <Any><-El, no action
@@ -92,11 +88,15 @@ const add: addTracer = (parent: El, value: El, endMark) => {
       valueChildren.forEach(x => parentChildren.add(x));
   } else {
     const children = valueComp ? new Set([value]) : valueChildren;
-    if (!parent.parentElement || parent === document.body)
+    if (!parent.parentElement || parent === document.body) {
       relations.set(parent, children);
-    else
-    // Value is being added to a connected tree. Look for a tree parent
-      searchForAdoptiveParent(children);
+    } else {
+      // Value is being added to a connected tree. Look for a tree parent
+      parent = searchForAdoptiveParent(parent);
+      const parentChildren = relations.get(parent);
+      if (parentChildren) children.forEach(c => parentChildren.add(c));
+      else relations.set(parent, children); // parent === <body/>
+    }
   }
   add.onAttach(parent, value);
   // Delete _after_ attaching. Value wasn't a component
@@ -107,11 +107,13 @@ add.onAttach = emptyFn;
 
 type rmTracer = typeof api.rm & { onDetach(parent: El, child: El): void }
 const rm: rmTracer = (parent, start, end) => {
-  const children = relations.get(parent as El);
+  // Parent registered in the tree is possibly different than the DOM parent
+  const treeParent = searchForAdoptiveParent(start);
+  const children = relations.get(treeParent);
   if (children)
     for (let c: Node | null = start; c && c !== end; c = c.nextSibling) {
       children.delete(c);
-      rm.onDetach(parent, c);
+      rm.onDetach(treeParent, c);
     }
   return api.rm(parent, start, end);
 };
