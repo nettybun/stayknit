@@ -20,7 +20,8 @@
     "setup": "run-p snowpack build",
     "build": "run-p build:*",
     "serve": "servor ./serve",
-    "start": "run-p \"build:ts -- --watch\" serve"
+    "start": "run-p \"build:ts -- --watch\" serve",
+    "publish": "git fetch . work:publish && git push all publish"
   },
   "snowpack": {
     "scripts": {
