@@ -11,6 +11,13 @@ import type { ElementChildren } from 'sinuous/shared';
 import type { Observable } from 'sinuous/observable';
 type Component = () => HTMLElement | SVGElement | DocumentFragment
 
+// WIP: SSR support
+declare global {
+  interface Window {
+    hydrating?: boolean;
+  }
+}
+
 declare module 'sinuous/jsx' {
   // Disallow children on components that don't declare them explicitly
   // eslint-disable-next-line @typescript-eslint/no-namespace

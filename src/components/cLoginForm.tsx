@@ -2,9 +2,7 @@ import { h, tree, inSSR } from '../base.js';
 import { o, computed } from 'sinuous/observable';
 import { addMessage } from '../state/messages.js';
 
-import type { JSXEl } from '../types/index.js';
-
-const LoginForm = (): JSXEl => {
+const LoginForm = (): h.JSX.Element | null => {
   type Name = 'Username' | 'Password';
   const s = {
     username: o(''),
