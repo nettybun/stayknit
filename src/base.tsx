@@ -1,4 +1,4 @@
-import { h, api } from 'sinuous';
+import { api } from 'sinuous/h';
 import { subscribe, root, cleanup, sample } from 'sinuous/observable';
 
 import { tree } from './trace/tracers.js';
@@ -6,14 +6,31 @@ import { pluginLifecycles } from './trace/plugins/pluginLifecycles.js';
 import { pluginMapHydrations } from './trace/plugins/pluginMapHydrations.js';
 import { pluginLogs } from './trace/plugins/pluginLogs.js';
 
-// Disallow children on components that don't declare them explicitly
-// declare module 'sinuous/jsx' {
-//   interface IntrinsicAttributes {
-//     children?: never;
-//   }
-// }
+import type { JSXInternal } from 'sinuous/jsx';
+import type { ElementChildren } from 'sinuous/shared';
+import type { Observable } from 'sinuous/observable';
+type Component = () => HTMLElement | SVGElement | DocumentFragment
+
+declare module 'sinuous/jsx' {
+  // Disallow children on components that don't declare them explicitly
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace JSXInternal {
+    interface IntrinsicAttributes {
+      children?: never;
+    }
+  }
+}
 
 // Sinuous requires an observable implementation
+type hFn = (
+  tag: Component | Observable<unknown> | string,
+  props:
+    | (JSXInternal.HTMLAttributes | JSXInternal.SVGAttributes) &
+      Record<string, unknown>
+    | null,
+  ...children: ElementChildren[]
+) => HTMLElement | SVGElement | DocumentFragment;
+
 declare module 'sinuous/h' {
   interface HyperscriptApi {
     subscribe: typeof subscribe;
@@ -27,6 +44,16 @@ api.subscribe = subscribe;
 api.cleanup = cleanup;
 api.root = root;
 api.sample = sample;
+
+// eslint-disable-next-line @typescript-eslint/no-namespace
+declare namespace h {
+  // @ts-expect-error Not allowed to use `import type` but works either way
+  export import JSX = JSXInternal;
+}
+// This _must_ be a function for TS to perform declaration merging
+function h(...args: Parameters<hFn>): ReturnType<hFn> {
+  return (api.h as hFn)(...args);
+}
 
 const tracers = tree.setup(api);
 
