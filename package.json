@@ -6,7 +6,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "ssh://git@stayknit.ca:stayknit.git"
+    "url": "https://gitlab.com/nthm/stayknit"
   },
   "author": "Gen Hames",
   "main": "src/index.tsx",
@@ -29,7 +29,7 @@
     }
   },
   "dependencies": {
-    "sinuous": "file:sinuous/packages/sinuous"
+    "sinuous": "^0.27.5"
   },
   "devDependencies": {
     "@babel/cli": "^7.10.3",
