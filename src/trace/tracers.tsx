@@ -9,7 +9,7 @@ type InstanceMeta = RenderStackFrame
 /** Functions write here during render. Data is moved to ds.meta after */
 const stack: RenderStackFrame[] = [];
 /** Connections between components (including guards) */
-const relations: WeakMap<El, Set<El>> = new WeakMap();
+const tree: WeakMap<El, Set<El>> = new WeakMap();
 /** Component metadata */
 const meta: WeakMap<El, InstanceMeta> = new WeakMap();
 
@@ -28,7 +28,7 @@ const searchForAdoptiveParent = (start: El) => {
   let cursor: El | null = start;
   // eslint-disable-next-line no-cond-assign
   while (cursor = cursor.parentElement)
-    if (relations.has(cursor)) return cursor;
+    if (tree.has(cursor)) return cursor;
   // Else <body/>
   return document.body;
 };
@@ -50,7 +50,7 @@ const h: hTracer = (...args) => {
   if (!(el instanceof Node)) return el;
 
   // Elements will already be in the tree if they had any children
-  if (!relations.has(el)) relations.set(el, new Set<El>());
+  if (!tree.has(el)) tree.set(el, new Set<El>());
 
   // Register as a component
   meta.set(el, renderData);
@@ -71,8 +71,8 @@ const add: addTracer = (parent: El, value: El, endMark) => {
   if (!(value instanceof Node)) {
     return ret;
   }
-  const parentChildren = relations.get(parent);
-  const valueChildren = relations.get(value);
+  const parentChildren = tree.get(parent);
+  const valueChildren = tree.get(value);
   // If <Any><-El, no action
   // If inTree<-Comp, parent also guards val
   // If inTree<-Guard, parent also guards val's children and val is no longer a guard
@@ -89,18 +89,18 @@ const add: addTracer = (parent: El, value: El, endMark) => {
   } else {
     const children = valueComp ? new Set([value]) : valueChildren;
     if (!parent.parentElement || parent === document.body) {
-      relations.set(parent, children);
+      tree.set(parent, children);
     } else {
       // Value is being added to a connected tree. Look for a tree parent
       parent = searchForAdoptiveParent(parent);
-      const parentChildren = relations.get(parent);
+      const parentChildren = tree.get(parent);
       if (parentChildren) children.forEach(c => parentChildren.add(c));
-      else relations.set(parent, children); // parent === <body/>
+      else tree.set(parent, children); // parent === <body/>
     }
   }
   add.onAttach(parent, value);
   // Delete _after_ attaching. Value wasn't a component
-  if (!valueComp) relations.delete(value);
+  if (!valueComp) tree.delete(value);
   return ret;
 };
 add.onAttach = emptyFn;
@@ -109,7 +109,7 @@ type rmTracer = typeof api.rm & { onDetach(parent: El, child: El): void }
 const rm: rmTracer = (parent, start, end) => {
   // Parent registered in the tree is possibly different than the DOM parent
   const treeParent = searchForAdoptiveParent(start);
-  const children = relations.get(treeParent);
+  const children = tree.get(treeParent);
   if (children)
     for (let c: Node | null = start; c && c !== end; c = c.nextSibling) {
       children.delete(c);
@@ -134,7 +134,7 @@ const setup = (live: HyperscriptApi): Tracers => {
   return { h, add, rm };
 };
 
-const tree = { setup, stack, relations, meta };
+const trace = { setup, stack, tree, meta };
 
 export { El, RenderStackFrame, InstanceMeta, Tracers }; // Types
-export { tree };
+export { trace };

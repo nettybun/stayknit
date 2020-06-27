@@ -1,7 +1,7 @@
 import type { HyperscriptApi } from 'sinuous/h';
 import type { El, Tracers, RenderStackFrame, InstanceMeta } from '../tracers.js';
 
-import { tree } from '../tracers.js';
+import { trace } from '../tracers.js';
 
 const inSSR = typeof window === 'undefined';
 
@@ -16,8 +16,8 @@ const log = (x: unknown, subcall?: boolean): string => {
 
   if (x instanceof Element || x instanceof DocumentFragment) {
     let str = '';
-    const isComp = tree.meta.get(x);
-    const isGuard = tree.relations.get(x) && !isComp;
+    const isComp = trace.meta.get(x);
+    const isGuard = trace.tree.get(x) && !isComp;
     if (isComp) {
       str = `<${isComp.name}/>`;
     } else {
@@ -62,7 +62,6 @@ const log = (x: unknown, subcall?: boolean): string => {
   if (o && k && k.length === 1 && o[k[0]] instanceof Text)
     return '[StartMark]';
 
-
   // Default to [object DataType]
   return str(String(x));
 };
@@ -86,7 +85,7 @@ function pluginLogs(api: HyperscriptApi, tracers: Tracers): void {
     return h(fn, ...args);
   };
   tracers.h.onCreate = (_, el) => {
-    refRSF = tree.meta.get(el) as InstanceMeta;
+    refRSF = trace.meta.get(el) as InstanceMeta;
     const { name } = refRSF;
     if (el instanceof Node) {
       // Provide visual in DevTools

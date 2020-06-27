@@ -1,7 +1,7 @@
 import type { HyperscriptApi } from 'sinuous/h';
 import type { El, Tracers } from '../tracers.js';
 
-import { tree } from '../tracers.js';
+import { trace } from '../tracers.js';
 
 type LifecycleNames =
   | 'onAttach'
@@ -19,20 +19,13 @@ declare module '../tracers.js' {
 }
 
 const callLifecycleForTree = (fn: LifecycleNames, root: Node): void => {
-  console.log(`%c${fn}`, 'background: coral', 'for tree at', root);
-  let callCount = 0;
   const callRetChildren = (el: El) => {
-    const meta = tree.meta.get(el);
+    const meta = trace.meta.get(el);
     // FIXME: Terser throws
     // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
     const call = meta && meta.lifecycles && meta.lifecycles[fn];
-    if (call) {
-      // @ts-ignore TS is so bad at knowing when something can't be undefined
-      console.log(`<${meta.name}/>:${fn}`, call);
-      callCount++;
-      call();
-    }
-    return tree.relations.get(el);
+    if (call) call();
+    return trace.tree.get(el);
   };
   const set = callRetChildren(root as El);
   if (!set) return;
@@ -43,7 +36,6 @@ const callLifecycleForTree = (fn: LifecycleNames, root: Node): void => {
       if (elChildren && elChildren.size > 0) stack.push(elChildren);
     });
   }
-  console.log(`Total lifecycles called for tree: ${callCount}`, root);
 };
 
 let childAlreadyConnected: boolean | undefined = undefined;
@@ -70,7 +62,7 @@ function pluginLifecycles(api: HyperscriptApi, tracers: Tracers): Methods {
   };
 
   const lifecyclesRSF = () => {
-    const rsf = tree.stack[tree.stack.length - 1];
+    const rsf = trace.stack[trace.stack.length - 1];
     if (!rsf.lifecycles) rsf.lifecycles = {};
     return rsf.lifecycles;
   };

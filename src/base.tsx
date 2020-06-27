@@ -1,7 +1,7 @@
 import { api } from 'sinuous/h';
 import { subscribe, root, cleanup, sample } from 'sinuous/observable';
 
-import { tree } from './trace/tracers.js';
+import { trace } from './trace/tracers.js';
 import { pluginLifecycles } from './trace/plugins/pluginLifecycles.js';
 import { pluginMapHydrations } from './trace/plugins/pluginMapHydrations.js';
 import { pluginLogs } from './trace/plugins/pluginLogs.js';
@@ -30,18 +30,17 @@ declare global {
   }
 }
 
+// This is lying but I need to not have overloads like sinuous/h does...
 type Component = () => HTMLElement | SVGElement | DocumentFragment
-type hFn = (
-  tag: Component | Observable<unknown> | string,
-  props:
-  | (JSXInternal.HTMLAttributes | JSXInternal.SVGAttributes) &
-  Record<string, unknown>
-  | null,
+type HyperscriptCall = (
+  tag: Component | Observable<unknown> | ElementChildren[] | [] | string,
+  props?: (JSXInternal.HTMLAttributes | JSXInternal.SVGAttributes) & Record<string, unknown>,
   ...children: ElementChildren[]
 ) => HTMLElement | SVGElement | DocumentFragment;
 
 declare module 'sinuous/h' {
   interface HyperscriptApi {
+    // `h: typeof h` throws "Subsequent declarations must have the same type"
     subscribe: typeof subscribe;
     cleanup: typeof cleanup;
     root: typeof root;
@@ -61,11 +60,11 @@ declare namespace h {
   export import JSX = JSXInternal;
 }
 // This _must_ be a function for TS to perform declaration merging
-function h(...args: Parameters<hFn>): ReturnType<hFn> {
-  return (api.h as hFn)(...args);
+function h(...args: Parameters<HyperscriptCall>): ReturnType<HyperscriptCall> {
+  return (api.h as HyperscriptCall)(...args);
 }
 
-const tracers = tree.setup(api);
+const tracers = trace.setup(api);
 
 const hydrationMethods = pluginMapHydrations();
 const lifecycleMethods = pluginLifecycles(api, tracers);
@@ -105,4 +104,5 @@ const svg = <T extends () => Element>(closure: T): ReturnType<T> => {
   return el as ReturnType<T>;
 };
 
+export { HyperscriptCall }; // Types
 export { h, svg, api, treeMethods as tree, inSSR, when };
