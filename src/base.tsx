@@ -17,6 +17,9 @@ declare module 'sinuous/jsx' {
     interface IntrinsicAttributes {
       children?: never;
     }
+    interface DOMAttributes<Target extends EventTarget> {
+      children?: ElementChildren;
+    }
   }
 }
 
