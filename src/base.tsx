@@ -9,14 +9,6 @@ import { pluginLogs } from './trace/plugins/pluginLogs.js';
 import type { JSXInternal } from 'sinuous/jsx';
 import type { ElementChildren } from 'sinuous/shared';
 import type { Observable } from 'sinuous/observable';
-type Component = () => HTMLElement | SVGElement | DocumentFragment
-
-// WIP: SSR support
-declare global {
-  interface Window {
-    hydrating?: boolean;
-  }
-}
 
 declare module 'sinuous/jsx' {
   // Disallow children on components that don't declare them explicitly
@@ -28,13 +20,20 @@ declare module 'sinuous/jsx' {
   }
 }
 
-// Sinuous requires an observable implementation
+// WIP: SSR support
+declare global {
+  interface Window {
+    hydrating?: boolean;
+  }
+}
+
+type Component = () => HTMLElement | SVGElement | DocumentFragment
 type hFn = (
   tag: Component | Observable<unknown> | string,
   props:
-    | (JSXInternal.HTMLAttributes | JSXInternal.SVGAttributes) &
-      Record<string, unknown>
-    | null,
+  | (JSXInternal.HTMLAttributes | JSXInternal.SVGAttributes) &
+  Record<string, unknown>
+  | null,
   ...children: ElementChildren[]
 ) => HTMLElement | SVGElement | DocumentFragment;
 
@@ -47,6 +46,7 @@ declare module 'sinuous/h' {
   }
 }
 
+// Sinuous requires an observable implementation
 api.subscribe = subscribe;
 api.cleanup = cleanup;
 api.root = root;
