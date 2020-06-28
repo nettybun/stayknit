@@ -1,5 +1,5 @@
-import { trace } from './index.js';
-import type { LogPluginOptions } from './logPlugin.js';
+import { trace } from '../index.js';
+import type { LogPluginOptions } from './index.js';
 
 const opts = {} as LogPluginOptions;
 

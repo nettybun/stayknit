@@ -1,0 +1,10 @@
+{
+  "description": "Trace plugin to log all Sinuous calls",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.com/nthm/sinuous-trace"
+  },
+  "main": "../dist/logPlugin/index.js",
+  "type": "module"
+}
