@@ -136,6 +136,10 @@ class Node {
   remove() {
     if (this.parentNode) this.parentNode.removeChild(this);
   }
+  // TODO: Support this?
+  contains() {
+    return false;
+  }
 }
 
 class Text extends Node {
