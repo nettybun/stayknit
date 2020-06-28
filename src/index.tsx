@@ -79,6 +79,16 @@ const Page = () =>
     >
       Remove {'<section>'} parent
     </button>
+    <button
+      class="bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-4 ml-2 rounded"
+      type="button"
+      onClick={() => {
+        const { body } = document;
+        api.rm(body, body.firstChild as Node, body.lastChild as Node);
+      }}
+    >
+      Remove {'<Page/>'}
+    </button>
     {when(() => view(), {
       A: () =>
         <section>
@@ -96,7 +106,8 @@ const Page = () =>
           <LoginForm />
           <p>This component below will be removed after 5 messages are in the list</p>
           {when(() => count() < 5 ? 'T' : 'F', {
-            T: () => <AttachTest/>,
+            // Nested components (in the <span>) work fine... so why not above?
+            T: () => <span><AttachTest/></span>,
             F: () => <em>Gone</em>,
           })}
         </section>,
@@ -131,7 +142,4 @@ const Page = () =>
     </div>
   </main>;
 
-const pageRendered = <Page/>;
-api.add(document.body, pageRendered, document.body.firstChild as Node);
-
-setTimeout(() => api.rm(document.body, pageRendered, document.body.lastChild as Node), 2000);
+api.add(document.body, <Page/>, document.body.firstChild as Node);
