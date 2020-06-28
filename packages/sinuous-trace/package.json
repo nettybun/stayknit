@@ -12,7 +12,7 @@
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
-    "build": "babel --no-babelrc . --out-dir dist --extensions \".ts\" --source-maps --plugins=@babel/plugin-transform-typescript"
+    "build": "../../node_modules/.bin/babel --no-babelrc . --out-dir dist --extensions \".ts\" --source-maps --plugins=@babel/plugin-transform-typescript"
   },
   "peerDependencies": {
     "sinuous": "^0.27.6"

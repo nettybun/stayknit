@@ -20,7 +20,7 @@ const defaultOptions: LogPluginOptions = {
 let refRSF: RenderStackFrame | undefined;
 let initialParentDuringAdd: El | undefined;
 
-function logPlugin(
+function logTrace(
   api: HyperscriptApi,
   tracers: Tracers,
   options: Partial<LogPluginOptions> = {}
@@ -110,4 +110,4 @@ function logPlugin(
 }
 
 export { LogPluginOptions }; // Types
-export { logPlugin };
+export { logTrace };

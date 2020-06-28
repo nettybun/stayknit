@@ -2,8 +2,10 @@ import { api } from 'sinuous/h';
 import { subscribe, root, cleanup, sample } from 'sinuous/observable';
 
 import { trace } from 'sinuous-trace';
-import { logPlugin } from 'sinuous-trace/logPlugin';
 import { lifecyclePlugin } from 'sinuous-lifecycle';
+
+import { logTrace } from 'sinuous-trace/log';
+import { logLifecycle, logLifecycleHook } from 'sinuous-lifecycle/log';
 
 import type { JSXInternal } from 'sinuous/jsx';
 import type { ElementChildren } from 'sinuous/shared';
@@ -66,7 +68,9 @@ function h(...args: Parameters<HyperscriptCall>): ReturnType<HyperscriptCall> {
 
 const tracers = trace.setup(api);
 lifecyclePlugin(api, tracers);
-logPlugin(api, tracers);
+
+logTrace(api, tracers);
+logLifecycle(tracers);
 
 // Make sure that all RSF objects are live for the hook to set values in them
 const setupRSF = () => {
@@ -77,10 +81,10 @@ const setupRSF = () => {
 
 const hooks = {
   onAttach(callback: () => void): void {
-    setupRSF().lifecycles.onAttach = callback;
+    setupRSF().lifecycles.onAttach = logLifecycleHook('onAttach', callback);
   },
   onDetach(callback: () => void): void {
-    setupRSF().lifecycles.onDetach = callback;
+    setupRSF().lifecycles.onDetach = logLifecycleHook('onDetach', callback);
   },
 };
 

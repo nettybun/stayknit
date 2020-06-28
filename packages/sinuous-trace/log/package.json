@@ -5,6 +5,6 @@
     "type": "git",
     "url": "https://gitlab.com/nthm/sinuous-trace"
   },
-  "main": "../dist/logPlugin/index.js",
+  "main": "../dist/log/index.js",
   "type": "module"
 }

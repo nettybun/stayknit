@@ -57,4 +57,5 @@ function lifecyclePlugin(api: HyperscriptApi, tracers: Tracers): void {
   };
 }
 
+export { LifecycleNames }; // Types
 export { lifecyclePlugin };
