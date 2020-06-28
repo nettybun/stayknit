@@ -1,0 +1,21 @@
+{
+  "name": "sinuous-lifecycles",
+  "version": "0.0.0",
+  "description": "Lifecycles for Sinuous",
+  "keywords": [],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.com/nthm/sinuous-lifecycles"
+  },
+  "author": "Gen Hames",
+  "main": "index.ts",
+  "type": "module",
+  "scripts": {
+    "build": "babel . --out-dir serve --extensions \".ts,.tsx\" --source-maps"
+  },
+  "peerDependencies": {
+    "sinuous": "^0.27.6",
+    "sinuous-trace": "file:../sinuous-trace"
+  }
+}

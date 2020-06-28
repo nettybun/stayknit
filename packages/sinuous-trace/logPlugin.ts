@@ -1,77 +1,38 @@
 import type { HyperscriptApi } from 'sinuous/h';
-import type { El, Tracers, RenderStackFrame, InstanceMeta } from '../tracers.js';
+import type { El, Tracers, RenderStackFrame, InstanceMeta } from './index.js';
 
-import { trace } from '../tracers.js';
+import { trace } from './index.js';
+import { createLogFunction } from './log.js';
 
-const inSSR = typeof window === 'undefined';
+type LogPluginOptions = {
+  maxArrayItems: number,
+  maxStringLength: number,
+  /** Tag component nodes: `<h1 data-[TAG]="MyComponent"></h1>` */
+  componentDatasetTag: string,
+}
 
-/** Return a pretty printed string for debugging */
-const log = (x: unknown, subcall?: boolean): string => {
-  if (Array.isArray(x)) {
-    if (subcall) return 'Array[...]';
-    return x.length <= 3
-      ? `Array[${x.map(n => log(n, true)).join(',')}]`
-      : `Array[${x.slice(0, 3).map(n => log(n, true)).join(',')},+${x.length - 3}]`;
-  }
-
-  if (x instanceof Element || x instanceof DocumentFragment) {
-    let str = '';
-    const isComp = trace.meta.get(x);
-    const isGuard = trace.tree.get(x) && !isComp;
-    if (isComp) {
-      str = `<${isComp.name}/>`;
-    } else {
-      const elName = x instanceof Element
-        ? `<${x.tagName.toLowerCase()}>`
-        : '[Fragment]';
-      str = isGuard
-        ? `Guard${elName}`
-        : elName;
-    }
-    const isAttached = !subcall && !inSSR && document.body.contains(x);
-    if (isAttached) str = `📶${str}`;
-
-    if (subcall || x.childNodes.length === 0) return str;
-    const c = Array.from(x.childNodes);
-    return c.length <= 3
-      ? `${str}[${c.map(n => log(n, true)).join(',')}]`
-      : `${str}[${c.slice(0, 3).map(n => log(n, true)).join(',')},+${c.length - 3}]`;
-  }
-  const str = (s: string) => {
-    s = s.trim();
-    return s.length <= 10
-      ? `"${s}"`
-      : `"${s.slice(0, 10)}"+${s.length - 10}`;
-  };
-  if (x instanceof Text) {
-    if (!x.textContent) return '';
-    return str(x.textContent);
-  }
-  if (typeof x === 'undefined')
-    return '∅';
-
-  if (typeof x === 'function')
-    return '$o' in x
-      ? '[Observable]'
-      : '[Function]';
-
-  // Try to show a startMark (key is minified)
-  const o = x as Record<string, unknown> | null;
-  const k = o && Object.keys(o);
-  // TS bug...
-  if (o && k && k.length === 1 && o[k[0]] instanceof Text)
-    return '[StartMark]';
-
-  // Default to [object DataType]
-  return str(String(x));
+const defaultOptions: LogPluginOptions = {
+  maxArrayItems: 3,
+  maxStringLength: 10,
+  componentDatasetTag: 'component',
 };
 
 let refRSF: RenderStackFrame | undefined;
 let initialParentDuringAdd: El | undefined;
 
-function pluginLogs(api: HyperscriptApi, tracers: Tracers): void {
+function logPlugin(
+  api: HyperscriptApi,
+  tracers: Tracers,
+  options: Partial<LogPluginOptions> = {}
+): void {
   const { h, add, insert, property, rm } = api;
   const { h: { onCreate }, add: { onAttach }, rm: { onDetach } } = tracers;
+
+  const opts: LogPluginOptions = Object.assign(options, defaultOptions);
+  const log = createLogFunction(opts);
+
+  const tag = (el: HTMLElement, name: string) =>
+    el.dataset[opts.componentDatasetTag] = name;
 
   api.h = (fn, ...args) => {
     if (typeof fn === 'function') {
@@ -87,16 +48,14 @@ function pluginLogs(api: HyperscriptApi, tracers: Tracers): void {
   tracers.h.onCreate = (_, el) => {
     refRSF = trace.meta.get(el) as InstanceMeta;
     const { name } = refRSF;
-    if (el instanceof Node) {
-      // Provide visual in DevTools
-      const DATASET_TAG = 'component';
-      if (el instanceof Element)
-        (el as HTMLElement).dataset[DATASET_TAG] = name;
-      else el.childNodes.forEach(x => {
-        (x as HTMLElement).dataset[DATASET_TAG] = `Fragment::${name}`;
-      });
-    } else {
+    if (!(el instanceof Node)) {
       console.log(`${name}: Function was not a component. Skipping`);
+    } else {
+      // Optionally provide a tag onto the element
+      if (opts.componentDatasetTag) {
+        if (el instanceof Element) tag(el as HTMLElement, name);
+        else el.childNodes.forEach(x => tag(x as HTMLElement, `Fragment::${name}`));
+      }
     }
     onCreate(_, el);
   };
@@ -150,4 +109,5 @@ function pluginLogs(api: HyperscriptApi, tracers: Tracers): void {
   };
 }
 
-export { pluginLogs };
+export { LogPluginOptions }; // Types
+export { logPlugin };

@@ -1,14 +1,14 @@
 import { api } from 'sinuous/h';
 import { subscribe, root, cleanup, sample } from 'sinuous/observable';
 
-import { trace } from './trace/tracers.js';
-import { pluginLifecycles } from './trace/plugins/pluginLifecycles.js';
-import { pluginMapHydrations } from './trace/plugins/pluginMapHydrations.js';
-import { pluginLogs } from './trace/plugins/pluginLogs.js';
+import { trace } from '../packages/sinuous-trace/index.js';
+import { logPlugin } from '../packages/sinuous-trace/logPlugin.js';
+import { lifecyclePlugin } from '../packages/sinuous-lifecycles/index.js';
 
 import type { JSXInternal } from 'sinuous/jsx';
 import type { ElementChildren } from 'sinuous/shared';
 import type { Observable } from 'sinuous/observable';
+import type { RenderStackFrame } from '../packages/sinuous-trace/index.js';
 
 declare module 'sinuous/jsx' {
   // Disallow children on components that don't declare them explicitly
@@ -65,23 +65,33 @@ function h(...args: Parameters<HyperscriptCall>): ReturnType<HyperscriptCall> {
 }
 
 const tracers = trace.setup(api);
+lifecyclePlugin(api, tracers);
+logPlugin(api, tracers);
 
-const hydrationMethods = pluginMapHydrations();
-const lifecycleMethods = pluginLifecycles(api, tracers);
-pluginLogs(api, tracers);
-
-const treeMethods = {
-  ...hydrationMethods,
-  ...lifecycleMethods,
+// Make sure that all RSF objects are live for the hook to set values in them
+const setupRSF = () => {
+  const rsf = trace.stack[trace.stack.length - 1];
+  if (!rsf.lifecycles) rsf.lifecycles = {};
+  return rsf as Required<RenderStackFrame>;
 };
-type Fns = keyof typeof treeMethods
-for (const key of Object.keys(treeMethods) as Fns[]) {
-  const prevFn = treeMethods[key];
-  // @ts-ignore Why do they make wrapping functions so incredibly hard
-  treeMethods[key] = (...args) => { !inSSR && prevFn(...args); };
-}
+
+const hooks = {
+  onAttach(callback: () => void): void {
+    setupRSF().lifecycles.onAttach = callback;
+  },
+  onDetach(callback: () => void): void {
+    setupRSF().lifecycles.onDetach = callback;
+  },
+};
 
 const inSSR = typeof window === 'undefined';
+
+// Disable all hooks during SSR
+for (const key of Object.keys(hooks) as (keyof typeof hooks)[]) {
+  const prevFn = hooks[key];
+  // @ts-ignore Why do they make wrapping functions so incredibly hard
+  hooks[key] = (...args) => { !inSSR && prevFn(...args); };
+}
 
 const when = (
   condition: () => string,
@@ -105,4 +115,4 @@ const svg = <T extends () => Element>(closure: T): ReturnType<T> => {
 };
 
 export { HyperscriptCall }; // Types
-export { h, svg, api, treeMethods as tree, inSSR, when };
+export { h, svg, api, hooks, inSSR, when };

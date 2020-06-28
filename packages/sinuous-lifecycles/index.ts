@@ -1,18 +1,13 @@
 import type { HyperscriptApi } from 'sinuous/h';
-import type { El, Tracers } from '../tracers.js';
+import type { El, Tracers } from '../sinuous-trace/index.js';
 
-import { trace } from '../tracers.js';
+import { trace } from '../sinuous-trace/index.js';
 
 type LifecycleNames =
   | 'onAttach'
   | 'onDetach'
 
-type Methods = {
-  onAttach(callback: () => void): void
-  onDetach(callback: () => void): void
-}
-
-declare module '../tracers.js' {
+declare module '../sinuous-trace/index.js' {
   interface RenderStackFrame {
     lifecycles?: { [k in LifecycleNames]?: () => void }
   }
@@ -21,7 +16,7 @@ declare module '../tracers.js' {
 const callLifecycleForTree = (fn: LifecycleNames, root: Node): void => {
   const callRetChildren = (el: El) => {
     const meta = trace.meta.get(el);
-    // FIXME: Terser throws
+    // Terser throws
     // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
     const call = meta && meta.lifecycles && meta.lifecycles[fn];
     if (call) call();
@@ -40,7 +35,7 @@ const callLifecycleForTree = (fn: LifecycleNames, root: Node): void => {
 
 let childAlreadyConnected: boolean | undefined = undefined;
 
-function pluginLifecycles(api: HyperscriptApi, tracers: Tracers): Methods {
+function lifecyclePlugin(api: HyperscriptApi, tracers: Tracers): void {
   const { add } = api;
   const { add: { onAttach }, rm: { onDetach } } = tracers;
 
@@ -60,16 +55,6 @@ function pluginLifecycles(api: HyperscriptApi, tracers: Tracers): Methods {
     if (parent.isConnected) callLifecycleForTree('onDetach', child);
     onDetach(parent, child);
   };
-
-  const lifecyclesRSF = () => {
-    const rsf = trace.stack[trace.stack.length - 1];
-    if (!rsf.lifecycles) rsf.lifecycles = {};
-    return rsf.lifecycles;
-  };
-  return {
-    onAttach(callback: () => void) { lifecyclesRSF().onAttach = callback; },
-    onDetach(callback: () => void) { lifecyclesRSF().onDetach = callback; },
-  };
 }
 
-export { pluginLifecycles };
+export { lifecyclePlugin };

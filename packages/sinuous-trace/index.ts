@@ -13,8 +13,8 @@ const tree: WeakMap<El, Set<El>> = new WeakMap();
 /** Component metadata */
 const meta: WeakMap<El, InstanceMeta> = new WeakMap();
 
-// Note about ds.tree
-// All connections between components and children are kept in ds.tree. Elements
+// Note about the tree
+// All connections between components and children are kept in tree. Elements
 // that aren't components but have children who are must also be in the tree so
 // the component children can be re-parented to a parent component later on.
 // Every component is in the tree, even those with no children.

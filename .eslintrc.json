@@ -13,8 +13,7 @@
   "overrides": [
     {
       "files": [
-        "src/**/*.{ts,tsx}",
-        "tools/**/*.ts"
+        "{packages,src,tools}/**/*.{ts,tsx}"
       ],
       "extends": [
         "plugin:@typescript-eslint/recommended",
