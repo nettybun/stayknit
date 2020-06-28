@@ -1,4 +1,4 @@
-import { h, tree, inSSR } from '../base.js';
+import { h, hooks, inSSR } from '../base.js';
 import { o, computed } from 'sinuous/observable';
 import { addMessage } from '../state/messages.js';
 
@@ -42,7 +42,6 @@ const LoginForm = (): h.JSX.Element | null => {
     );
   };
 
-  tree.reportHydrations(s);
   if (!inSSR && window.hydrating) return null;
   return (
     <div class="mb-6">

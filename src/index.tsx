@@ -1,4 +1,4 @@
-import { h, svg, api, tree, when } from './base.js';
+import { h, svg, api, hooks, when } from './base.js';
 import { observable } from 'sinuous/observable';
 import { map } from 'sinuous/map';
 
@@ -11,13 +11,13 @@ import { AttachTest } from './components/cAttachTest.js';
 
 const HelloMessage = ({ name }: { name: string }): h.JSX.Element => {
   const style = observable('transition-colors duration-500 ease-in-out');
-  tree.onAttach(() => {
-    // Simulate fetch() call that takes some time...
+  hooks.onAttach(() => {
+    // Simulate async call that takes some time...
     setTimeout(() => {
       style(`${style()} bg-orange-400`);
     }, 100);
   });
-  return <span class={style}>Hello {name}</span>;
+  return <span class={style}>Hello "{name}"</span>;
 };
 
 const HeartIcon = () =>

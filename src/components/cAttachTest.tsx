@@ -1,4 +1,4 @@
-import { h, tree } from '../base.js';
+import { h, hooks } from '../base.js';
 import { observable } from 'sinuous/observable';
 
 const AttachTest = (): h.JSX.Element => {
@@ -10,7 +10,7 @@ const AttachTest = (): h.JSX.Element => {
     s.windowSize(`${window.innerWidth}px x ${window.innerHeight}px`);
   }, 250);
 
-  tree.onAttach(() => {
+  hooks.onAttach(() => {
     void fetch('fetchData.txt')
       .then(r => r.text())
       .then(count => s.xhrFetchedCommentCount(count));
@@ -18,7 +18,7 @@ const AttachTest = (): h.JSX.Element => {
     window.addEventListener('resize', onWindowResize);
   });
 
-  tree.onDetach(() => {
+  hooks.onDetach(() => {
     window.removeEventListener('resize', onWindowResize);
   });
 
