@@ -5,20 +5,10 @@ import { map } from 'sinuous/map';
 import { messages, count } from './state/messages.js';
 import { svgSize } from './state/svgSize.js';
 
+import { HelloMessage } from './components/cHelloMessage.js';
 import { LoginForm } from './components/cLoginForm.js';
 import { NavBar } from './components/cNavBar.js';
 import { AttachTest } from './components/cAttachTest.js';
-
-const HelloMessage = ({ name }: { name: string }): h.JSX.Element => {
-  const style = observable('transition-colors duration-500 ease-in-out');
-  hooks.onAttach(() => {
-    // Simulate async call that takes some time...
-    setTimeout(() => {
-      style(`${style()} bg-orange-400`);
-    }, 100);
-  });
-  return <span class={style}>Hello "{name}"</span>;
-};
 
 const HeartIcon = () =>
   svg(() =>
@@ -47,6 +37,8 @@ const Link = ({ to, name }: { to: string, name?: string }) =>
 //     background-color: #555;
 //   }
 // `;
+
+const view = observable('A');
 
 const Page = () =>
   <main
@@ -80,25 +72,37 @@ const Page = () =>
       provide warnings such as when a component hits a certain number of child elements.
     </p>
     <NavBar items={['A', 'B', 'C', 'D', 'E']} />
-    <section>
-      <div class="flex justify-center">
-        <HeartIcon />
-      </div>
-      <p class="m-4 w-3/4 mx-auto text-center">
-        The heart icon is an SVG that's rendered (in JSX) via <code>api.hs</code>
-      </p>
-      <p>There's {() => {
-        const x = messages().length;
-        return `${x} message${x === 1 ? '' : 's'}`;
-      }} right now
-      </p>
-      <LoginForm />
-      <p>This component below will be removed after 5 messages are in the list</p>
-      {when(() => count() < 5 ? 'T' : 'F', {
-        T: () => <AttachTest/>,
-        F: () => <em>Gone</em>,
-      })}
-    </section>
+    <button
+      class="bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded"
+      type="button"
+      onClick={() => view('B')}
+    >
+      Remove {'<section>'} parent
+    </button>
+    {when(() => view(), {
+      A: () =>
+        <section>
+          <div class="flex justify-center">
+            <HeartIcon />
+          </div>
+          <p class="m-4 w-3/4 mx-auto text-center">
+            The heart icon is an SVG that's rendered (in JSX) via <code>api.hs</code>
+          </p>
+          <p>There's {() => {
+            const x = messages().length;
+            return `${x} message${x === 1 ? '' : 's'}`;
+          }} right now
+          </p>
+          <LoginForm />
+          <p>This component below will be removed after 5 messages are in the list</p>
+          {when(() => count() < 5 ? 'T' : 'F', {
+            T: () => <AttachTest/>,
+            F: () => <em>Gone</em>,
+          })}
+        </section>,
+      B: () =>
+        <p>Gone via {'<section>'} parent removal</p>,
+    })}
     <HelloMessage name="This is a <HelloMessage/> component"/>
     <div class="my-5">
       <p>Below, a list of HelloMessage components are being rendered like this:</p>
@@ -127,4 +131,7 @@ const Page = () =>
     </div>
   </main>;
 
-api.add(document.body, <Page/>, document.body.firstChild as Node);
+const pageRendered = <Page/>;
+api.add(document.body, pageRendered, document.body.firstChild as Node);
+
+setTimeout(() => api.rm(document.body, pageRendered, document.body.lastChild as Node), 2000);
