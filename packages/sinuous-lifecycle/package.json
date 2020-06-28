@@ -1,12 +1,12 @@
 {
-  "name": "sinuous-lifecycles",
+  "name": "sinuous-lifecycle",
   "version": "0.0.0",
-  "description": "Lifecycles for Sinuous",
+  "description": "DOM lifecycles onAttach/onDetach for Sinuous",
   "keywords": [],
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://gitlab.com/nthm/sinuous-lifecycles"
+    "url": "https://gitlab.com/nthm/sinuous-lifecycle"
   },
   "author": "Gen Hames",
   "main": "index.ts",
@@ -16,6 +16,6 @@
   },
   "peerDependencies": {
     "sinuous": "^0.27.6",
-    "sinuous-trace": "file:../sinuous-trace"
+    "sinuous-trace": "file:packages/sinuous-trace"
   }
 }

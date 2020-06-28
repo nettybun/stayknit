@@ -1,13 +1,13 @@
 import type { HyperscriptApi } from 'sinuous/h';
-import type { El, Tracers } from '../sinuous-trace/index.js';
+import type { El, Tracers } from 'sinuous-trace';
 
-import { trace } from '../sinuous-trace/index.js';
+import { trace } from 'sinuous-trace';
 
 type LifecycleNames =
   | 'onAttach'
   | 'onDetach'
 
-declare module '../sinuous-trace/index.js' {
+declare module 'sinuous-trace' {
   interface RenderStackFrame {
     lifecycles?: { [k in LifecycleNames]?: () => void }
   }

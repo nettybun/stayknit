@@ -1,14 +1,14 @@
 import { api } from 'sinuous/h';
 import { subscribe, root, cleanup, sample } from 'sinuous/observable';
 
-import { trace } from '../packages/sinuous-trace/index.js';
-import { logPlugin } from '../packages/sinuous-trace/logPlugin.js';
-import { lifecyclePlugin } from '../packages/sinuous-lifecycles/index.js';
+import { trace } from 'sinuous-trace';
+import { logPlugin } from 'sinuous-trace/logPlugin';
+import { lifecyclePlugin } from 'sinuous-lifecycle';
 
 import type { JSXInternal } from 'sinuous/jsx';
 import type { ElementChildren } from 'sinuous/shared';
 import type { Observable } from 'sinuous/observable';
-import type { RenderStackFrame } from '../packages/sinuous-trace/index.js';
+import type { RenderStackFrame } from 'sinuous-trace';
 
 declare module 'sinuous/jsx' {
   // Disallow children on components that don't declare them explicitly
