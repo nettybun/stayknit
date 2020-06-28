@@ -12,7 +12,7 @@
   "main": "src/index.tsx",
   "type": "module",
   "scripts": {
-    "build:ts": "babel src --out-dir serve --extensions \".tsx\" --source-maps",
+    "build:ts": "babel src --out-dir serve --extensions \".ts,.tsx\" --source-maps",
     "build:static": "mkdir -p serve && cp -r ./static/* serve/",
     "snowpack": "mkdir -p serve && snowpack && cp -r ./web_modules serve/",
     "ssr": "npm run build && cd packages/ssr && npm run build",
