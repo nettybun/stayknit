@@ -15,12 +15,12 @@ pages:
     - cd packages/sinuous-trace
     - npm install
     - npm run build
-    - cd ..
+    - cd ../..
 
     - cd packages/sinuous-lifecycle
     - npm install
     - npm run build
-    - cd ..
+    - cd ../..
 
     # Fix URL since GitLab hosts at a subdomain
     - sed -i 's|/web_modules/|/stayknit/web_modules/|' .babelrc.json
