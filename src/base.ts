@@ -5,7 +5,7 @@ import { trace } from 'sinuous-trace';
 import { lifecyclePlugin } from 'sinuous-lifecycle';
 
 import { logTrace } from 'sinuous-trace/log';
-import { logLifecycle, logLifecycleHook } from 'sinuous-lifecycle/log';
+import { logLifecycle } from 'sinuous-lifecycle/log';
 
 import type { JSXInternal } from 'sinuous/jsx';
 import type { ElementChildren } from 'sinuous/shared';
@@ -70,7 +70,7 @@ const tracers = trace.setup(api);
 lifecyclePlugin(api, tracers);
 
 logTrace(api, tracers);
-logLifecycle(tracers);
+logLifecycle(lifecyclePlugin);
 
 // Make sure that all RSF objects are live for the hook to set values in them
 const setupRSF = () => {
@@ -81,10 +81,10 @@ const setupRSF = () => {
 
 const hooks = {
   onAttach(callback: () => void): void {
-    setupRSF().lifecycles.onAttach = logLifecycleHook('onAttach', callback);
+    setupRSF().lifecycles.onAttach = callback;
   },
   onDetach(callback: () => void): void {
-    setupRSF().lifecycles.onDetach = logLifecycleHook('onDetach', callback);
+    setupRSF().lifecycles.onDetach = callback;
   },
 };
 

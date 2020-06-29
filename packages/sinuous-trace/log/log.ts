@@ -1,7 +1,7 @@
 import { trace } from '../index.js';
-import type { LogPluginOptions } from './index.js';
+import type { LogTraceOptions } from './index.js';
 
-const opts = {} as LogPluginOptions;
+const opts = {} as LogTraceOptions;
 
 const limitedList = (head: string, children: unknown[]) => {
   let tail = '';
@@ -81,7 +81,7 @@ const log = (x: unknown, subcall?: boolean): string => {
     : limitedString(str);
 };
 
-const createLogFunction = (options: LogPluginOptions): typeof log => {
+const createLogFunction = (options: LogTraceOptions): typeof log => {
   Object.assign(opts, options);
   // TODO: Return a function that sets/restores a `subcall` global
   return log;

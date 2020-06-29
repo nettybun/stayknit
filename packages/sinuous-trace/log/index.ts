@@ -4,14 +4,14 @@ import type { El, Tracers, RenderStackFrame, InstanceMeta } from '../index.js';
 import { trace } from '../index.js';
 import { createLogFunction } from './log.js';
 
-type LogPluginOptions = {
+type LogTraceOptions = {
   maxArrayItems: number,
   maxStringLength: number,
   /** Tag component nodes: `<h1 data-[TAG]="MyComponent"></h1>` */
   componentDatasetTag: string,
 }
 
-const defaultOptions: LogPluginOptions = {
+const defaultOptions: LogTraceOptions = {
   maxArrayItems: 3,
   maxStringLength: 10,
   componentDatasetTag: 'component',
@@ -23,12 +23,12 @@ let initialParentDuringAdd: El | undefined;
 function logTrace(
   api: HyperscriptApi,
   tracers: Tracers,
-  options: Partial<LogPluginOptions> = {}
+  options: Partial<LogTraceOptions> = {}
 ): void {
   const { h, add, insert, property, rm } = api;
   const { h: { onCreate }, add: { onAttach }, rm: { onDetach } } = tracers;
 
-  const opts: LogPluginOptions = Object.assign(options, defaultOptions);
+  const opts: LogTraceOptions = Object.assign(defaultOptions, options);
   const log = createLogFunction(opts);
 
   const tag = (el: HTMLElement, name: string) =>
@@ -109,5 +109,5 @@ function logTrace(
   };
 }
 
-export { LogPluginOptions }; // Types
+export { LogTraceOptions }; // Types
 export { logTrace };
