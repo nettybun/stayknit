@@ -3,39 +3,25 @@ import type { El, Tracers } from 'sinuous-trace';
 
 import { trace } from 'sinuous-trace';
 
-type LifecycleNames =
+type Lifecycle =
   | 'onAttach'
   | 'onDetach'
 
+type LifecyclePlugin = {
+  (api: HyperscriptApi, tracers: Tracers): void
+  // This is a separate method to support the log plugin
+  callTree(fn: Lifecycle, root: El): void
+}
+
 declare module 'sinuous-trace' {
   interface RenderStackFrame {
-    lifecycles?: { [k in LifecycleNames]?: () => void }
+    lifecycles?: { [k in Lifecycle]?: () => void }
   }
 }
 
-const callLifecycleForTree = (fn: LifecycleNames, root: Node): void => {
-  const callRetChildren = (el: El) => {
-    const meta = trace.meta.get(el);
-    // Terser throws
-    // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-    const call = meta && meta.lifecycles && meta.lifecycles[fn];
-    if (call) call();
-    return trace.tree.get(el);
-  };
-  const set = callRetChildren(root as El);
-  if (!set) return;
-  const stack = [set];
-  while (stack.length > 0) {
-    (stack.shift() as Set<El>).forEach(el => {
-      const elChildren = callRetChildren(el);
-      if (elChildren && elChildren.size > 0) stack.push(elChildren);
-    });
-  }
-};
-
 let childAlreadyConnected: boolean | undefined = undefined;
 
-function lifecyclePlugin(api: HyperscriptApi, tracers: Tracers): void {
+const lifecyclePlugin: LifecyclePlugin = (api, tracers) => {
   const { add } = api;
   const { add: { onAttach }, rm: { onDetach } } = tracers;
 
@@ -46,16 +32,28 @@ function lifecyclePlugin(api: HyperscriptApi, tracers: Tracers): void {
   };
   tracers.add.onAttach = (parent, child) => {
     if (parent.isConnected && !childAlreadyConnected)
-      callLifecycleForTree('onAttach', child as Node);
+      lifecyclePlugin.callTree('onAttach', child as Node);
     childAlreadyConnected = undefined;
     onAttach(parent, child);
   };
 
   tracers.rm.onDetach = (parent, child) => {
-    if (parent.isConnected) callLifecycleForTree('onDetach', child);
+    if (parent.isConnected) lifecyclePlugin.callTree('onDetach', child);
     onDetach(parent, child);
   };
-}
+};
 
-export { LifecycleNames }; // Types
+// Depth-first-traversal of components
+lifecyclePlugin.callTree = (fn: Lifecycle, root: Node): void => {
+  const meta = trace.meta.get(root as El);
+  // Terser throws
+  // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+  const call = meta && meta.lifecycles && meta.lifecycles[fn];
+  if (call) call();
+  const children = trace.tree.get(root as El);
+  if (children && children.size > 0)
+    children.forEach(c => lifecyclePlugin.callTree(fn, c));
+};
+
+export { Lifecycle, LifecyclePlugin }; // Types
 export { lifecyclePlugin };
