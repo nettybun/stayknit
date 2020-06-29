@@ -15,7 +15,7 @@
     "build:ts": "babel src --out-dir serve --extensions \".ts,.tsx\" --source-maps",
     "build:static": "mkdir -p serve && cp -r ./static/* serve/",
     "snowpack": "mkdir -p serve && snowpack && cp -r ./web_modules serve/",
-    "ssr": "npm run build && cd packages/ssr && npm run build",
+    "ssr": "npm run build && cd contrib/ssr && npm run build",
     "setup": "run-p snowpack build",
     "build": "run-p build:*",
     "serve": "servor ./serve",
@@ -29,8 +29,8 @@
   },
   "dependencies": {
     "sinuous": "^0.27.6",
-    "sinuous-trace": "file:packages/sinuous-trace",
-    "sinuous-lifecycle": "file:packages/sinuous-lifecycle"
+    "sinuous-trace": "0.1.0",
+    "sinuous-lifecycle": "0.1.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.10.3",
