@@ -1,27 +1,33 @@
 image: node:latest
 
-variables:
-  GIT_SUBMODULE_STRATEGY: normal
-
 cache:
   paths:
     - node_modules/
-    - sinuous/node_modules/
-    - sinuous/packages/sinuous/dist
-    - sinuous/packages/sinuous/module
+    - packages/sinuous-trace/node_modules
+    - packages/sinuous-lifecycle/node_modules
 
 pages:
   only:
     - publish
   script:
     - npm install
-    - cd sinuous
+
+    - cd packages/sinuous-trace
     - npm install
     - npm run build
     - cd ..
+
+    - cd packages/sinuous-lifecycle
+    - npm install
+    - npm run build
+    - cd ..
+
     # Fix URL since GitLab hosts at a subdomain
     - sed -i 's|/web_modules/|/stayknit/web_modules/|' .babelrc.json
     - npm run setup
+
+    - npm run ssr
+
     - mv serve public
   artifacts:
     paths:
