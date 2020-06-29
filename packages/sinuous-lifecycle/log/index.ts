@@ -1,7 +1,7 @@
 import { trace } from 'sinuous-trace';
 
 import type { El } from 'sinuous-trace';
-import type { Lifecycle, LifecyclePlugin } from '../index.js';
+import type { Lifecycle, LifecyclePlugin } from 'sinuous-lifecycle';
 
 type LogLifecycleCSS = { [k in Lifecycle]: string }
 
@@ -32,7 +32,9 @@ function logLifecycle(
       root = el;
       console.log(...c(fn, ' for tree'), compStr);
     }
-    const call = meta?.lifecycles?.[fn];
+    // Terser throws
+    // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+    const call = meta && meta.lifecycles && meta.lifecycles[fn];
     if (call) console.log(...c(fn), `(${++callCount})`, compStr, call);
     callTree(fn, el);
 

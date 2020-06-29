@@ -1,7 +1,7 @@
 import type { HyperscriptApi } from 'sinuous/h';
-import type { El, Tracers, RenderStackFrame, InstanceMeta } from '../index.js';
+import type { El, Tracers, RenderStackFrame, InstanceMeta } from 'sinuous-trace';
 
-import { trace } from '../index.js';
+import { trace } from 'sinuous-trace';
 import { createLogFunction } from './log.js';
 
 type LogTraceOptions = {

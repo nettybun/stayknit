@@ -1,4 +1,4 @@
-import { trace } from '../index.js';
+import { trace } from 'sinuous-trace';
 import type { LogTraceOptions } from './index.js';
 
 const opts = {} as LogTraceOptions;
