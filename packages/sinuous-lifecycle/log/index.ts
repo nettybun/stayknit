@@ -1,45 +1,47 @@
 import { trace } from 'sinuous-trace';
 
-import type { Tracers, El, InstanceMeta } from 'sinuous-trace';
-import type { LifecycleNames } from '../index.js';
+import type { El } from 'sinuous-trace';
+import type { Lifecycle, LifecyclePlugin } from '../index.js';
 
-let currentRoot: El | undefined = undefined;
-let callCount: number | undefined = undefined;
+type LogLifecycleCSS = { [k in Lifecycle]: string }
 
-function logLifecycleHook(name: LifecycleNames, fn: () => void): () => void {
-  return () => {
-    const entryCall = typeof callCount === 'undefined';
+const defaultCSS: LogLifecycleCSS = {
+  onAttach: 'background: #A6E2B3', // Green
+  onDetach: 'background: #F4A89A', // Red
+};
+
+function logLifecycle(
+  lifecyclePlugin: LifecyclePlugin,
+  consoleCSS: Partial<LogLifecycleCSS> = {}
+): void {
+  const { callTree } = lifecyclePlugin;
+
+  const css: LogLifecycleCSS = Object.assign(defaultCSS, consoleCSS);
+  const c = (fn: Lifecycle, extra = '') => [`%c${fn}${extra}`, `${css[fn]}`];
+
+  let callCount = 0;
+  let root: El | undefined = undefined;
+
+  lifecyclePlugin.callTree = (fn: Lifecycle, el: El) => {
+    const meta = trace.meta.get(el);
+    const compStr = meta ? `<${meta.name}/>` : el;
+    const entryCall = !root;
+
+    // Setup
     if (entryCall) {
-      // This is the very first call
-      const comp = trace.meta.get(currentRoot as El);
-      const compStr = comp && `<${comp.name}/>`;
-      console.log(`${name} call for root`, compStr ?? currentRoot);
+      root = el;
+      console.log(...c(fn, ' for tree'), compStr);
+    }
+    const call = meta?.lifecycles?.[fn];
+    if (call) console.log(...c(fn), `(${++callCount})`, compStr, call);
+    callTree(fn, el);
+
+    // Cleanup
+    if (entryCall) {
+      root = undefined;
       callCount = 0;
     }
-    // TS bug
-    const count = ++(callCount as number);
-    console.log(`%c${name}`, 'background: coral', `(${count})`, fn);
-    fn();
-    if (entryCall) {
-      callCount = undefined;
-    }
   };
 }
 
-function logLifecycle(tracers: Tracers): void {
-  const { add: { onAttach }, rm: { onDetach } } = tracers;
-
-  tracers.add.onAttach = (parent, child) => {
-    currentRoot = child;
-    onAttach(parent, child);
-    currentRoot = undefined;
-  };
-
-  tracers.rm.onDetach = (parent, child) => {
-    currentRoot = child;
-    onDetach(parent, child);
-    currentRoot = undefined;
-  };
-}
-
-export { logLifecycle, logLifecycleHook };
+export { logLifecycle };
