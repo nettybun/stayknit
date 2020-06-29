@@ -106,6 +106,9 @@ const when = (
     const cond = condition();
     if (!rendered[cond] && views[cond])
       rendered[cond] = root(() => (views[cond] as () => Element)());
+    // TODO: Must upgrade guard elements to be components if they have any
+    // children at all - Maybe even always (since nested when() will hide if
+    // they may have children in the future and we need a catch block)
     return rendered[cond];
   };
 };
