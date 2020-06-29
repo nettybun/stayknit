@@ -16,7 +16,6 @@
     "build:static": "mkdir -p serve && cp -r ./static/* serve/",
     "snowpack": "mkdir -p serve && snowpack && cp -r ./web_modules serve/",
     "ssr": "npm run build && cd packages/ssr && npm run build",
-    "trace-size": "rollup serve/trace/index.js -o bundle.js -f iife -p 'terser={compress:{drop_console:true}}'",
     "setup": "run-p snowpack build",
     "build": "run-p build:*",
     "serve": "servor ./serve",
