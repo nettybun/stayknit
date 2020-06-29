@@ -9,12 +9,20 @@
     "url": "https://gitlab.com/nthm/sinuous-trace"
   },
   "author": "Gen Hames",
-  "main": "dist/index.js",
+  "main": "dist/index.min.js",
   "type": "module",
   "scripts": {
-    "build": "../../node_modules/.bin/babel --no-babelrc . --out-dir dist --extensions \".ts\" --source-maps --plugins=@babel/plugin-transform-typescript"
+    "build": "npm run build:babel && npm run build:minify",
+    "build:babel": "babel --no-babelrc . --ignore 'node_modules' --out-dir dist --extensions \".ts\" --plugins=@babel/plugin-transform-typescript",
+    "build:minify": "terser dist/index.js --module --mangle --compress --output dist/index.min.js"
   },
   "peerDependencies": {
     "sinuous": "^0.27.6"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.10.3",
+    "@babel/core": "^7.10.3",
+    "@babel/plugin-transform-typescript": "^7.10.3",
+    "terser": "^4.8.0"
   }
 }
