@@ -1,10 +1,10 @@
 # Stayknit
 
-Originally started for the homepage of Stayknit, a cloud I host for my partners,
-built on [Sinuous][1]. However, I ended up more focused on Sinuous itself, and
-sidetracked the project to help develop better Typescript and JSX support, a
-starter kit of Sinuous with Typescript and Snowpack, and community packages such
-as [`sinuous-trace`][2] and [`sinuous-lifecycle`][3].
+This repo was originally to build a homepage with [Sinuous][1] for Stayknit, a
+cloud I host for my partners. However, I ended up more focused on Sinuous
+itself, and sidetracked the project to help develop better Typescript and JSX
+support, a starter kit of Sinuous with Typescript and Snowpack, and community
+packages such as [`sinuous-trace`][2] and [`sinuous-lifecycle`][3].
 
 This project is written and published as a set of native ES modules. There is no
 bundler or transpilation (beyond removing Typescript annotations). [Snowpack][4]
