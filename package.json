@@ -29,8 +29,8 @@
   },
   "dependencies": {
     "sinuous": "^0.27.6",
-    "sinuous-trace": "0.1.0",
-    "sinuous-lifecycle": "0.1.0"
+    "sinuous-trace": "file:../sinuous-packages/dist/sinuous-trace",
+    "sinuous-lifecycle": "file:../sinuous-packages/dist/sinuous-lifecycle"
   },
   "devDependencies": {
     "@babel/cli": "^7.10.3",
