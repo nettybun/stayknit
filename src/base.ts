@@ -10,7 +10,6 @@ import { logLifecycle } from 'sinuous-lifecycle/log';
 import type { JSXInternal } from 'sinuous/jsx';
 import type { ElementChildren } from 'sinuous/shared';
 import type { Observable } from 'sinuous/observable';
-import type { RenderStackFrame } from 'sinuous-trace';
 
 declare module 'sinuous/jsx' {
   // Disallow children on components that don't declare them explicitly
@@ -72,19 +71,12 @@ lifecyclePlugin(api, tracers);
 logTrace(api, tracers);
 logLifecycle(lifecyclePlugin);
 
-// Make sure that all RSF objects are live for the hook to set values in them
-const setupRSF = () => {
-  const rsf = trace.stack[trace.stack.length - 1];
-  if (!rsf.lifecycles) rsf.lifecycles = {};
-  return rsf as Required<RenderStackFrame>;
-};
-
 const hooks = {
   onAttach(callback: () => void): void {
-    setupRSF().lifecycles.onAttach = callback;
+    lifecyclePlugin.setLifecycle('onAttach', callback);
   },
   onDetach(callback: () => void): void {
-    setupRSF().lifecycles.onDetach = callback;
+    lifecyclePlugin.setLifecycle('onDetach', callback);
   },
 };
 
