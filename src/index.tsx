@@ -38,66 +38,50 @@ const Link = ({ to, name }: { to: string, name?: string }) =>
 //   }
 // `;
 
-const view = observable('A');
+const view = observable('WhenViewA');
 
 const Page = () =>
   <main
     class="bg-purple-100 antialiased justify-center p-8"
     style="max-width: 800px;"
   >
-    <h1 class="text-4xl mb-2">Hi</h1>
+    <h1 class="text-4xl mb-2">Hi 🌺</h1>
     <p class="mb-4">
       This is a testing page for <Link to="https://sinuous.dev" name="Sinuous"/>. You'll need a
       modern browser. It's all ESM modules and no transpilation. I'm on Firefox 72.
     </p>
     <p class="mb-4">
       I've added onAttach/onDetach lifecycles for components so they can run code once they're added
-      to the page, even if that's long after they're created. It uses WeakMaps and WeakSets.
+      to the page, even if that's long after they're created. It uses WeakMaps.
     </p>
     <p class="mb-4"><strong>Open your browser's console to see the application tracing</strong></p>
     <p class="mb-4">
-      The source code is here: <Link to="https://gitlab.com/nthm/stayknit"/>. The actual algorithm
-      for lifecycles is under <em>src/trace/plugins/pluginLifecycles.tsx</em>. The `tree` is the
-      tree of all component relations - similar to a DOM tree. When components are created, added,
-      or removed, a function is called. Plugins can tap into this.
+      The source code is here: <Link to="https://gitlab.com/nthm/sinuous-packages"/>. This testing
+      page has its source here: <Link to="https://gitlab.com/nthm/stayknit"/>.
     </p>
-    <p>There are currently 3 plugins:</p>
-    <ul class="list-disc m-4">
-      <li>pluginLifecycles: Adds onAttach/onDetach hooks</li>
-      <li>pluginLogs: Provides all the logging in your browser console</li>
-      <li>pluginMapHydrations: Is an SSR-helper (still under heavy development)</li>
-    </ul>
     <p class="mb-4">
-      You might want to write a plugin to gather render timing information, re-render counts, or
-      provide warnings such as when a component hits a certain number of child elements.
+      The packages are pluggable, and I've tried to make it easy to extend the functionality. Some
+      example plugins you could write: gather render timing information; re-render counts; or
+      showing a warning when a component hits a certain number of child elements.
     </p>
-    <NavBar items={['A', 'B', 'C', 'D', 'E']} />
-    <button
-      class="bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded"
-      type="button"
-      onClick={() => view('B')}
-    >
-      Remove {'<section>'} parent
-    </button>
-    <button
-      class="bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-4 ml-2 rounded"
-      type="button"
-      onClick={() => {
-        const { body } = document;
-        api.rm(body, body.firstChild as Node, body.lastChild as Node);
-      }}
-    >
-      Remove {'<Page/>'}
-    </button>
+    <NavBar items={['Add A', 'Add B', 'Add C', 'Add D', 'Add E']} />
+    <p>Below the content is rendered as a <code>`when()`</code> block</p>
     {when(() => view(), {
-      A: () =>
-        <section>
+      WhenViewA: () =>
+        <section class="mb-5 border-dashed border-2 border-blue-500">
           <div class="flex justify-center">
             <HeartIcon />
           </div>
           <p class="m-4 w-3/4 mx-auto text-center">
-            The heart icon is an SVG that's rendered (in JSX) via <code>api.hs</code>
+            The heart icon is an SVG that's rendered (in JSX) via <code>api.s</code>
           </p>
+          <button
+            class="bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-4 mb-4"
+            type="button"
+            onClick={() => view('WhenViewB')}
+          >
+            Remove blue dashed content via <code>`when()`</code>
+          </button>
           <p>There's {() => {
             const x = messages().length;
             return `${x} message${x === 1 ? '' : 's'}`;
@@ -105,19 +89,36 @@ const Page = () =>
           </p>
           <LoginForm />
           <p>This component below will be removed after 5 messages are in the list</p>
+          <p>This is the logic:</p>
+          <pre class="text-xs bg-gray-200 my-5 p-5 overflow-x-auto">
+            {`
+when(() => count() < 5 ? 'T' : 'F', {
+  T: () => <span><AttachTest/></span>,
+  F: () => <em>Gone</em>,
+})
+            `.trim()}
+          </pre>
           {when(() => count() < 5 ? 'T' : 'F', {
-            // Nested components (in the <span>) work fine... so why not above?
             T: () => <span><AttachTest/></span>,
             F: () => <em>Gone</em>,
           })}
         </section>,
-      B: () =>
-        <p>Gone via {'<section>'} parent removal</p>,
+      WhenViewB: () =>
+        <div class="mb-5 border-dashed border-2 border-blue-500">
+          <p>Gone. You can restore the content (cached!)</p>
+          <button
+            class="bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-4 mt-4"
+            type="button"
+            onClick={() => view('WhenViewA')}
+          >
+            Restore via <code>`when()`</code>
+          </button>
+        </div>,
     })}
     <HelloMessage name="This is a <HelloMessage/> component"/>
     <div class="my-5">
       <p>Below, a list of HelloMessage components are being rendered like this:</p>
-      <pre class="text-xs bg-gray-300 my-5 p-2 overflow-x-auto">
+      <pre class="text-xs bg-gray-200 my-5 p-5 overflow-x-auto">
         {'() => messages().map(x => <p><HelloMessage name={x}/></p>)'}
       </pre>
       <p>
@@ -132,7 +133,7 @@ const Page = () =>
         '0..10':
           () => <p>There's {count} messages; which is less than ten...</p>,
         '>= 10':
-          () => <p><em>Damn.</em> There's {count} messages!</p>,
+          () => <p><em>Passed 10!</em> There's {count} messages</p>,
       })
     }
     </div>

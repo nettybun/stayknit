@@ -24,7 +24,7 @@ const AttachTest = (): h.JSX.Element => {
   });
 
   return (
-    <div class="bg-gray-300 m-5 p-5 ml-0">
+    <div class="bg-gray-300 mt-5 p-5">
       <p>The window's size is <span>{s.windowSize}</span></p>
       <p>This post has {s.xhrFetchedCommentCount} comments</p>
       <HelloMessage name="Nested! (Works)"/>

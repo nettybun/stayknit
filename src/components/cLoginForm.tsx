@@ -48,7 +48,7 @@ const LoginForm = (): h.JSX.Element | null => {
       <Item name="Username" />
       <Item name="Password" error="Please choose a password" />
       <button
-        class="bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded"
+        class="bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-4"
         type="button"
         onClick={() => addMessage(`${s.username()} & ${s.password()}`)}
       >
