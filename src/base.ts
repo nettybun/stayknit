@@ -32,12 +32,13 @@ declare global {
 }
 
 // This is lying but I need to not have overloads like sinuous/h does...
-type Component = () => HTMLElement | SVGElement | DocumentFragment
+type El = HTMLElement | SVGElement | DocumentFragment
+type Component = () => El
 type HyperscriptCall = (
   tag: Component | Observable<unknown> | ElementChildren[] | [] | string,
   props?: (JSXInternal.HTMLAttributes | JSXInternal.SVGAttributes) & Record<string, unknown>,
   ...children: ElementChildren[]
-) => HTMLElement | SVGElement | DocumentFragment;
+) => El;
 
 declare module 'sinuous/h' {
   interface HyperscriptApi {
@@ -91,16 +92,13 @@ for (const key of Object.keys(hooks) as (keyof typeof hooks)[]) {
 
 const when = (
   condition: () => string,
-  views: { [k in string]?: () => Element}
-): () => Element | undefined => {
-  const rendered: { [k in string]?: Element } = {};
+  views: { [k in string]?: Component }
+): () => El | undefined => {
+  const rendered: { [k in string]?: El } = {};
   return () => {
     const cond = condition();
     if (!rendered[cond] && views[cond])
-      rendered[cond] = root(() => (views[cond] as () => Element)());
-    // TODO: Must upgrade guard elements to be components if they have any
-    // children at all - Maybe even always (since nested when() will hide if
-    // they may have children in the future and we need a catch block)
+      rendered[cond] = root(() => h(views[cond] as Component));
     return rendered[cond];
   };
 };
