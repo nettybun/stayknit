@@ -1,9 +1,7 @@
 import { api } from 'sinuous/h';
 import { subscribe, root, cleanup, sample } from 'sinuous/observable';
-
 import { trace } from 'sinuous-trace';
-import { lifecyclePlugin } from 'sinuous-lifecycle';
-
+import { lifecycle } from 'sinuous-lifecycle';
 import { logTrace } from 'sinuous-trace/log';
 import { logLifecycle } from 'sinuous-lifecycle/log';
 
@@ -66,29 +64,21 @@ function h(...args: Parameters<HyperscriptCall>): ReturnType<HyperscriptCall> {
   return (api.h as HyperscriptCall)(...args);
 }
 
-const tracers = trace.setup(api);
-lifecyclePlugin(api, tracers);
+trace(api);
+lifecycle(api, trace);
 
-logTrace(api, tracers);
-logLifecycle(lifecyclePlugin);
-
-const hooks = {
-  onAttach(callback: () => void): void {
-    lifecyclePlugin.setLifecycle('onAttach', callback);
-  },
-  onDetach(callback: () => void): void {
-    lifecyclePlugin.setLifecycle('onDetach', callback);
-  },
-};
+logTrace(api, trace);
+logLifecycle(trace, lifecycle);
 
 const inSSR = typeof window === 'undefined';
-
-// Disable all hooks during SSR
-for (const key of Object.keys(hooks) as (keyof typeof hooks)[]) {
-  const prevFn = hooks[key];
-  // @ts-ignore Why do they make wrapping functions so incredibly hard
-  hooks[key] = (...args) => { !inSSR && prevFn(...args); };
-}
+const hooks = {
+  onAttach(callback: () => void): void {
+    if (!inSSR) lifecycle.set('onAttach', callback);
+  },
+  onDetach(callback: () => void): void {
+    if (!inSSR) lifecycle.set('onDetach', callback);
+  },
+};
 
 const when = (
   condition: () => string,

@@ -1,8 +1,8 @@
-import { h, svg, api, hooks, when } from './base.js';
+import { h, svg, api, when } from './base.js';
 import { observable } from 'sinuous/observable';
 import { map } from 'sinuous/map';
 
-import { messages, count } from './state/messages.js';
+import { messages, count, addMessage } from './state/messages.js';
 import { svgSize } from './state/svgSize.js';
 
 import { HelloMessage } from './components/cHelloMessage.js';
@@ -137,6 +137,13 @@ when(() => count() < 5 ? 'T' : 'F', {
       })
     }
     </div>
+    <button
+      class="bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-4 mt-5"
+      type="button"
+      onClick={() => addMessage(String(messages().length + 1))}
+    >
+      Message
+    </button>
     <div class="my-5">
       {/* <ListUsingMap /> */}
       {() => messages().map(x => <p><HelloMessage name={x}/></p>)}
