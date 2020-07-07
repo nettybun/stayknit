@@ -3,12 +3,14 @@ image: node:latest
 cache:
   paths:
     - node_modules/
+    - contrib/ssr/node_modules/
 
 pages:
   only:
     - publish
   script:
     - npm install
+    - npm run snowpack
     - cd contrib/ssr
     - npm install
     - cd -
