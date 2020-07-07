@@ -20,7 +20,9 @@ function h(...args: Parameters<HCall>): ReturnType<HCall> { return (api.h as HCa
 
 trace(api);
 lifecycle(api, trace);
-logTrace(api, trace);
+logTrace(api, trace, {
+  skipMethods: ['add', 'insert', 'property', 'rm', 'onAttach', 'onDetach'],
+});
 logLifecycle(trace, lifecycle);
 
 /** Component lifecycles */
