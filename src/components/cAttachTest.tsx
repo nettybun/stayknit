@@ -1,5 +1,5 @@
-import { h, hooks } from '../base.js';
-import { observable } from 'sinuous/observable';
+import { h, hooks, inSSR } from '../base.js';
+import { observable, computed } from 'sinuous/observable';
 import { HelloMessage } from './cHelloMessage.js';
 
 const AttachTest = (): h.JSX.Element => {
@@ -11,16 +11,28 @@ const AttachTest = (): h.JSX.Element => {
     s.windowSize(`${window.innerWidth}px x ${window.innerHeight}px`);
   }, 250);
 
+  // XXX: SSR isn't updating the DOM but this _is_ called...
+  // Imagine api.insert() isn't working with SoftDOM
+  computed(() => {
+    console.log('Value of xhrFetchedCommentCount:', s.xhrFetchedCommentCount());
+  });
+
+  const fetchController = new AbortController();
   hooks.onAttach(() => {
-    void fetch('fetchData.txt')
+    void fetch('fetchData.txt', { signal: fetchController.signal })
       .then(r => r.text())
       .then(count => s.xhrFetchedCommentCount(count));
-    onWindowResize();
-    window.addEventListener('resize', onWindowResize);
+    if (!inSSR) {
+      onWindowResize();
+      window.addEventListener('resize', onWindowResize);
+    }
   });
 
   hooks.onDetach(() => {
-    window.removeEventListener('resize', onWindowResize);
+    fetchController.abort();
+    if (!inSSR) {
+      window.removeEventListener('resize', onWindowResize);
+    }
   });
 
   return (
@@ -40,8 +52,9 @@ function debounce(func: (...args: unknown[]) => void, wait: number, immediate?: 
       if (!immediate) func(...args);
     };
     const callNow = immediate && !timeout;
-    timeout && window.clearTimeout(timeout);
-    timeout = window.setTimeout(later, wait);
+    timeout && clearTimeout(timeout);
+    // TS will default to the return type `NodeJS.Timeout` which isn't `number`
+    timeout = (setTimeout as typeof window.setTimeout)(later, wait);
     if (callNow) func(...args);
   };
 }

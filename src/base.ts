@@ -66,18 +66,12 @@ function h(...args: Parameters<HyperscriptCall>): ReturnType<HyperscriptCall> {
 
 trace(api);
 lifecycle(api, trace);
-
 logTrace(api, trace);
 logLifecycle(trace, lifecycle);
 
-const inSSR = typeof window === 'undefined';
 const hooks = {
-  onAttach(callback: () => void): void {
-    if (!inSSR) lifecycle.set('onAttach', callback);
-  },
-  onDetach(callback: () => void): void {
-    if (!inSSR) lifecycle.set('onDetach', callback);
-  },
+  onAttach(callback: () => void): void { lifecycle.set('onAttach', callback); },
+  onDetach(callback: () => void): void { lifecycle.set('onDetach', callback); },
 };
 
 const when = (
@@ -100,6 +94,8 @@ const svg = <T extends () => Element>(closure: T): ReturnType<T> => {
   api.s = prev;
   return el as ReturnType<T>;
 };
+
+const inSSR = typeof window === 'undefined';
 
 export { HyperscriptCall }; // Types
 export { h, svg, api, hooks, inSSR, when };
