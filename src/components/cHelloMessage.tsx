@@ -1,4 +1,4 @@
-import { h, hooks } from '../base.js';
+import { h, hooks } from '../sinuous.js';
 import { observable } from 'sinuous/observable';
 
 const HelloMessage = ({ name }: { name: string }): h.JSX.Element => {

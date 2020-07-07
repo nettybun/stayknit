@@ -1,4 +1,4 @@
-import { h, hooks, inSSR } from '../base.js';
+import { h, hooks, inSSR } from '../sinuous.js';
 import { o, computed } from 'sinuous/observable';
 import { addMessage } from '../state/messages.js';
 

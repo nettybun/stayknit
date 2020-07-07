@@ -1,4 +1,4 @@
-import { h } from '../base.js';
+import { h } from '../sinuous.js';
 import { addMessage } from '../state/messages.js';
 
 const NavBar = ({ items }: { items: string[] }): h.JSX.Element =>

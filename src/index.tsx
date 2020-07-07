@@ -1,4 +1,4 @@
-import { h, svg, api, when } from './base.js';
+import { h, svg, api, when } from './sinuous.js';
 import { observable } from 'sinuous/observable';
 import { map } from 'sinuous/map';
 
