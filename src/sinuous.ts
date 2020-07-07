@@ -54,9 +54,6 @@ const svg = <T extends () => Element>(closure: T): ReturnType<T> => {
   return el as ReturnType<T>;
 };
 
-/** Running in Node during a server-side render */
-const inSSR = typeof window === 'undefined';
-
 // Declarations and typings
 // Thankfully these are hoisted so they don't need to take up space
 
@@ -104,4 +101,4 @@ declare module 'sinuous/h' {
 }
 
 export { HCall as HyperscriptCall }; // Types
-export { h, svg, api, hooks, inSSR, when };
+export { h, svg, api, hooks, when };

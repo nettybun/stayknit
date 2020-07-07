@@ -1,5 +1,6 @@
-import { h, hooks, inSSR } from '../sinuous.js';
+import { h, hooks } from '../sinuous.js';
 import { o, computed } from 'sinuous/observable';
+import { inSSR } from '../util.js';
 import { addMessage } from '../state/messages.js';
 
 const LoginForm = (): h.JSX.Element | null => {

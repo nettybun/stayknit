@@ -1,5 +1,6 @@
-import { h, hooks, inSSR } from '../sinuous.js';
+import { h, hooks } from '../sinuous.js';
 import { observable, computed } from 'sinuous/observable';
+import { inSSR, debounce } from '../util.js';
 import { HelloMessage } from './cHelloMessage.js';
 
 const AttachTest = (): h.JSX.Element => {
@@ -43,20 +44,5 @@ const AttachTest = (): h.JSX.Element => {
     </div>
   );
 };
-
-function debounce(func: (...args: unknown[]) => void, wait: number, immediate?: boolean) {
-  let timeout: number | null;
-  return (...args: unknown[]) => {
-    const later = () => {
-      timeout = null;
-      if (!immediate) func(...args);
-    };
-    const callNow = immediate && !timeout;
-    timeout && clearTimeout(timeout);
-    // TS will default to the return type `NodeJS.Timeout` which isn't `number`
-    timeout = (setTimeout as typeof window.setTimeout)(later, wait);
-    if (callNow) func(...args);
-  };
-}
 
 export { AttachTest };
