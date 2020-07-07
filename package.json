@@ -37,7 +37,6 @@
     "@babel/core": "^7.10.4",
     "@babel/plugin-transform-react-jsx": "^7.10.4",
     "@babel/plugin-transform-typescript": "^7.10.4",
-    "@emotion/stylis": "^0.8.5",
     "@snowpack/babel-plugin-package-import": "^1.0.0",
     "@typescript-eslint/eslint-plugin": "^3.5.0",
     "@typescript-eslint/parser": "^3.5.0",
