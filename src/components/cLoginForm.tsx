@@ -13,7 +13,9 @@ const LoginForm = (): h.JSX.Element | null => {
   const Item = ({ name, error }: { name: Name; error?: string }) => {
     const id = name.toLowerCase() as 'username' | 'password';
     const count = computed(() => s[id]().length);
-    if (!inSSR && window.hydrating) return null;
+    // SSR
+    if (inSSR) hooks.saveObservables({ count });
+    else if (window.hydrating) return null;
 
     return (
       <div class="my-3">
@@ -43,7 +45,10 @@ const LoginForm = (): h.JSX.Element | null => {
     );
   };
 
-  if (!inSSR && window.hydrating) return null;
+  // SSR
+  if (inSSR) hooks.saveObservables(s);
+  else if (window.hydrating) return null;
+
   return (
     <div class="mb-6">
       <Item name="Username" />

@@ -34,6 +34,11 @@ logLifecycle(trace, lifecycle);
 const hooks = {
   onAttach(callback: () => void): void { lifecycle.set('onAttach', callback); },
   onDetach(callback: () => void): void { lifecycle.set('onDetach', callback); },
+  // For SSR
+  saveObservables(observables: { [k: string]: Observable<unknown> }): void {
+    const rsf = trace.stack[trace.stack.length - 1];
+    rsf.observables = observables;
+  },
 };
 
 /** Switch rendered content based on an observable. Memos the DOM result */
@@ -81,6 +86,12 @@ declare module 'sinuous/jsx' {
 declare global {
   interface Window {
     hydrating?: boolean;
+  }
+}
+declare module 'sinuous-trace' {
+  interface RenderStackFrame {
+    // Related to hooks.saveObservables()
+    observables?: {}
   }
 }
 

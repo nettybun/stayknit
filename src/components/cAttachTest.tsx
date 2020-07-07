@@ -3,7 +3,7 @@ import { observable, computed } from 'sinuous/observable';
 import { inSSR, debounce } from '../util.js';
 import { HelloMessage } from './cHelloMessage.js';
 
-const AttachTest = (): h.JSX.Element => {
+const AttachTest = (): h.JSX.Element | null => {
   const s = {
     xhrFetchedCommentCount: observable('...'),
     windowSize: observable('...'),
@@ -35,6 +35,10 @@ const AttachTest = (): h.JSX.Element => {
       window.removeEventListener('resize', onWindowResize);
     }
   });
+
+  // SSR
+  if (inSSR) hooks.saveObservables(s);
+  else if (window.hydrating) return null;
 
   return (
     <div class="bg-gray-300 mt-5 p-5">
