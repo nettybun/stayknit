@@ -9,9 +9,12 @@ pages:
     - publish
   script:
     - npm install
+    - cd contrib/ssr
+    - npm install
+    - cd -
     # Fix URL since GitLab hosts at a subdomain
     - sed -i 's|/web_modules/|/stayknit/web_modules/|' .babelrc.json
-    - npm run setup
+    - npm run build
     - npm run ssr
     - mv serve public
   artifacts:
