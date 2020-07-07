@@ -12,12 +12,12 @@ is used to provide a `web_modules` directory. This means you'll need a modern
 browser that supports ESM out of the box. I was very tired of bundlers - if you
 are too, let this spark hope a better future in JS modules.
 
-I've composed _parts_ of Sinuous in _src/base.ts_ to provide a local framework
-used throughout the rest of the project. This is mostly because Sinuous is
-written to target JS-only developers who will use [HTM][5] to convert HTML-in-JS
-tag templates to `h()` calls at runtime. JSX transpilation does this at compile
-time, so there's no need to import HTM. This project doesn't use tree-shaking so
-the best option is to not carry the code at all.
+I've composed _parts_ of Sinuous in _src/sinuous.ts_ to provide a local
+framework used throughout the rest of the project. This is mostly because
+Sinuous is written to target JS-only developers who will use [HTM][5] to convert
+HTML-in-JS tag templates to `h()` calls at runtime. JSX transpilation does this
+at compile time, so there's no need to import HTM. This project doesn't use
+tree-shaking so the best option is to not carry the code at all.
 
 Some concepts hadn't existed in the Sinuous ecosystem, so I'm currently
 developing packages for them. The two mentioned above in the introduction were
