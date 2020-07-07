@@ -9,6 +9,57 @@ import type { JSXInternal } from 'sinuous/jsx';
 import type { ElementChildren } from 'sinuous/shared';
 import type { Observable } from 'sinuous/observable';
 
+// Sinuous requires an observable implementation
+Object.assign(api, { subscribe, cleanup, root, sample });
+
+// @ts-expect-error Not allowed to use `import type` but still works
+// eslint-disable-next-line @typescript-eslint/no-namespace
+declare namespace h { export import JSX = JSXInternal; }
+// Must be a function for declaration merging
+function h(...args: Parameters<HCall>): ReturnType<HCall> { return (api.h as HCall)(...args); }
+
+trace(api);
+lifecycle(api, trace);
+logTrace(api, trace);
+logLifecycle(trace, lifecycle);
+
+/** Component lifecycles */
+const hooks = {
+  onAttach(callback: () => void): void { lifecycle.set('onAttach', callback); },
+  onDetach(callback: () => void): void { lifecycle.set('onDetach', callback); },
+};
+
+/** Switch rendered content based on an observable. Memos the DOM result */
+const when = (
+  condition: () => string,
+  views: { [k in string]?: Component }
+): () => El | undefined => {
+  const rendered: { [k in string]?: El } = {};
+  return () => {
+    const cond = condition();
+    if (!rendered[cond] && views[cond])
+      // All when() content is wrapped in a component to support sinuous-trace
+      // which requires mount points to maintain records of their children
+      rendered[cond] = root(() => h(views[cond] as Component));
+    return rendered[cond];
+  };
+};
+
+/** Set h() to temporarily build SVG elements for the duration of the closure */
+const svg = <T extends () => Element>(closure: T): ReturnType<T> => {
+  const prev = api.s;
+  api.s = true;
+  const el = closure();
+  api.s = prev;
+  return el as ReturnType<T>;
+};
+
+/** Running in Node during a server-side render */
+const inSSR = typeof window === 'undefined';
+
+// Declarations and typings
+// Thankfully these are hoisted so they don't need to take up space
+
 declare module 'sinuous/jsx' {
   // Disallow children on components that don't declare them explicitly
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -22,17 +73,18 @@ declare module 'sinuous/jsx' {
   }
 }
 
-// WIP: SSR support
+// XXX: SSR support
 declare global {
   interface Window {
     hydrating?: boolean;
   }
 }
 
-// This is lying but I need to not have overloads like sinuous/h does...
 type El = HTMLElement | SVGElement | DocumentFragment
 type Component = () => El
-type HyperscriptCall = (
+// This isn't the real definition but sinuous/h uses overloads and Typescript is
+// fragile about `...args` and return types on functions that have overloads
+type HCall = (
   tag: Component | Observable<unknown> | ElementChildren[] | [] | string,
   props?: (JSXInternal.HTMLAttributes | JSXInternal.SVGAttributes) & Record<string, unknown>,
   ...children: ElementChildren[]
@@ -40,7 +92,10 @@ type HyperscriptCall = (
 
 declare module 'sinuous/h' {
   interface HyperscriptApi {
-    // `h: typeof h` throws "Subsequent declarations must have the same type"
+    // Throws "Subsequent declarations must have the same type" else it would
+    // make sense to remove overloads on the definition as explained above
+
+    // h: typeof h
     subscribe: typeof subscribe;
     cleanup: typeof cleanup;
     root: typeof root;
@@ -48,54 +103,5 @@ declare module 'sinuous/h' {
   }
 }
 
-// Sinuous requires an observable implementation
-api.subscribe = subscribe;
-api.cleanup = cleanup;
-api.root = root;
-api.sample = sample;
-
-// eslint-disable-next-line @typescript-eslint/no-namespace
-declare namespace h {
-  // @ts-expect-error Not allowed to use `import type` but works either way
-  export import JSX = JSXInternal;
-}
-// This _must_ be a function for TS to perform declaration merging
-function h(...args: Parameters<HyperscriptCall>): ReturnType<HyperscriptCall> {
-  return (api.h as HyperscriptCall)(...args);
-}
-
-trace(api);
-lifecycle(api, trace);
-logTrace(api, trace);
-logLifecycle(trace, lifecycle);
-
-const hooks = {
-  onAttach(callback: () => void): void { lifecycle.set('onAttach', callback); },
-  onDetach(callback: () => void): void { lifecycle.set('onDetach', callback); },
-};
-
-const when = (
-  condition: () => string,
-  views: { [k in string]?: Component }
-): () => El | undefined => {
-  const rendered: { [k in string]?: El } = {};
-  return () => {
-    const cond = condition();
-    if (!rendered[cond] && views[cond])
-      rendered[cond] = root(() => h(views[cond] as Component));
-    return rendered[cond];
-  };
-};
-
-const svg = <T extends () => Element>(closure: T): ReturnType<T> => {
-  const prev = api.s;
-  api.s = true;
-  const el = closure();
-  api.s = prev;
-  return el as ReturnType<T>;
-};
-
-const inSSR = typeof window === 'undefined';
-
-export { HyperscriptCall }; // Types
+export { HCall as HyperscriptCall }; // Types
 export { h, svg, api, hooks, inSSR, when };
