@@ -9,6 +9,7 @@
         const link = document.createElement('link');
         link.rel = 'stylesheet';
         link.href = `index.css?${Math.random().toString(36).slice(4)}`
+        document.head.appendChild(link);
     </script>
 </head>
 <body>
