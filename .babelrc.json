@@ -1,6 +1,7 @@
 {
     "sourceMaps": true,
     "plugins": [
+        "macros",
         [
             "@babel/plugin-transform-typescript",
             {
