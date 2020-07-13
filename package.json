@@ -14,6 +14,7 @@
   "scripts": {
     "build:ts": "babel src --out-dir serve --extensions \".ts,.tsx\" --source-maps",
     "build:static": "mkdir -p serve && cp -r ./static/* serve/",
+    "merge-css": "rm serve/style.css; cat serve/*.css > serve/style.css",
     "snowpack": "mkdir -p serve && snowpack && cp -r ./web_modules serve/",
     "ssr": "cd contrib/ssr && npm run build",
     "install": "npm run snowpack",
@@ -30,7 +31,8 @@
   "dependencies": {
     "sinuous": "^0.27.6",
     "sinuous-lifecycle": "^2.0.0",
-    "sinuous-trace": "^2.2.0"
+    "sinuous-trace": "^2.2.0",
+    "style-takeout.macro": "file:contrib/babel-style-takeout"
   },
   "devDependencies": {
     "@babel/cli": "^7.10.4",
