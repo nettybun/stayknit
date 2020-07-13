@@ -1,6 +1,7 @@
 import { h, svg, api, when } from './sinuous.js';
 import { observable } from 'sinuous/observable';
 import { map } from 'sinuous/map';
+import { css, injectGlobal } from 'style-takeout.macro';
 
 import { messages, count, addMessage } from './state/messages.js';
 import { svgSize } from './state/svgSize.js';
@@ -28,15 +29,15 @@ const Link = ({ to, name }: { to: string, name?: string }) =>
   <a class="text-blue-400 underline" href={to}>{name ?? to}</a>;
 
 // Styled components with syntax highlighting, error checking, & autogen classes
-// const styPage = css`
-//   margin-bottom: 10px;
-// `;
-//
-// cssGlobal`
-//   body {
-//     background-color: #555;
-//   }
-// `;
+const styPage = css`
+  margin-bottom: 10px;
+`;
+
+injectGlobal`
+  body {
+    background-color: #555;
+  }
+`;
 
 const view = observable('WhenViewA');
 
