@@ -13,6 +13,7 @@ injectGlobal`
   }
 `;
 
+// TODO: I've decided these should really just be in their own CSS file
 const text = {
   xs:    css`font-size: .75rem;`,
   sm:    css`font-size: .875rem;`,
