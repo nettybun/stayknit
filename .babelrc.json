@@ -1,7 +1,16 @@
 {
     "sourceMaps": true,
     "plugins": [
-        "macros",
+        [
+            "macros",
+            {
+                "styletakeout": {
+                    "outputFile": "serve/takeout.css"
+                    // "stdoutPatch": false
+                    // "beautify": false
+                }
+            }
+        ],
         [
             "@babel/plugin-transform-typescript",
             {
