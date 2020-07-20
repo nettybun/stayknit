@@ -1,15 +1,11 @@
 import { h, hooks } from '../sinuous.js';
 import { observable } from 'sinuous/observable';
-import { css } from 'style-takeout.macro';
+import { css } from 'styletakeout.macro';
 
 const baseStyle = css`
   transition-timing-function: ease-in-out;
   transition-property: background-color;
   transition-duration: 500ms;
-`;
-
-const orangeStyle = css`
-  background-color: #ff8822;
 `;
 
 const HelloMessage = ({ name }: { name: string }): h.JSX.Element => {
@@ -19,7 +15,7 @@ const HelloMessage = ({ name }: { name: string }): h.JSX.Element => {
   hooks.onAttach(() => {
     // Simulate async call that takes some time...
     setTimeout(() => {
-      style(`${baseStyle} ${orangeStyle}`);
+      style(`${baseStyle} ${css`background-color: pink;`}`);
     }, 100);
   });
   hooks.onDetach(() => {});

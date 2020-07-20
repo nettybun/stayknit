@@ -2,7 +2,7 @@ import { h, hooks } from '../sinuous.js';
 import { observable, computed } from 'sinuous/observable';
 import { inSSR, debounce } from '../util.js';
 import { HelloMessage } from './cHelloMessage.js';
-import { css } from 'style-takeout.macro';
+import { css } from 'styletakeout.macro';
 
 const AttachTest = (): h.JSX.Element | null => {
   const s = {
@@ -41,14 +41,12 @@ const AttachTest = (): h.JSX.Element | null => {
   if (inSSR) hooks.saveObservables(s);
   else if (window.hydrating) return null;
 
-  const style = css`
-    background: lightgray;
-    margin-top: 5px;
-    padding: 5px;
-  `;
-
   return (
-    <div class={style}>
+    <div class={css`
+      background: #eeeeee;
+      margin-top: 15px;
+      padding: 20px;`}
+    >
       <p>The window's size is <span>{s.windowSize}</span></p>
       <p>This post has {s.xhrFetchedCommentCount} comments</p>
       <HelloMessage name="Nested! (Works)"/>

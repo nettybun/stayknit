@@ -1,7 +1,7 @@
 import { h, svg, api, when } from './sinuous.js';
 import { observable } from 'sinuous/observable';
 import { map } from 'sinuous/map';
-import { css, injectGlobal } from 'style-takeout.macro';
+import { css } from 'styletakeout.macro';
 
 import { messages, count, addMessage } from './state/messages.js';
 import { svgSize } from './state/svgSize.js';
@@ -10,6 +10,8 @@ import { HelloMessage } from './components/cHelloMessage.js';
 import { LoginForm } from './components/cLoginForm.js';
 import { NavBar } from './components/cNavBar.js';
 import { AttachTest } from './components/cAttachTest.js';
+
+import { styles } from './styles.js';
 
 const HeartIcon = () =>
   svg(() =>
@@ -26,41 +28,27 @@ const ListUsingMap = () =>
   </ul>;
 
 const Link = ({ to, name }: { to: string, name?: string }) =>
-  <a class="text-blue-400 underline" href={to}>{name ?? to}</a>;
-
-// Styled components with syntax highlighting, error checking, & autogen classes
-const styPage = css`
-  margin-bottom: 10px;
-`;
-
-injectGlobal`
-  body {
-    background-color: #555;
-  }
-`;
+  <a class={styles.Link} href={to}>{name ?? to}</a>;
 
 const view = observable('WhenViewA');
 
 const Page = () =>
-  <main
-    class="bg-purple-100 antialiased justify-center p-8"
-    style="max-width: 800px;"
-  >
-    <h1 class="text-4xl mb-2">Hi 🌺</h1>
-    <p class="mb-4">
+  <main class={styles.Page}>
+    <h1 class={`${styles.t.xl4}`}>Hi 🌺</h1>
+    <p>
       This is a testing page for <Link to="https://sinuous.dev" name="Sinuous"/>. You'll need a
       modern browser. It's all ESM modules and no transpilation. I'm on Firefox 72.
     </p>
-    <p class="mb-4">
+    <p>
       I've added onAttach/onDetach lifecycles for components so they can run code once they're added
       to the page, even if that's long after they're created. It uses WeakMaps.
     </p>
-    <p class="mb-4"><strong>Open your browser's console to see the application tracing</strong></p>
-    <p class="mb-4">
+    <p><strong>Open your browser's console to see the application tracing</strong></p>
+    <p>
       The source code is here: <Link to="https://gitlab.com/nthm/sinuous-packages"/>. This testing
       page has its source here: <Link to="https://gitlab.com/nthm/stayknit"/>.
     </p>
-    <p class="mb-4">
+    <p>
       The packages are pluggable, and I've tried to make it easy to extend the functionality. Some
       example plugins you could write: gather render timing information; re-render counts; or
       showing a warning when a component hits a certain number of child elements.
@@ -139,13 +127,13 @@ when(() => count() < 5 ? 'T' : 'F', {
     }
     </div>
     <button
-      class="bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-4 mt-5"
+      class="bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-4"
       type="button"
       onClick={() => addMessage(String(messages().length + 1))}
     >
       Message
     </button>
-    <div class="my-5">
+    <div>
       {/* <ListUsingMap /> */}
       {() => messages().map(x => <p><HelloMessage name={x}/></p>)}
     </div>
