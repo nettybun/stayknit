@@ -1,7 +1,7 @@
-import { css, injectGlobal } from 'styletakeout.macro';
+import { snip, css, injectGlobal } from 'styletakeout.macro';
 
-const pageBackground = '#faf5ff';
-const bodyBackground = '#eee';
+const pageBackground = snip`#faf5ff`;
+const bodyBackground = snip`#eee`;
 
 injectGlobal`
   * {
