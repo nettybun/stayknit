@@ -2,16 +2,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
+    <link href="./normalize.css" rel="stylesheet">
+    <link href="./microtailwind.css" rel="stylesheet">
     <link href="./takeout.css" rel="stylesheet">
     <title>Stayknit</title>
+    <!-- This actually doesn't seem necessary in Firefox
     <script>
         // Don't cache CSS during development
         const link = document.createElement('link');
         link.rel = 'stylesheet';
         link.href = `index.css?${Math.random().toString(36).slice(4)}`
         document.head.appendChild(link);
-    </script>
+    </script> -->
 </head>
 <body>
     <!--SSR-->

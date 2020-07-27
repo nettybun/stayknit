@@ -5,7 +5,8 @@
             "macros",
             {
                 "styletakeout": {
-                    "outputFile": "serve/takeout.css"
+                    "outputFile": "serve/takeout.css",
+                    "timing": true
                     // "stdoutPatch": false
                     // "beautify": false
                 }

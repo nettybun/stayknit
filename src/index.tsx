@@ -34,7 +34,7 @@ const view = observable('WhenViewA');
 
 const Page = () =>
   <main class={styles.Page}>
-    <h1 class={`${styles.t.xl4}`}>Hi 🌺</h1>
+    <h1 class="text-4xl">Hi 🌺</h1>
     <p>
       This is a testing page for <Link to="https://sinuous.dev" name="Sinuous"/>. You'll need a
       modern browser. It's all ESM modules and no transpilation. I'm on Firefox 72.
