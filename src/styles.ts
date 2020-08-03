@@ -21,18 +21,18 @@ declare module 'styletakeout.macro' {
     pageBackground: 'purple.100'
     bodyBackground: '#eee'
     color: {
-      black:  string
-      white:  string
-      gray:   ColorScale
-      red:    ColorScale
+      black: string
+      white: string
+      gray: ColorScale
+      red: ColorScale
       orange: ColorScale
       yellow: ColorScale
-      green:  ColorScale
-      teal:   ColorScale
-      blue:   ColorScale
+      green: ColorScale
+      teal: ColorScale
+      blue: ColorScale
       indigo: ColorScale
       purple: ColorScale
-      pink:   ColorScale
+      pink: ColorScale
     }
     size: {
       // Without the leading 0 autocomplete will order them wrong
@@ -68,6 +68,17 @@ injectGlobal`
     background-color: ${decl.bodyBackground};
     font-family: 'system-ui', sans-serif;
   }
+  /* Text and sizing */
+  .text-xs   { font-size: 0.75rem ; }
+  .text-sm   { font-size: 0.875rem; }
+  .text-base { font-size: 1rem    ; }
+  .text-lg   { font-size: 1.125rem; }
+  .text-xl   { font-size: 1.25rem ; }
+  .text-2xl  { font-size: 1.5rem  ; }
+  .text-3xl  { font-size: 1.875rem; }
+  .text-4xl  { font-size: 2.25rem ; }
+  .text-5xl  { font-size: 3rem    ; }
+  .text-6xl  { font-size: 4rem    ; }
 `;
 
 const Page = css`
