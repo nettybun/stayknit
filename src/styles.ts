@@ -3,8 +3,8 @@ import { decl, css, injectGlobal } from 'styletakeout.macro';
 declare module 'styletakeout.macro' {
   // It's not important to be able to see the value so use string to simplify
   // Numbers can't be object property names without ['100'] so prefix with 'c'
-  type ColorScale = {
-    [key in
+  type Scale = {
+    [level in
       | 'c100'
       | 'c200'
       | 'c300'
@@ -15,25 +15,28 @@ declare module 'styletakeout.macro' {
       | 'c800'
       | 'c900']: string
   }
+  type ScaledColors = {
+    [color in
+      | 'gray'
+      | 'red'
+      | 'orange'
+      | 'yellow'
+      | 'green'
+      | 'teal'
+      | 'blue'
+      | 'indigo'
+      | 'purple'
+      | 'pink']: Scale
+  }
   interface Decl {
     // Remember that TS definitions are entirely for linting/intellisense
     // Values aren't real. Pick anything that helps you remember
     pageBackground: 'purple.100'
     bodyBackground: '#eee'
     color: {
-      black: string
-      white: string
-      gray: ColorScale
-      red: ColorScale
-      orange: ColorScale
-      yellow: ColorScale
-      green: ColorScale
-      teal: ColorScale
-      blue: ColorScale
-      indigo: ColorScale
-      purple: ColorScale
-      pink: ColorScale
-    }
+      black: string,
+      white: string,
+    } & ScaledColors
     size: {
       // Without the leading 0 autocomplete will order them wrong
       // Prefix with 's' for same reason as 'c'
