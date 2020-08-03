@@ -6,7 +6,7 @@ listed below. It's a place to try out a modern healthy web stack.
 It's Sinuous(+Lifecycles), ESM-only, TS, JSX, CSS-in-JS, and SSR.
 
 Originally this repo was created to build a homepage for Stayknit, a cloud I
-host for my partners. It's been sidetracked, to say the least.
+host for my partners. It's been sidetracked to say the least.
 
 https://nthm.gitlab.io/stayknit/
 
@@ -27,10 +27,9 @@ Packages are handled by [Snowpack][6]. I was very tired of bundlers - if you are
 too, let this spark hope a better future in JS modules.
 
 I've composed _parts_ of Sinuous in _src/sinuous.ts_ to provide a local
-framework used throughout the rest of the project. Mostly because Sinuous is
-targets [HTM][7] but JSX transpilation does this work at compile time. There's
-no need to import HTM and this project doesn't use tree-shaking so the best
-option is to not include the code at all.
+framework used throughout the rest of the project. Mostly because by default
+Sinuous pulls in [HTM][7] but JSX already does this work at compile time.
+There's no tree-shaking so the best option is to not include HTM at all.
 
 ## Future
 
