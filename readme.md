@@ -1,48 +1,44 @@
 # Stayknit
 
-This repo was originally to build a homepage with [Sinuous][1] for Stayknit, a
-cloud I host for my partners. However, I ended up more focused on Sinuous
-itself, and sidetracked the project to help develop better Typescript and JSX
-support, a starter kit of Sinuous with Typescript and Snowpack, and community
-packages such as [`sinuous-trace`][2] and [`sinuous-lifecycle`][3].
+This repo is for the testing and development of [Sinuous][1] and other packages
+listed below. It's a place to try out a modern healthy web stack.
 
-This project is written and published as a set of native ES modules. There is no
-bundler or transpilation (beyond removing Typescript annotations). [Snowpack][4]
-is used to provide a `web_modules` directory. This means you'll need a modern
-browser that supports ESM out of the box. I was very tired of bundlers - if you
-are too, let this spark hope a better future in JS modules.
+It's Sinuous(+Lifecycles), ESM-only, TS, JSX, CSS-in-JS, and SSR.
 
-I've composed _parts_ of Sinuous in _src/sinuous.ts_ to provide a local
-framework used throughout the rest of the project. This is mostly because
-Sinuous is written to target JS-only developers who will use [HTM][5] to convert
-HTML-in-JS tag templates to `h()` calls at runtime. JSX transpilation does this
-at compile time, so there's no need to import HTM. This project doesn't use
-tree-shaking so the best option is to not carry the code at all.
-
-Some concepts hadn't existed in the Sinuous ecosystem, so I'm currently
-developing packages for them. The two mentioned above in the introduction were
-moved to [their own repository][6] and are now published.
-
-- The trace package follows Sinuous' execution and maintains a tree of all
-  component relationships.
-- The lifecycle package uses this tree to provide `onAttach`/`onDetach` hooks
-  which run when components are added to and removed from the DOM.
-
-Each package has an optional log plugin provided to write all operations to the
-browser console. This repository's GitLab page showcases this. Feedback is very
-welcomed for either package.
+Originally this repo was created to build a homepage for Stayknit, a cloud I
+host for my partners. It's been sidetracked, to say the least.
 
 https://nthm.gitlab.io/stayknit/
 
-Next I'll continue working on server-side-rendering and hydration for Sinuous. I
-have SSR working ([CI demo][7]) and a mechanism using `sinuous-trace` to collect
-observables and event handlers to be re-hydrated at run time. It's a work in
-progress.
+## Packages
 
-The last project on the go is in _contrib/babel/_ to factor out CSS-in-JS at
-compile-time. Only research has been done. It'll use the preprocessor from
-styled-components to leverage VSCode syntax highlighting and type checking to
-vibe well with the Typescript-nature of this project.
+Sinuous:
+  - Component relationships: [sinuous-trace][2]
+  - Component lifecycles: [sinuous-lifecycle][3]
+
+Web:
+  - CSS-in-JS at compile time: [styletakeout.macro][4]
+  - DOM in Node for SSR: [softdom.js][5]
+
+## Structure
+
+This is ESM-only. No bundler - Babel removes all Typescript annotations.
+Packages are handled by [Snowpack][6]. I was very tired of bundlers - if you are
+too, let this spark hope a better future in JS modules.
+
+I've composed _parts_ of Sinuous in _src/sinuous.ts_ to provide a local
+framework used throughout the rest of the project. Mostly because Sinuous is
+targets [HTM][7] but JSX transpilation does this work at compile time. There's
+no need to import HTM and this project doesn't use tree-shaking so the best
+option is to not include the code at all.
+
+## Future
+
+- Publish a TS+JSX Sinuous starter kit
+- Publish a ESM(Snowpack)+TS+JSX Sinuous starter kit
+- Work on SSR hydration ([CI demo][8])
+  - Support event handlers
+  - Support observables
 
 I think Sinuous is a beautiful project and has a bright future. JS frameworks
 often become over-engineered and heavy, so it's nice to see an approachable
@@ -51,7 +47,8 @@ lightweight project that anyone use without drowning in tooling.
 [1]: https://sinuous.dev
 [2]: https://gitlab.com/nthm/sinuous-packages/-/tree/work/sinuous-trace
 [3]: https://gitlab.com/nthm/sinuous-packages/-/tree/work/sinuous-lifecycle
-[4]: https://snowpack.dev
-[5]: https://github.com/developit/htm/
-[6]: https://gitlab.com/nthm/sinuous-packages/
-[7]: https://gitlab.com/nthm/stayknit/-/jobs/615115580
+[4]: https://gitlab.com/nthm/styletakeout
+[5]: https://gitlab.com/nthm/stayknit/-/tree/work/contrib/ssr
+[6]: https://snowpack.dev
+[7]: https://github.com/developit/htm/
+[8]: https://gitlab.com/nthm/stayknit/-/jobs/615115580
