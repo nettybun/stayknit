@@ -32,7 +32,7 @@
     "sinuous": "^0.27.7",
     "sinuous-lifecycle": "^2.0.1",
     "sinuous-trace": "^2.2.0",
-    "styletakeout.macro": "file:../styletakeout"
+    "styletakeout.macro": "file:../styletakeout/publish"
   },
   "devDependencies": {
     "@babel/cli": "^7.10.5",
