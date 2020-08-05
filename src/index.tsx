@@ -1,39 +1,23 @@
-import { h, svg, api, when } from './sinuous.js';
+import { h, api, when } from './sinuous.js';
 import { observable } from 'sinuous/observable';
-import { map } from 'sinuous/map';
-import { css } from 'styletakeout.macro';
+// TODO: This is huge at 16.7kb... I only ever need a stripIndent
+import { codeBlock } from 'common-tags';
 
 import { messages, count, addMessage } from './state/messages.js';
-import { svgSize } from './state/svgSize.js';
 
+import { AttachTest } from './components/cAttachTest.js';
 import { HelloMessage } from './components/cHelloMessage.js';
+import { HeartIcon } from './components/cIcon.js';
+import { Link } from './components/cLink.js';
 import { LoginForm } from './components/cLoginForm.js';
 import { NavBar } from './components/cNavBar.js';
-import { AttachTest } from './components/cAttachTest.js';
 
-import { styles } from './styles.js';
-
-const HeartIcon = () =>
-  svg(() =>
-    <svg width={svgSize} height={svgSize} viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-      <path fillRule="evenodd" d="M8 2.748l-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01L8 2.748zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143c.06.055.119.112.176.171a3.12 3.12 0 01.176-.17C12.72-3.042 23.333 4.867 8 15z" clip-rule="evenodd"/>
-    </svg>
-  );
-
-const ListUsingMap = () =>
-  <ul>
-    {map(messages, (text) =>
-      <li class=""><HelloMessage name={text} /></li>
-    )}
-  </ul>;
-
-const Link = ({ to, name }: { to: string, name?: string }) =>
-  <a class={styles.Link} href={to}>{name ?? to}</a>;
+import { sharedStyles } from './styles.js';
 
 const view = observable('WhenViewA');
 
 const Page = () =>
-  <main class={styles.Page}>
+  <main class={sharedStyles.Page}>
     <h1 class="text-4xl">Hi 🌺</h1>
     <p>
       This is a testing page for <Link to="https://sinuous.dev" name="Sinuous"/>. You'll need a
@@ -57,7 +41,7 @@ const Page = () =>
     <p>Below the content is rendered as a <code>`when()`</code> block</p>
     {when(() => view(), {
       WhenViewA: () =>
-        <section class="mb-5 border-dashed border-2 border-blue-500">
+        <section class={`mb-5 ${sharedStyles.DashBorderBlue}`}>
           <div class="flex justify-center">
             <HeartIcon />
           </div>
@@ -65,27 +49,22 @@ const Page = () =>
             The heart icon is an SVG that's rendered (in JSX) via <code>api.s</code>
           </p>
           <button
-            class="bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-4 mb-4"
+            class={sharedStyles.ButtonBlue}
             type="button"
             onClick={() => view('WhenViewB')}
           >
             Remove blue dashed content via <code>`when()`</code>
           </button>
-          <p>There's {() => {
-            const x = messages().length;
-            return `${x} message${x === 1 ? '' : 's'}`;
-          }} right now
-          </p>
+          <p>There's {() => `${count()} message${count() === 1 ? '' : 's'}`} right now</p>
           <LoginForm />
           <p>This component below will be removed after 5 messages are in the list</p>
           <p>This is the logic:</p>
-          <pre class="text-xs bg-gray-200 my-5 p-5 overflow-x-auto">
-            {`
-when(() => count() < 5 ? 'T' : 'F', {
-  T: () => <span><AttachTest/></span>,
-  F: () => <em>Gone</em>,
-})
-            `.trim()}
+          <pre class={`text-xs ${sharedStyles.CodeBlock}`}>
+            {codeBlock`
+              when(() => count() < 5 ? 'T' : 'F', {
+                T: () => <span><AttachTest/></span>,
+                F: () => <em>Gone</em>,
+              })`}
           </pre>
           {when(() => count() < 5 ? 'T' : 'F', {
             T: () => <span><AttachTest/></span>,
@@ -93,10 +72,10 @@ when(() => count() < 5 ? 'T' : 'F', {
           })}
         </section>,
       WhenViewB: () =>
-        <div class="mb-5 border-dashed border-2 border-blue-500">
+        <div class={`mb-5 ${sharedStyles.DashBorderBlue}`}>
           <p>Gone. You can restore the content (cached!)</p>
           <button
-            class="bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-4 mt-4"
+            class={`${sharedStyles.ButtonBlue} mt-4`}
             type="button"
             onClick={() => view('WhenViewA')}
           >
@@ -107,7 +86,7 @@ when(() => count() < 5 ? 'T' : 'F', {
     <HelloMessage name="This is a <HelloMessage/> component"/>
     <div class="my-5">
       <p>Below, a list of HelloMessage components are being rendered like this:</p>
-      <pre class="text-xs bg-gray-200 my-5 p-5 overflow-x-auto">
+      <pre class={`text-xs my-5 p-5 ${sharedStyles.CodeBlock}`}>
         {'() => messages().map(x => <p><HelloMessage name={x}/></p>)'}
       </pre>
       <p>
@@ -127,14 +106,13 @@ when(() => count() < 5 ? 'T' : 'F', {
     }
     </div>
     <button
-      class="bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-4"
+      class={sharedStyles.ButtonBlue}
       type="button"
-      onClick={() => addMessage(String(messages().length + 1))}
+      onClick={() => addMessage(String(count() + 1))}
     >
-      Message
+      Add message
     </button>
     <div>
-      {/* <ListUsingMap /> */}
       {() => messages().map(x => <p><HelloMessage name={x}/></p>)}
     </div>
   </main>;

@@ -1,8 +1,8 @@
 import { h, hooks } from '../sinuous.js';
+import { css, decl } from 'styletakeout.macro';
 import { observable, computed } from 'sinuous/observable';
 import { inSSR, debounce } from '../util.js';
 import { HelloMessage } from './cHelloMessage.js';
-import { css } from 'styletakeout.macro';
 
 const AttachTest = (): h.JSX.Element | null => {
   const s = {
@@ -42,10 +42,12 @@ const AttachTest = (): h.JSX.Element | null => {
   else if (window.hydrating) return null;
 
   return (
-    <div class={css`
-      background: #eeeeee;
-      margin-top: 15px;
-      padding: 20px;`}
+    <div
+      class={css`
+        background: ${decl.color.gray.c200};
+        margin-top: 15px;
+        padding: 20px;
+      `}
     >
       <p>The window's size is <span>{s.windowSize}</span></p>
       <p>This post has {s.xhrFetchedCommentCount} comments</p>

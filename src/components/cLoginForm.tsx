@@ -1,7 +1,10 @@
 import { h, hooks } from '../sinuous.js';
 import { o, computed } from 'sinuous/observable';
+import { css, decl } from 'styletakeout.macro';
+
 import { inSSR } from '../util.js';
 import { addMessage } from '../state/messages.js';
+import { sharedStyles } from '../styles.js';
 
 const LoginForm = (): h.JSX.Element | null => {
   type Name = 'Username' | 'Password';
@@ -39,8 +42,18 @@ const LoginForm = (): h.JSX.Element | null => {
             if (target?.value) s[id](target.value);
           }}
         />
-        {error
-        && <p class="mt-3 text-red-400 text-xs italic">{error}</p>}
+        {error && (
+          // Hmm... Not a huge fan of classes mixed with css``...
+          <p class={`text-xs ${css`
+              margin-top: ${decl.size.s03};
+              color: ${decl.color.red.c400};
+              font-style: italic;
+              /* Might be better to have a snippet "decl.text.xs" */
+            `}`}
+          >
+            {error}
+          </p>
+        )}
       </div>
     );
   };
@@ -54,7 +67,7 @@ const LoginForm = (): h.JSX.Element | null => {
       <Item name="Username" />
       <Item name="Password" error="Please choose a password" />
       <button
-        class="bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-4"
+        class={sharedStyles.ButtonBlue}
         type="button"
         onClick={() => addMessage(`${s.username()} & ${s.password()}`)}
       >

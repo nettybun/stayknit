@@ -95,22 +95,31 @@ const Page = css`
   }
 `;
 
-const Link = css`
-  color: ${decl.color.blue.c400};
+const ButtonBlue = css`
+  color: ${decl.color.white};
+  font-weight: bold;
+  padding: ${decl.size.s02} ${decl.size.s04};
+  background-color: ${decl.color.blue.c400};
   &:hover {
-    color: ${decl.color.blue.c500};
-    text-decoration: underline;
+    background-color: ${decl.color.blue.c500};
   }
 `;
 
-const DashBorder = css`
+const DashBorderBlue = css`
   border: 2px dashed ${decl.color.blue.c500};
 `;
 
-const styles = {
+const CodeBlock = css`
+  background: ${decl.color.gray.c200};
+  overflow-x: auto;
+  padding: ${decl.size.s05};
+`;
+
+const sharedStyles = {
   Page,
-  Link,
-  DashBorder,
+  ButtonBlue,
+  DashBorderBlue,
+  CodeBlock,
 };
 
-export { styles };
+export { sharedStyles };
