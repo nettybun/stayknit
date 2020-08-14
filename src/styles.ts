@@ -1,6 +1,10 @@
-import { decl, css, injectGlobal } from 'styletakeout.macro';
+import { decl, colour as c, size as s, css, injectGlobal } from 'styletakeout.macro';
 
 declare module 'styletakeout.macro' {
+  const decl: Declarations;
+  const colour: Colors;
+  const size: Sizes;
+
   // It's not important to be able to see the value so use string to simplify
   // Numbers can't be object property names without ['100'] so prefix with 'c'
   type Scale = {
@@ -28,37 +32,39 @@ declare module 'styletakeout.macro' {
       | 'purple'
       | 'pink']: Scale
   }
-  interface Decl {
+  type Colors = ScaledColors & {
+    black: string,
+    white: string,
+  }
+  type Sizes = {
+    // Without the leading 0 autocomplete will order them wrong
+    // Prefix with 's' for same reason as 'c'
+    s00: '0'
+    s01: '0.25re'
+    s02: '0.5rem'
+    s03: '0.75re'
+    s04: '1rem'
+    s05: '1.25re'
+    s06: '1.5rem'
+    s08: '2rem'
+    s10: '2.5rem'
+    s12: '3rem'
+    s16: '4rem'
+    s20: '5rem'
+    s24: '6rem'
+    s32: '8rem'
+    s40: '10rem'
+    s48: '12rem'
+    s56: '14rem'
+    s64: '16rem'
+  }
+  type Declarations = {
     // Remember that TS definitions are entirely for linting/intellisense
     // Values aren't real. Pick anything that helps you remember
-    pageBackground: 'purple.100'
+    pageBackground: 'purple 100'
     bodyBackground: '#eee'
-    color: {
-      black: string,
-      white: string,
-    } & ScaledColors
-    size: {
-      // Without the leading 0 autocomplete will order them wrong
-      // Prefix with 's' for same reason as 'c'
-      s00: '0'
-      s01: '0.25re'
-      s02: '0.5rem'
-      s03: '0.75re'
-      s04: '1rem'
-      s05: '1.25re'
-      s06: '1.5rem'
-      s08: '2rem'
-      s10: '2.5rem'
-      s12: '3rem'
-      s16: '4rem'
-      s20: '5rem'
-      s24: '6rem'
-      s32: '8rem'
-      s40: '10rem'
-      s48: '12rem'
-      s56: '14rem'
-      s64: '16rem'
-    }
+    color: Colors
+    size: Sizes
   }
 }
 
@@ -87,32 +93,32 @@ injectGlobal`
 const Page = css`
   background-color: ${decl.pageBackground};
   margin-bottom: 5px;
-  padding: ${decl.size.s08};
+  padding: ${s.s08};
   max-width: 800px;
 
   > * {
-    margin-bottom: ${decl.size.s02};
+    margin-bottom: ${s.s02};
   }
 `;
 
 const ButtonBlue = css`
-  color: ${decl.color.white};
+  color: ${c.white};
   font-weight: bold;
-  padding: ${decl.size.s02} ${decl.size.s04};
-  background-color: ${decl.color.blue.c400};
+  padding: ${s.s02} ${s.s04};
+  background-color: ${c.blue.c400};
   &:hover {
-    background-color: ${decl.color.blue.c500};
+    background-color: ${c.blue.c500};
   }
 `;
 
 const DashBorderBlue = css`
-  border: 2px dashed ${decl.color.blue.c500};
+  border: 2px dashed ${c.blue.c500};
 `;
 
 const CodeBlock = css`
-  background: ${decl.color.gray.c200};
+  background: ${c.gray.c200};
   overflow-x: auto;
-  padding: ${decl.size.s05};
+  padding: ${s.s05};
 `;
 
 const sharedStyles = {
