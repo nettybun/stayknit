@@ -1,11 +1,31 @@
 import { h } from '../sinuous.js';
-import { addMessage } from '../state/messages.js';
+import { addMessage } from '../state.js';
+import { css, sizes, colours } from 'styletakeout.macro';
+
+const barStyle = css`
+  display: flex;
+  border-radius: ${sizes._01};
+  border: 1px solid ${colours.purple._200};
+  border-bottom: none;
+  margin-bottom: ${sizes._02};
+`;
 
 const NavBar = ({ items }: { items: string[] }): h.JSX.Element =>
-  <div class="flex mb-2 border-t border-r border-l text-sm rounded">
+  <div class={`${barStyle} text-sm`}>
     {items.map(text =>
       <a
-        class="flex-1 text-center px-4 py-2 border-b-2 bg-white hover:bg-gray-100 hover:border-purple-500"
+        class={
+          css`
+            flex: 1 1 0%;
+            text-align: center;
+            padding: ${sizes._02} ${sizes._04};
+            border-bottom: 2px solid #e2e8f0;
+            background: ${colours.white};
+            &:hover {
+              background: ${colours.gray._100};
+              border-color: ${colours.purple._500};
+            }
+          `}
         onClick={() => addMessage(text)}
       >
         {text}
