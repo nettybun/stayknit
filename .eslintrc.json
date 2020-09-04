@@ -153,9 +153,11 @@
     ],
     "import/extensions": [
       "error",
-      "always",
+      "ignorePackages",
       {
-        "ignorePackages": true
+        "ts": "never",
+        "tsx": "never",
+        "js": "ignorePackages"
       }
     ],
     // Doesn't understand Typescript's resolver that allows .js for .ts/.tsx
