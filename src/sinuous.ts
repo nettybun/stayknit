@@ -42,9 +42,9 @@ const hooks = {
 };
 
 /** Switch rendered content based on an observable. Memos the DOM result */
-const when = (
-  condition: () => string,
-  views: { [k in string]?: Component }
+const when = <T extends string>(
+  condition: () => T,
+  views: { [k in T]?: Component }
 ): () => El | undefined => {
   const rendered: { [k in string]?: El } = {};
   return () => {
