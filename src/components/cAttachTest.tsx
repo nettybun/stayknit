@@ -1,5 +1,5 @@
 import { h, hooks } from '../sinuous.js';
-import { css, decl } from 'styletakeout.macro';
+import { css, colours, sizes } from 'styletakeout.macro';
 import { observable, computed } from 'sinuous/observable';
 import { inSSR, debounce } from '../util.js';
 import { HelloMessage } from './cHelloMessage.js';
@@ -44,9 +44,12 @@ const AttachTest = (): h.JSX.Element | null => {
   return (
     <div
       class={css`
-        background: ${decl.color.gray.c200};
+        background: ${colours.gray._200};
         margin-top: 15px;
         padding: 20px;
+        > * {
+          margin-bottom: ${sizes._05};
+        }
       `}
     >
       <p>The window's size is <span>{s.windowSize}</span></p>

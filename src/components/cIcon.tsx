@@ -1,5 +1,5 @@
 import { h, svg } from '../sinuous.js';
-import { svgSize } from '../state/svgSize.js';
+import { svgSize } from '../state.js';
 import { css } from 'styletakeout.macro';
 
 const HeartIcon = (): h.JSX.Element => {

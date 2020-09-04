@@ -1,13 +1,13 @@
 import { h } from '../sinuous.js';
-import { decl, css } from 'styletakeout.macro';
+import { colours, css } from 'styletakeout.macro';
 
 const Link = ({ to, name }: { to: string, name?: string }): h.JSX.Element =>
   <a
     class={
       css`
-        color: ${decl.color.blue.c400};
+        color: ${colours.blue._400};
         &:hover {
-          color: ${decl.color.blue.c500};
+          color: ${colours.blue._500};
           text-decoration: underline;
         }
       `}

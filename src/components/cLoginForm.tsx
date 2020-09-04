@@ -3,8 +3,8 @@ import { o, computed } from 'sinuous/observable';
 import { css, decl } from 'styletakeout.macro';
 
 import { inSSR } from '../util.js';
-import { addMessage } from '../state/messages.js';
-import { sharedStyles } from '../styles.js';
+import { addMessage } from '../state.js';
+import { styles } from '../styles.js';
 
 const LoginForm = (): h.JSX.Element | null => {
   type Name = 'Username' | 'Password';
@@ -45,8 +45,8 @@ const LoginForm = (): h.JSX.Element | null => {
         {error && (
           // Hmm... Not a huge fan of classes mixed with css``...
           <p class={`text-xs ${css`
-              margin-top: ${decl.size.s03};
-              color: ${decl.color.red.c400};
+              margin-top: ${decl.size._03};
+              color: ${decl.colour.red._400};
               font-style: italic;
               /* Might be better to have a snippet "decl.text.xs" */
             `}`}
@@ -67,7 +67,7 @@ const LoginForm = (): h.JSX.Element | null => {
       <Item name="Username" />
       <Item name="Password" error="Please choose a password" />
       <button
-        class={sharedStyles.ButtonBlue}
+        class={styles.ButtonBlue}
         type="button"
         onClick={() => addMessage(`${s.username()} & ${s.password()}`)}
       >
