@@ -1,23 +1,53 @@
-import { decl, colour as c, size as s, css, injectGlobal } from 'styletakeout.macro';
+import { decl, colours, sizes, css, injectGlobal } from 'styletakeout.macro';
 
 declare module 'styletakeout.macro' {
-  const decl: Declarations;
-  const colour: Colors;
-  const size: Sizes;
-
+  const decl: {
+    // Remember that TS definitions are entirely for linting/intellisense
+    // Values aren't real. Pick anything that helps you remember
+    pageBackground: 'purple 100'
+    bodyBackground: '#eee'
+    colour: typeof colours
+    size: typeof sizes
+  };
+  const colours: ScaledColors & {
+    black: string,
+    white: string,
+  };
+  const sizes: {
+    // Without the leading 0 autocomplete will order them wrong
+    // Prefix with 's' for same reason as 'c'
+    _00: '0'
+    _01: '0.25rem'
+    _02: '0.5rem'
+    _03: '0.75rem'
+    _04: '1rem'
+    _05: '1.25rem'
+    _06: '1.5rem'
+    _08: '2rem'
+    _10: '2.5rem'
+    _12: '3rem'
+    _16: '4rem'
+    _20: '5rem'
+    _24: '6rem'
+    _32: '8rem'
+    _40: '10rem'
+    _48: '12rem'
+    _56: '14rem'
+    _64: '16rem'
+  };
   // It's not important to be able to see the value so use string to simplify
-  // Numbers can't be object property names without ['100'] so prefix with 'c'
+  // Numbers can't be object property names without ['100'] so prefix with '_'
   type Scale = {
     [level in
-      | 'c100'
-      | 'c200'
-      | 'c300'
-      | 'c400'
-      | 'c500'
-      | 'c600'
-      | 'c700'
-      | 'c800'
-      | 'c900']: string
+      | '_100'
+      | '_200'
+      | '_300'
+      | '_400'
+      | '_500'
+      | '_600'
+      | '_700'
+      | '_800'
+      | '_900']: string
   }
   type ScaledColors = {
     [color in
@@ -32,50 +62,22 @@ declare module 'styletakeout.macro' {
       | 'purple'
       | 'pink']: Scale
   }
-  type Colors = ScaledColors & {
-    black: string,
-    white: string,
-  }
-  type Sizes = {
-    // Without the leading 0 autocomplete will order them wrong
-    // Prefix with 's' for same reason as 'c'
-    s00: '0'
-    s01: '0.25re'
-    s02: '0.5rem'
-    s03: '0.75re'
-    s04: '1rem'
-    s05: '1.25re'
-    s06: '1.5rem'
-    s08: '2rem'
-    s10: '2.5rem'
-    s12: '3rem'
-    s16: '4rem'
-    s20: '5rem'
-    s24: '6rem'
-    s32: '8rem'
-    s40: '10rem'
-    s48: '12rem'
-    s56: '14rem'
-    s64: '16rem'
-  }
-  type Declarations = {
-    // Remember that TS definitions are entirely for linting/intellisense
-    // Values aren't real. Pick anything that helps you remember
-    pageBackground: 'purple 100'
-    bodyBackground: '#eee'
-    color: Colors
-    size: Sizes
-  }
 }
 
 injectGlobal`
   * {
     box-sizing: border-box;
   }
+  html {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    line-height: 1.5;
+  }
   body {
     margin: 0;
     background-color: ${decl.bodyBackground};
-    font-family: 'system-ui', sans-serif;
+  }
+  p {
+    margin: 0;
   }
   /* Text and sizing */
   .text-xs   { font-size: 0.75rem ; }
@@ -90,42 +92,36 @@ injectGlobal`
   .text-6xl  { font-size: 4rem    ; }
 `;
 
-const Page = css`
-  background-color: ${decl.pageBackground};
-  margin-bottom: 5px;
-  padding: ${s.s08};
-  max-width: 800px;
+// I recommend inlining styles to one object without pointing to variables.
+// Then Ctrl+Hover will show you the full definition as a hint in VSCode.
+const styles = {
+  Page: css`
+    background-color: ${decl.pageBackground};
+    margin-bottom: 5px;
+    padding: ${sizes._08};
+    max-width: 800px;
 
-  > * {
-    margin-bottom: ${s.s02};
-  }
-`;
-
-const ButtonBlue = css`
-  color: ${c.white};
-  font-weight: bold;
-  padding: ${s.s02} ${s.s04};
-  background-color: ${c.blue.c400};
-  &:hover {
-    background-color: ${c.blue.c500};
-  }
-`;
-
-const DashBorderBlue = css`
-  border: 2px dashed ${c.blue.c500};
-`;
-
-const CodeBlock = css`
-  background: ${c.gray.c200};
-  overflow-x: auto;
-  padding: ${s.s05};
-`;
-
-const sharedStyles = {
-  Page,
-  ButtonBlue,
-  DashBorderBlue,
-  CodeBlock,
+    > * {
+      margin-bottom: ${sizes._05};
+    }
+  `,
+  ButtonBlue: css`
+    color: ${colours.white};
+    font-weight: bold;
+    padding: ${sizes._02} ${sizes._04};
+    background-color: ${colours.blue._400};
+    &:hover {
+      background-color: ${colours.blue._500};
+    }
+  `,
+  DashBorderBlue: css`
+    border: 2px dashed ${colours.blue._500};
+  `,
+  CodeBlock: css`
+    background: ${colours.gray._200};
+    overflow-x: auto;
+    padding: ${sizes._05};
+  `,
 };
 
-export { sharedStyles };
+export { styles };
