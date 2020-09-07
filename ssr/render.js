@@ -38,7 +38,6 @@ console.log(`Koa server listening on ${SERVER_PORT}`);
 
 // Client
 const window = {
-  // Constructors
   Document,
   DocumentFragment,
   Node,
@@ -74,11 +73,8 @@ window.document = document;
 document.defaultView = window;
 
 // Allows statements like "if (el instanceof Node)" as Node is a global
+// Note "window" isn't global so "typeof window === undefined" checking works
 for (const key in window) global[key] = window[key];
-
-// Note that "window" isn't global so "typeof window === undefined" checks work
-// @ts-ignore
-global.document = document;
 
 // Create the initial blank DOM
 document.documentElement = document.createElement('html');
