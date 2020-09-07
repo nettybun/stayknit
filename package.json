@@ -15,7 +15,7 @@
     "build:ts": "babel src --out-dir serve --extensions \".ts,.tsx\" --source-maps",
     "build:static": "mkdir -p serve && cp -r ./static/* serve/",
     "snowpack": "mkdir -p serve && snowpack && cp -r ./web_modules serve/",
-    "ssr": "cd contrib/ssr && npm run build",
+    "ssr": "cd ssr && npm run build",
     "install": "npm run snowpack",
     "build": "run-p build:*",
     "serve": "servor ./serve",
@@ -31,7 +31,6 @@
     "sinuous": "^0.27.8",
     "sinuous-lifecycle": "^2.0.1",
     "sinuous-trace": "^2.2.0",
-    "softdom": "../softdom",
     "styletakeout.macro": "../styletakeout/publish"
   },
   "devDependencies": {
@@ -40,8 +39,8 @@
     "@babel/plugin-transform-react-jsx": "^7.10.4",
     "@babel/plugin-transform-typescript": "^7.11.0",
     "@snowpack/babel-plugin-package-import": "^1.1.2",
-    "@typescript-eslint/eslint-plugin": "^4.0.1",
-    "@typescript-eslint/parser": "^4.0.1",
+    "@typescript-eslint/eslint-plugin": "^4.1.0",
+    "@typescript-eslint/parser": "^4.1.0",
     "babel-plugin-macros": "^2.8.0",
     "eslint": "^7.8.1",
     "eslint-import-resolver-typescript": "^2.3.0",
