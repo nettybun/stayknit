@@ -4,7 +4,7 @@ declare module 'styletakeout.macro' {
   const decl: {
     // Remember that TS definitions are entirely for linting/intellisense
     // Values aren't real. Pick anything that helps you remember
-    pageBackground: 'purple 100'
+    pageBackground: 'c.purple.100'
     bodyBackground: '#eee'
     colour: typeof colours
     size: typeof sizes
@@ -69,7 +69,7 @@ injectGlobal`
     box-sizing: border-box;
   }
   html {
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;
     line-height: 1.5;
   }
   body {
@@ -78,6 +78,13 @@ injectGlobal`
   }
   p {
     margin: 0;
+  }
+  code, kbd, pre {
+    font-family: Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+    font-size: 0.9em;
+  }
+  pre {
+    font-size: 0.75em;
   }
   /* Text and sizing */
   .text-xs   { font-size: 0.75rem ; }
@@ -90,6 +97,13 @@ injectGlobal`
   .text-4xl  { font-size: 2.25rem ; }
   .text-5xl  { font-size: 3rem    ; }
   .text-6xl  { font-size: 4rem    ; }
+
+  .space > * {
+    margin-bottom: ${sizes._04};
+  }
+  .space > :last-child {
+    margin-bottom: 0;
+  }
 `;
 
 // I recommend inlining styles to one object without pointing to variables.
@@ -100,22 +114,21 @@ const styles = {
     margin-bottom: 5px;
     padding: ${sizes._08};
     max-width: 800px;
-
-    > * {
-      margin-bottom: ${sizes._05};
-    }
   `,
   ButtonBlue: css`
     color: ${colours.white};
-    font-weight: bold;
     padding: ${sizes._02} ${sizes._04};
     background-color: ${colours.blue._400};
+    border: 2px solid ${colours.blue._200};
+    border-radius: 5px;
     &:hover {
       background-color: ${colours.blue._500};
     }
   `,
   DashBorderBlue: css`
     border: 2px dashed ${colours.blue._500};
+    margin: inherit -10px;
+    padding: 10px;
   `,
   CodeBlock: css`
     background: ${colours.gray._200};

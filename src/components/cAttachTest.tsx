@@ -45,9 +45,6 @@ const AttachTest = (): h.JSX.Element | null => {
         background: ${colours.gray._200};
         margin-top: 15px;
         padding: 20px;
-        > * {
-          margin-bottom: ${sizes._05};
-        }
       `}
     >
       <p>The window's size is <span>{s.windowSize}</span></p>

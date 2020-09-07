@@ -1,4 +1,5 @@
 import { h, api, when } from './sinuous.js';
+import { css, sizes } from 'styletakeout.macro';
 
 import { messages, count, addMessage, route } from './state.js';
 
@@ -13,7 +14,7 @@ import { styles } from './styles.js';
 import { stripIndent } from './util.js';
 
 const Page = () =>
-  <main class={styles.Page}>
+  <main class={`${styles.Page} space`}>
     <h1 class="text-4xl">Hi 🌺</h1>
     <p>This is a testing page for <Link to="https://sinuous.dev" name="Sinuous"/>. You'll need a modern browser. It's all ESM modules and no transpilation. I'm on Firefox 72.</p>
     <p>I've added onAttach/onDetach lifecycles for components so they can run code once they're added to the page, even if that's long after they're created. It uses WeakMaps.</p>
@@ -53,11 +54,11 @@ const Page = () =>
   </main>;
 
 const routeA = () =>
-  <section class={styles.DashBorderBlue}>
-    <div class="flex justify-center">
+  <section class={`${styles.DashBorderBlue} space`}>
+    <div class={css`display: flex; justify-content: center;`}>
       <HeartIcon />
     </div>
-    <p class="m-4 w-3/4 mx-auto text-center">
+    <p class={css`text-align: center;`}>
       The heart icon is an SVG that's rendered (in JSX) via <code>api.s</code>
     </p>
     <button
@@ -71,7 +72,7 @@ const routeA = () =>
     <LoginForm />
     <p>This component below will be removed after 5 messages are in the list</p>
     <p>This is the logic:</p>
-    <pre class={`text-xs ${styles.CodeBlock}`}>{stripIndent(`
+    <pre class={styles.CodeBlock}>{stripIndent(`
       when(() => count() < 5 ? 'T' : 'F', {
         T: () => <span><AttachTest/></span>,
         F: () => <em>Gone</em>,
@@ -85,10 +86,10 @@ const routeA = () =>
   </section>;
 
 const routeB = () =>
-  <div class={`mb-5 ${styles.DashBorderBlue}`}>
+  <div class={`${styles.DashBorderBlue} space`}>
     <p>Gone. You can restore the content (cached!)</p>
     <button
-      class={`${styles.ButtonBlue} mt-4`}
+      class={styles.ButtonBlue}
       type="button"
       onClick={() => route('A')}
     >
