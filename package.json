@@ -28,9 +28,10 @@
     }
   },
   "dependencies": {
-    "sinuous": "../sinuous/packages/sinuous",
+    "sinuous": "^0.27.8",
     "sinuous-lifecycle": "^2.0.1",
     "sinuous-trace": "^2.2.0",
+    "softdom": "../softdom",
     "styletakeout.macro": "../styletakeout/publish"
   },
   "devDependencies": {

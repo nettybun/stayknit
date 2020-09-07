@@ -13,8 +13,6 @@ const AttachTest = (): h.JSX.Element | null => {
     s.windowSize(`${window.innerWidth}px x ${window.innerHeight}px`);
   }, 250);
 
-  // XXX: SSR isn't updating the DOM but this _is_ called...
-  // Imagine api.insert() isn't working with SoftDOM
   computed(() => {
     console.log('Value of xhrFetchedCommentCount:', s.xhrFetchedCommentCount());
   });
