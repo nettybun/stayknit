@@ -2,7 +2,6 @@ import { promises as fs } from 'fs';
 import path from 'path';
 
 // For "server side"
-// If you have a full backend server written, turn it on here instead
 import Koa from 'koa';
 import send from 'koa-send';
 
@@ -20,19 +19,21 @@ import {
   Document,
   DocumentFragment,
   Event
-} from './softdom.js';
+} from 'softdom';
+
+const ROOT_DIR = '../serve';
+const SERVER_PORT = 3000;
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
-const rootPublicDir = '../../serve';
-const asPublicPath = filepath => path.join(__dirname, rootPublicDir, filepath);
+const asPublicPath = filepath => path.join(__dirname, ROOT_DIR, filepath);
 
 // Server
 const app = new Koa();
 app.use(async (ctx) => {
-  await send(ctx, ctx.path, { root: path.join(__dirname, rootPublicDir) });
+  await send(ctx, ctx.path, { root: path.join(__dirname, ROOT_DIR) });
 });
-const server = app.listen(3000);
-console.log('Koa server listening on 3000');
+const server = app.listen(SERVER_PORT);
+console.log(`Koa server listening on ${SERVER_PORT}`);
 
 // Client
 const window = {
@@ -56,7 +57,7 @@ const networkRequests = [];
 window.fetch = (url, ...args) => {
   // Convert relative and absolute paths to full URLs needed by node-fetch
   if (!url.match(/^https?:\/\//)) {
-    url = new URL(`http://localhost:3000/${url}`).toString();
+    url = new URL(`http://localhost:${SERVER_PORT}/${url}`).toString();
   }
   const reqStart = Date.now();
   const req = fetch(url, ...args);
@@ -98,21 +99,21 @@ document.documentElement.appendChild(document.body);
   server.close();
   console.log('Koa server stopped');
 
-  // Pull out SSR observables
-  // ... ugh trace.meta isn't iterable
-  // ... maybe the best way is to tap into api.insert/api.property?
-
   console.time('Serialize');
-  const serialized = xmlFormat(document.body.innerHTML, {
-    indentation: ' '.repeat(4),
+  // XML formatter requires a single root node else it drops content out of tags
+  const serialized = xmlFormat(`<root>${document.body.innerHTML}`, {
+    indentation: '  ',
     collapseContent: true,
-  });
+  })
+  // Remove the root...
+    .replace(/^<root>\s*/, '')
+    .replace(/\s*<\/root>$/, '');
   console.timeEnd('Serialize');
 
   const inPath = asPublicPath('index.html');
   const indexHTML = await fs.readFile(inPath, 'utf-8');
   const outPath = asPublicPath('indexSSR.html');
-  await fs.writeFile(outPath, indexHTML.replace(/[ ]*<!--SSR-->/, serialized));
+  await fs.writeFile(outPath, indexHTML.replace('<!--SSR-->', serialized));
 
   console.log('Written to:', outPath);
 })();
