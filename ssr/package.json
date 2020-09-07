@@ -10,9 +10,9 @@
   "dependencies": {
     "abort-controller": "^3.0.0",
     "koa": "^2.13.0",
-    "koa-send": "^5.0.0",
-    "node-fetch": "^2.6.0",
+    "koa-send": "^5.0.1",
+    "node-fetch": "^2.6.1",
     "softdom": "gitlab:nthm/softdom",
-    "xml-formatter": "^2.1.2"
+    "xml-formatter": "^2.1.3"
   }
 }
