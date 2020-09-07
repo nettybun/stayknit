@@ -24,6 +24,7 @@ import {
 const ROOT_DIR = '../serve';
 const SERVER_PORT = 3000;
 
+// @ts-ignore TS module is ESNext...
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 const asPublicPath = filepath => path.join(__dirname, ROOT_DIR, filepath);
 
@@ -75,8 +76,8 @@ document.defaultView = window;
 // Allows statements like "if (el instanceof Node)" as Node is a global
 for (const key in window) global[key] = window[key];
 
-// XXX: Convention to detect SSR when "window" isn't set, so don't set it
-// XXX: global.window = window;
+// Note that "window" isn't global so "typeof window === undefined" checks work
+// @ts-ignore
 global.document = document;
 
 // Create the initial blank DOM
