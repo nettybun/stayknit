@@ -1,6 +1,6 @@
 import { h, hooks } from '../sinuous.js';
 import { o, computed } from 'sinuous/observable';
-import { css, decl, snippets } from 'styletakeout.macro';
+import { css, decl, snippets, colours, sizes } from 'styletakeout.macro';
 
 import { inSSR } from '../util.js';
 import { addMessage } from '../state.js';
@@ -21,14 +21,31 @@ const LoginForm = (): h.JSX.Element | null => {
     else if (window.hydrating) return null;
 
     return (
-      <div class="my-3">
+      <div class={css`margin-bottom: ${sizes._04};`}>
         <label
-          class="block text-grey-darker text-sm font-bold mb-2" htmlFor={id}
+          // "block text-grey-darker text-sm font-bold mb-2"
+          class={css`
+            display: block;
+            color: ${colours.gray._700};
+            margin-bottom: ${sizes._02};
+            font-weight: bold;
+            ${snippets.text.sm}
+          `}
+          htmlFor={id}
         >
           {name} ({count} chars)
         </label>
         <input
-          class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker"
+          // "shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker"
+          class={css`
+            width: 100%;
+            padding: ${sizes._02} ${sizes._03};
+            color: ${colours.gray._700};
+            border-width: 2px;
+            &:focus {
+              border-color: ${colours.purple._300};
+            }
+          `}
           id={id}
           type="text"
           placeholder={
@@ -44,7 +61,7 @@ const LoginForm = (): h.JSX.Element | null => {
         />
         {error && (
           <p class={css`
-              margin: ${decl.size._03} 0;
+              margin: ${decl.size._02} 0;
               color: ${decl.colour.red._400};
               font-style: italic;
               ${snippets.text.xs}
@@ -62,7 +79,7 @@ const LoginForm = (): h.JSX.Element | null => {
   else if (window.hydrating) return null;
 
   return (
-    <div class="mb-6">
+    <div>
       <Item name="Username" />
       <Item name="Password" error="Please choose a password" />
       <button
@@ -70,7 +87,7 @@ const LoginForm = (): h.JSX.Element | null => {
         type="button"
         onClick={() => addMessage(`${s.username()} & ${s.password()}`)}
       >
-        Add fields to message list
+        Add items to message list
       </button>
     </div>
   );
