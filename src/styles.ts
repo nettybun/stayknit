@@ -67,17 +67,28 @@ declare module 'styletakeout.macro' {
 injectGlobal`
   * {
     box-sizing: border-box;
+    border-width: 0;
+    border-style: solid;
+    border-color: #e2e8f0;
   }
   html {
-    font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;
+    /* It's actually important to have the emoji fonts too */
+    font-family: system-ui,Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
     line-height: 1.5;
   }
   body {
-    margin: 0;
     background-color: ${decl.bodyBackground};
   }
-  p {
+  /* From Tailwind's preflight.css */
+  body, blockquote, dl, dd, h1, h2, h3, h4, h5, h6, hr, figure, p, pre {
     margin: 0;
+  }
+  img, svg, video, canvas, audio, iframe, embed, object {
+    display: block;
+  }
+  img, video {
+    max-width: 100%;
+    height: auto;
   }
   code, kbd, pre {
     font-family: Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
