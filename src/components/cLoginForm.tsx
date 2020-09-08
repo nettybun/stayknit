@@ -1,4 +1,4 @@
-import { h, hooks } from '../sinuous.js';
+import { h, hooks, when } from '../sinuous.js';
 import { o, computed } from 'sinuous/observable';
 import { css, decl, snippets, colours, sizes } from 'styletakeout.macro';
 
@@ -13,9 +13,11 @@ const LoginForm = (): h.JSX.Element | null => {
     password: o(''),
   };
 
-  const Item = ({ name, error }: { name: Name; error?: string }) => {
+  const Item = ({ name, emptyMessage }: { name: Name; emptyMessage?: string }) => {
     const id = name.toLowerCase() as 'username' | 'password';
     const count = computed(() => s[id]().length);
+    let hasTyped = false;
+
     // SSR
     if (inSSR) hooks.saveObservables({ count });
     else if (window.hydrating) return null;
@@ -53,23 +55,29 @@ const LoginForm = (): h.JSX.Element | null => {
               ? name
               : '*****'
           }
-          onInput={ev => {
-            // TODO: This is nuts.
-            const { target }: { target: EventTarget & { value?: string } | null } = ev;
-            if (target?.value) s[id](target.value);
+          onKeyUp={ev => {
+            hasTyped = true;
+            // @ts-ignore
+            s[id](ev.target.value);
           }}
         />
-        {error && (
-          <p class={css`
-              margin: ${decl.size._02} 0;
-              color: ${decl.colour.red._400};
-              font-style: italic;
-              ${snippets.text.xs}
-            `}
-          >
-            {error}
-          </p>
-        )}
+        {emptyMessage
+          && (
+            () => count() === 0 && hasTyped && (
+              <p class={css`
+                margin-top: ${sizes._02};
+                padding-left: ${sizes._03};
+                color: ${colours.red._400};
+                border-left: 2px solid ${colours.red._400};
+                font-style: italic;
+                ${snippets.text.xs}
+              `}
+              >
+                {emptyMessage}
+              </p>
+            )
+          )
+        }
       </div>
     );
   };
@@ -81,7 +89,7 @@ const LoginForm = (): h.JSX.Element | null => {
   return (
     <div>
       <Item name="Username" />
-      <Item name="Password" error="Please choose a password" />
+      <Item name="Password" emptyMessage="Please choose a password" />
       <button
         class={styles.ButtonBlue}
         type="button"
