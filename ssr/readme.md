@@ -1,4 +1,5 @@
 # SSR via SoftDOM
 
-https://gitlab.com/nthm/softdom
-https://github.com/heyheyhello/softdom
+Read more at:
+ - https://gitlab.com/nthm/softdom
+ - https://github.com/heyheyhello/softdom
