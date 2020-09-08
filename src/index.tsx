@@ -1,7 +1,7 @@
 import { h, api, when } from './sinuous.js';
 import { css, snippets, sizes } from 'styletakeout.macro';
 
-import { messages, count, addMessage, route } from './state.js';
+import { messages, count, addMessage, route, svgSize } from './state.js';
 
 import { AttachTest } from './components/cAttachTest.js';
 import { HelloMessage } from './components/cHelloMessage.js';
@@ -109,12 +109,13 @@ const routeA = () =>
       Swap to route "B"
     </button>
     <div class={css`display: flex; justify-content: center;`}>
-      <HeartIcon />
+      <HeartIcon size={svgSize}/>
     </div>
-    <p class={css`text-align: center;`}>
-      The heart icon is an SVG that's rendered (in JSX) via <code>api.s</code>.<br />It grows with how many messages there are.
-    </p>
+    <p class={css`text-align: center;`}>The heart icon is an SVG that's rendered (in JSX) via <code>api.s</code>.<br />It grows with how many messages there are.</p>
+
     <p>There's {() => `${count()} message${count() === 1 ? '' : 's'}`} right now</p>
+
+    <p>Here's a <code>{'<LoginForm/>'}</code> component that also writes to the list of messages</p>
 
     <LoginForm />
 
@@ -140,7 +141,9 @@ const routeA = () =>
 
 const routeB = () =>
   <div class={`${styles.DashBorderBlue} space`}>
-    <p>Gone. This is now <code>routeB</code></p>
+    <p>Gone. This is now route B</p>
+    <p>Here's some content to play with while you're here. Each button adds a message. When you go back to route A, the heart will be bigger.</p>
+    <NavBar items={['Add A', 'Add B', 'Add C', 'Add D', 'Add E']} />
     <button
       class={styles.ButtonBlue}
       type="button"
