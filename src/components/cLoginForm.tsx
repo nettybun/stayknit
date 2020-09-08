@@ -95,7 +95,7 @@ const LoginForm = (): h.JSX.Element | null => {
         type="button"
         onClick={() => addMessage(`${s.username()} & ${s.password()}`)}
       >
-        Add items to message list
+        Add user/pass fields as a message
       </button>
     </div>
   );
