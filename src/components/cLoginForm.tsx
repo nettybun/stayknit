@@ -16,7 +16,51 @@ const LoginForm = (): h.JSX.Element | null => {
   const Item = ({ name, emptyMessage }: { name: Name; emptyMessage?: string }) => {
     const id = name.toLowerCase() as 'username' | 'password';
     const count = computed(() => s[id]().length);
-    let hasTyped = false;
+    const hasTyped = o(false);
+
+    // XXX: This is only an example that you can nest components. I don't
+    // recommend it tho! It's too much closure overhead to think about...
+    const DisappearingMessage = ({ text }: { text: string }) => {
+      const transitionStyle = css`
+        transition-timing-function: linear;
+        transition-property: width;
+        transition-duration: 3000ms;
+        width: 100%;
+        height: 2px;
+        background-color: ${colours.red._600};
+        `;
+      const emptyLoaderStyle = o(transitionStyle);
+
+      let timeout: NodeJS.Timeout;
+      hooks.onAttach(() => {
+        // Here the _child_ asks the _parent_ to unmount itself (!!!)
+        timeout = setTimeout(() => hasTyped(false), 3000);
+        // rAF() and sT() both seem to be enough
+        setTimeout(() => emptyLoaderStyle(`${transitionStyle} ${css`width: 0;`}`), 10);
+      });
+      hooks.onDetach(() => {
+        clearTimeout(timeout);
+      });
+      return (
+        <div class={css`
+          display: inline-block;
+          margin-top: ${sizes._02};
+          background-color: ${colours.red._300};
+          `}
+        >
+          <p class={css`
+            color: #fff;
+            font-style: italic;
+            padding: ${sizes._01} ${sizes._03} 4px;
+            ${snippets.text.xs}
+          `}
+          >
+            {text}
+          </p>
+          <div class={emptyLoaderStyle}/>
+        </div>
+      );
+    };
 
     // SSR
     if (inSSR) hooks.saveObservables({ count });
@@ -56,27 +100,14 @@ const LoginForm = (): h.JSX.Element | null => {
               : '*****'
           }
           onKeyUp={ev => {
-            hasTyped = true;
+            hasTyped(true);
             // @ts-ignore
             s[id](ev.target.value);
           }}
         />
         {emptyMessage
-          && (
-            () => count() === 0 && hasTyped && (
-              <p class={css`
-                margin-top: ${sizes._02};
-                padding-left: ${sizes._03};
-                color: ${colours.red._400};
-                border-left: 2px solid ${colours.red._400};
-                font-style: italic;
-                ${snippets.text.xs}
-              `}
-              >
-                {emptyMessage}
-              </p>
-            )
-          )
+          && (() => (count() === 0 && hasTyped())
+            && <DisappearingMessage text={emptyMessage}/>)
         }
       </div>
     );
