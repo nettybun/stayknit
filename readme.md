@@ -47,7 +47,7 @@ lightweight project that anyone use without drowning in tooling.
 [2]: https://gitlab.com/nthm/sinuous-packages/-/tree/work/sinuous-trace
 [3]: https://gitlab.com/nthm/sinuous-packages/-/tree/work/sinuous-lifecycle
 [4]: https://gitlab.com/nthm/styletakeout
-[5]: https://gitlab.com/nthm/stayknit/-/tree/work/contrib/ssr
+[5]: https://gitlab.com/nthm/softdom
 [6]: https://snowpack.dev
 [7]: https://github.com/developit/htm/
 [8]: https://gitlab.com/nthm/stayknit/-/jobs/615115580
