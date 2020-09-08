@@ -1,6 +1,6 @@
 import { h, hooks } from '../sinuous.js';
 import { o, computed } from 'sinuous/observable';
-import { css, decl } from 'styletakeout.macro';
+import { css, decl, snippets } from 'styletakeout.macro';
 
 import { inSSR } from '../util.js';
 import { addMessage } from '../state.js';
@@ -43,13 +43,12 @@ const LoginForm = (): h.JSX.Element | null => {
           }}
         />
         {error && (
-          // Hmm... Not a huge fan of classes mixed with css``...
-          <p class={`text-xs ${css`
-              margin-top: ${decl.size._03};
+          <p class={css`
+              margin: ${decl.size._03} 0;
               color: ${decl.colour.red._400};
               font-style: italic;
-              /* Might be better to have a snippet "decl.text.xs" */
-            `}`}
+              ${snippets.text.xs}
+            `}
           >
             {error}
           </p>
