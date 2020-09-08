@@ -21,7 +21,7 @@ const AttachTest = (): h.JSX.Element | null => {
   hooks.onAttach(() => {
     void fetch('fetchData.txt', { signal: fetchController.signal })
       .then(r => r.text())
-      .then(count => s.xhrFetchedCommentCount(count));
+      .then(count => s.xhrFetchedCommentCount(count.trim()));
     if (!inSSR) {
       onWindowResize();
       window.addEventListener('resize', onWindowResize);
