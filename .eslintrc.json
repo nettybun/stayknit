@@ -180,6 +180,10 @@
     "no-multi-spaces": [
       "error",
       {
+        "exceptions": {
+          "Property": true,
+          "TSTypeAnnotation": true
+        },
         "ignoreEOLComments": true
       }
     ],
