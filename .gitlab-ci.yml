@@ -11,7 +11,7 @@ pages:
   script:
     - npm install
     - npm run snowpack
-    - cd contrib/ssr
+    - cd ssr
     - npm install
     - cd -
     # Fix URL since GitLab hosts at a subdomain

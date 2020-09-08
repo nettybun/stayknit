@@ -18,7 +18,9 @@ import {
   Element,
   Document,
   DocumentFragment,
-  Event
+  Event,
+  classProperties,
+  elementAttributes
 } from 'softdom';
 
 const ROOT_DIR = '../serve';
@@ -67,6 +69,16 @@ window.fetch = (url, ...args) => {
   }));
   return req;
 };
+
+// Sinuous add-ons
+Object.assign(classProperties.Element, {
+  // Naturally el._listeners = {} but minified. Ugh.
+  t: {},
+  // Cannot set property of 'cssText' of undefined
+  style: {},
+  // This isn't implemented in SoftDOM but I write to it in sinuous-trace/log
+  dataset: {},
+});
 
 const document = new Document();
 window.document = document;
