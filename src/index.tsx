@@ -1,5 +1,5 @@
 import { h, api, when } from './sinuous.js';
-import { css, snippets } from 'styletakeout.macro';
+import { css, snippets, sizes } from 'styletakeout.macro';
 
 import { messages, count, addMessage, route } from './state.js';
 
@@ -27,32 +27,56 @@ const Page = () =>
 
     <p>The packages are pluggable, and I've tried to make it easy to extend the functionality. Some example plugins you could write: gather render timing information; re-render counts; or showing a warning when a component hits a certain number of child elements.</p>
 
-    <NavBar items={['Add A', 'Add B', 'Add C', 'Add D', 'Add E']} />
+    <h2 style={`margin-top: ${sizes._10}; margin-bottom: ${sizes._02}`}>Demos</h2>
 
-    <p>Below the content is rendered as a <code>`when()`</code> block</p>
+    <p>Here are some demos of content, logic, and styling. Below the content is rendered as a <code>`when()`</code> block, like this:</p>
+    <pre class={styles.CodeBlock}>{stripIndent(`
+      when(() => route(), {
+        A: routeA,
+        B: routeB,
+      })
+    `)}
+    </pre>
     {when(() => route(), {
       A: routeA,
       B: routeB,
     })}
 
+    <p>This is now outside of the router content. Let's talk about state and counting. To help illustrate this, we'll count <code>{'<HelloMessage/>'}</code> components. Here's one now:</p>
+
     <HelloMessage name="This is a <HelloMessage/> component"/>
 
-    <p>Below, a list of HelloMessage components are being rendered like this:</p>
+    <p>These are a lil special because they use <code>onAttach</code> and <code>onDetach</code> hooks. The pink background <em>only</em> appears when the component has been mounted. It fades in.</p>
+
+    <p>Below, a list of these components are being rendered:</p>
 
     <pre class={styles.CodeBlock}>
       {'() => messages().map(x => <p><HelloMessage name={x}/></p>)'}
     </pre>
 
-    <p>Each time a message is added, all old components are removed (causes onDetach) and new components are created from scartch and added (onAttach).</p>
+    <p>Because this uses a simple <code>[].map()</code>, each time a message is added all old components are removed (calling their respective onDetach) and new components are created and added to the DOM (calling onAttach).</p>
 
-    <div>{
+    <p>Let's also do one last neat <code>when()</code> block:</p>
+    <pre class={styles.CodeBlock}>{stripIndent(`
       when(() => count() === 0 ? '0' : count() < 10 ? '0..10' : '>= 10', {
         '0':     () => <p>There's no messages right now</p>,
         '0..10': () => <p>There's {count} messages; which is less than ten...</p>,
         '>= 10': () => <p><em>Passed 10!</em> There's {count} messages</p>,
       })
-    }
+    `)}
+    </pre>
+    <p>It looks a little complex, but it's pretty intuitive to read. Here's the output:</p>
+    <div>
+      {
+        when(() => count() === 0 ? '0' : count() < 10 ? '0..10' : '>= 10', {
+          '0':     () => <p>There's no messages right now</p>,
+          '0..10': () => <p>There's {count} messages; which is less than ten...</p>,
+          '>= 10': () => <p><em>Passed 10!</em> There's {count} messages</p>,
+        })
+      }
     </div>
+
+    <p>Play with the page's reactivity by adding and clearing some messages! Lots of the page updates, like the heart icon mentioned earlier.</p>
 
     <button
       class={styles.ButtonBlue}
@@ -62,32 +86,39 @@ const Page = () =>
       Add message
     </button>
 
-    <div>
+    <button
+      class={`${styles.ButtonBlue} ${css`margin-left: 5px;`}`}
+      type="button"
+      onClick={() => messages([])}
+    >
+      Clear all
+    </button>
+
+    <section class={styles.DashBorderBlue}>
       {() => messages().map(x => <p><HelloMessage name={x}/></p>)}
-    </div>
+    </section>
   </main>;
 
 const routeA = () =>
   <section class={`${styles.DashBorderBlue} space`}>
-    <div class={css`display: flex; justify-content: center;`}>
-      <HeartIcon />
-    </div>
-    <p class={css`text-align: center;`}>
-      The heart icon is an SVG that's rendered (in JSX) via <code>api.s</code>
-    </p>
     <button
       class={styles.ButtonBlue}
       type="button"
       onClick={() => route('B')}
     >
-      Remove blue dashed content via <code>`when()`</code>
+      Swap to route "B"
     </button>
-
+    <div class={css`display: flex; justify-content: center;`}>
+      <HeartIcon />
+    </div>
+    <p class={css`text-align: center;`}>
+      The heart icon is an SVG that's rendered (in JSX) via <code>api.s</code>.<br />It grows with how many messages there are.
+    </p>
     <p>There's {() => `${count()} message${count() === 1 ? '' : 's'}`} right now</p>
 
     <LoginForm />
 
-    <p>This component below will be removed after 5 messages are in the list</p>
+    <p>There's a blue component below called <code>{'<AttachTest/>'}</code> that will be removed after 5 messages are in the list</p>
 
     <p>This is the logic:</p>
 
@@ -98,6 +129,9 @@ const routeA = () =>
       })
       `)}
     </pre>
+
+    <p>Here's count: {count}</p>
+
     {when(() => count() < 5 ? 'T' : 'F', {
       T: () => <span><AttachTest/></span>,
       F: () => <em>Gone</em>,
@@ -106,13 +140,13 @@ const routeA = () =>
 
 const routeB = () =>
   <div class={`${styles.DashBorderBlue} space`}>
-    <p>Gone. You can restore the content (cached!)</p>
+    <p>Gone. This is now <code>routeB</code></p>
     <button
       class={styles.ButtonBlue}
       type="button"
       onClick={() => route('A')}
     >
-      Restore via <code>`when()`</code>
+      Restore "A"
     </button>
   </div>;
 

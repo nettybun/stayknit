@@ -19,7 +19,7 @@ const HelloMessage = ({ name }: { name: string }): h.JSX.Element => {
     }, 100);
   });
   hooks.onDetach(() => {});
-  return <span class={style}>Hello "{name}"</span>;
+  return <div><span class={style}>Hello "{name}"</span></div>;
 };
 
 export { HelloMessage };

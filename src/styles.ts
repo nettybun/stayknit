@@ -68,8 +68,9 @@ const styles = {
   `,
   CodeBlock: css`
     background: ${colours.gray._200};
+    border: 2px solid ${colours.gray._400};
     overflow-x: auto;
-    padding: ${sizes._05};
+    padding: ${sizes._03};
   `,
 };
 

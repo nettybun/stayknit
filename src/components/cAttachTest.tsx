@@ -42,7 +42,8 @@ const AttachTest = (): h.JSX.Element | null => {
   return (
     <div
       class={css`
-        background: ${colours.gray._200};
+        background: ${colours.indigo._200};
+        border: 2px solid ${colours.indigo._300};
         margin-top: 15px;
         padding: 20px;
       `}
