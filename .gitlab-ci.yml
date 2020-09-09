@@ -18,7 +18,7 @@ pages:
     - npm run build
     - cd -
     # Make the .js file accessible so package.json points to it
-    - mv -r node_modules/styletakeout.macro/publish/* node_modules/styletakeout.macro/
+    - mv node_modules/styletakeout.macro/publish/* node_modules/styletakeout.macro/
     - cd ssr
     - npm install
     - cd -
