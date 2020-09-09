@@ -10,7 +10,15 @@ pages:
     - publish
   script:
     - npm install
+    # GitLab doesn't run post install hooks. Normally npm install would do this
     - npm run snowpack
+    # Hack until StyleTakeout is published
+    - cd node_modules/styletakeout.macro
+    - npm install
+    - npm run build
+    - cd -
+    # Make the .js file accessible so package.json points to it
+    - mv -r node_modules/styletakeout.macro/publish/* node_modules/styletakeout.macro/
     - cd ssr
     - npm install
     - cd -
