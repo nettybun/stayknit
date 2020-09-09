@@ -20,14 +20,14 @@ function h(...args: Parameters<HCall>): ReturnType<HCall> { return (api.h as HCa
 
 trace(api);
 lifecycle(api, trace);
-// Save these
+// Save these...
 const { add, insert, property, rm } = api;
 const { onAttach, onDetach } = trace.tracers;
-// Overwrite these
+// Overwrite them here:
 logTrace(api, trace);
-// Restore the overwritten function but to the originals
-Object.assign(api, { add, insert, property, rm });
-Object.assign(trace.tracers, { onAttach, onDetach });
+// Reduce logging by restoring the overwritten functions to the saved originals
+// Object.assign(api, { add, insert, property, rm });
+// Object.assign(trace.tracers, { onAttach, onDetach });
 logLifecycle(trace, lifecycle);
 
 /** Component lifecycles */
