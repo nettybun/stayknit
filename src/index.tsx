@@ -17,15 +17,19 @@ const Page = () =>
   <main class={`${styles.Page} space`}>
     <h1 class={css`font-weight: 400; ${snippets.text.xl_4}`}>Hi 🌺</h1>
 
-    <p>This is a testing page for <Link to="https://sinuous.dev" name="Sinuous"/>. You'll need a modern browser. It's all ESM modules and no transpilation. I'm on Firefox 72.</p>
+    <p>This is a testing page for <Link to="https://sinuous.dev" name="Sinuous"/>. You'll need a modern browser. It's all ESM modules and no JS transpilation except JSX.</p>
 
-    <p>I've added onAttach/onDetach lifecycles for components so they can run code once they're added to the page, even if that's long after they're created. It uses WeakMaps.</p>
+    <p>I've been working on projects that work with Sinuous. One is adding onAttach/onDetach lifecycles for components so they can run code once they're added to the DOM, even if that's long after they're created. It uses WeakMaps.</p>
 
     <p><strong>Open your browser's console to see the application tracing</strong></p>
 
     <p>The source code is here: <Link to="https://gitlab.com/nthm/sinuous-packages"/>. This testing page has its source here: <Link to="https://gitlab.com/nthm/stayknit"/>.</p>
 
     <p>The packages are pluggable, and I've tried to make it easy to extend the functionality. Some example plugins you could write: gather render timing information; re-render counts; or showing a warning when a component hits a certain number of child elements.</p>
+
+    <p>Another package is <em>styletakeout.macro</em> which is a true-zero overhead compile-time CSS-in-JS library. This page is written in it. I wrote it to replace Tailwind CSS.</p>
+
+    <p>Lastly there's <em>SoftDOM</em> which does server side rendering. It actually can render this page! Here's the output at <Link to="indexSSR.html"/>. Compare its source (Ctrl+U) to the non-SSR version.</p>
 
     <h2 style={`margin-top: ${sizes._10}; margin-bottom: ${sizes._02}`}>Demos</h2>
 

@@ -78,6 +78,10 @@ Object.assign(classProperties.Element, {
   style: {},
   // This isn't implemented in SoftDOM but I write to it in sinuous-trace/log
   dataset: {},
+  // Not sorry???
+  contains() {
+    return true;
+  },
 });
 
 const document = new Document();
