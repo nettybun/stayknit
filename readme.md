@@ -35,7 +35,7 @@ There's no tree-shaking so the best option is to not include HTM at all.
 
 - Publish a TS+JSX Sinuous starter kit
 - Publish a ESM(Snowpack)+TS+JSX Sinuous starter kit
-- Work on SSR hydration ([CI demo][8])
+- Work on SSR hydration (SSR is working via SoftDOM: [CI demo][8])
   - Support event handlers
   - Support observables
 
@@ -50,4 +50,4 @@ lightweight project that anyone use without drowning in tooling.
 [5]: https://gitlab.com/nthm/softdom
 [6]: https://snowpack.dev
 [7]: https://github.com/developit/htm/
-[8]: https://gitlab.com/nthm/stayknit/-/jobs/615115580
+[8]: https://gitlab.com/nthm/stayknit/-/jobs/737134174
