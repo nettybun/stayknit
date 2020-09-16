@@ -6,7 +6,7 @@ injectGlobal`
     box-sizing: border-box;
     border-width: 0;
     border-style: solid;
-    border-color: #e2e8f0;
+    border-color: #eee;
   }
   html {
     /* It's actually important to have the emoji fonts too */
@@ -17,10 +17,10 @@ injectGlobal`
     background-color: ${decl.bodyBackground};
   }
   /* From Tailwind's preflight.css */
-  body, blockquote, dl, dd, h1, h2, h3, h4, h5, h6, hr, figure, p, pre {
+  body, blockquote, h1, h2, h3, h4, h5, h6, hr, figure, p, pre {
     margin: 0;
   }
-  img, svg, video, canvas, audio, iframe, embed, object {
+  img, svg, video, canvas, audio, iframe {
     display: block;
   }
   img, video {
