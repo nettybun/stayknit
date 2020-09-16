@@ -1,5 +1,3 @@
 node_modules
 web_modules
 serve
-dist
-!.eslintrc.js

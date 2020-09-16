@@ -2,5 +2,3 @@
 node_modules
 web_modules
 serve
-dist
-packages/**/package-lock.json
