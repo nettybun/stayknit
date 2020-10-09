@@ -28,9 +28,9 @@
     }
   },
   "dependencies": {
-    "sinuous": "^0.27.8",
-    "sinuous-lifecycle": "^2.0.1",
-    "sinuous-trace": "^2.2.0",
+    "haptic": "^0.3.0",
+    "sinuous-lifecycle": "file:../sinuous-packages/publish/sinuous-lifecycle",
+    "sinuous-trace": "file:../sinuous-packages/publish/sinuous-trace",
     "styletakeout.macro": "2.0.0"
   },
   "devDependencies": {

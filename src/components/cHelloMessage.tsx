@@ -1,6 +1,8 @@
-import { h, hooks } from '../sinuous.js';
-import { observable } from 'sinuous/observable';
+import { h } from 'haptic';
+import { signal } from 'haptic/s';
 import { css } from 'styletakeout.macro';
+
+import { hooks } from '../sinuous.js';
 
 const baseStyle = css`
   transition-timing-function: ease-in-out;
@@ -10,7 +12,7 @@ const baseStyle = css`
 
 const HelloMessage = ({ name }: { name: string }): h.JSX.Element => {
   // I've decided this doesn't need hydration
-  const style = observable(baseStyle);
+  const style = signal(baseStyle);
 
   hooks.onAttach(() => {
     // Simulate async call that takes some time...

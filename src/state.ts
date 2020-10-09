@@ -1,10 +1,10 @@
-import { observable, computed, subscribe, sample } from 'sinuous/observable';
-import type { Observable } from 'sinuous/observable';
+import { signal, computed, subscribe, sample } from 'haptic/s';
+import type { Signal } from 'haptic/s';
 
-const route: Observable<'A' | 'B' | 'C'> = observable('A');
+const route: Signal<'A' | 'B' | 'C'> = signal('A');
 
 // This can't be a document fragment, it needs to be mountable
-const messages = observable([] as string[]);
+const messages = signal([] as string[]);
 
 const addMessage = (text: string): void => {
   const list = messages();

@@ -1,4 +1,4 @@
-import { h, api, when } from './sinuous.js';
+import { h, api, when } from 'haptic';
 import { css, snippets, sizes } from 'styletakeout.macro';
 
 import { messages, count, addMessage, route, svgSize } from './state.js';

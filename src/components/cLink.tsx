@@ -1,4 +1,4 @@
-import { h } from '../sinuous.js';
+import { h } from 'haptic';
 import { colours, css } from 'styletakeout.macro';
 
 const Link = ({ to, name }: { to: string, name?: string }): h.JSX.Element =>

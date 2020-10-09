@@ -1,6 +1,7 @@
-import { h } from '../sinuous.js';
-import { addMessage } from '../state.js';
+import { h } from 'haptic';
 import { css, sizes, colours, snippets } from 'styletakeout.macro';
+
+import { addMessage } from '../state.js';
 
 const NavBar = ({ items }: { items: string[] }): h.JSX.Element =>
   <div class={barStyle}>

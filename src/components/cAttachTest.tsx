@@ -1,13 +1,16 @@
-import { h, hooks } from '../sinuous.js';
+import { h } from 'haptic';
+import { signal, computed } from 'haptic/s';
 import { css, colours, sizes } from 'styletakeout.macro';
-import { observable, computed } from 'sinuous/observable';
+
+import { hooks } from '../sinuous.js';
 import { inSSR, debounce } from '../util.js';
+
 import { HelloMessage } from './cHelloMessage.js';
 
 const AttachTest = (): h.JSX.Element | null => {
   const s = {
-    xhrFetchedCommentCount: observable('...'),
-    windowSize: observable('...'),
+    xhrFetchedCommentCount: signal('...'),
+    windowSize: signal('...'),
   };
   const onWindowResize = debounce(() => {
     s.windowSize(`${window.innerWidth}px x ${window.innerHeight}px`);
@@ -36,7 +39,7 @@ const AttachTest = (): h.JSX.Element | null => {
   });
 
   // SSR
-  if (inSSR) hooks.saveObservables(s);
+  if (inSSR) hooks.saveSignals(s);
   else if (window.hydrating) return null;
 
   return (

@@ -1,6 +1,8 @@
-import { h, hooks, when } from '../sinuous.js';
-import { o, computed } from 'sinuous/observable';
+import { h, when } from 'haptic';
+import { s, computed } from 'haptic/s';
 import { css, decl, snippets, colours, sizes } from 'styletakeout.macro';
+
+import { hooks } from '../sinuous.js';
 
 import { inSSR } from '../util.js';
 import { addMessage } from '../state.js';
@@ -8,15 +10,15 @@ import { styles } from '../styles.js';
 
 const LoginForm = (): h.JSX.Element | null => {
   type Name = 'Username' | 'Password';
-  const s = {
-    username: o(''),
-    password: o(''),
+  const state = {
+    username: s(''),
+    password: s(''),
   };
 
   const Item = ({ name, emptyMessage }: { name: Name; emptyMessage?: string }) => {
     const id = name.toLowerCase() as 'username' | 'password';
-    const count = computed(() => s[id]().length);
-    const hasTyped = o(false);
+    const count = computed(() => state[id]().length);
+    const hasTyped = s(false);
 
     // XXX: This is only an example that you can nest components. I don't
     // recommend it tho! It's too much closure overhead to think about...
@@ -29,7 +31,7 @@ const LoginForm = (): h.JSX.Element | null => {
         height: 2px;
         background-color: ${colours.red._600};
         `;
-      const emptyLoaderStyle = o(transitionStyle);
+      const emptyLoaderStyle = s(transitionStyle);
 
       let timeout: NodeJS.Timeout;
       hooks.onAttach(() => {
@@ -63,7 +65,7 @@ const LoginForm = (): h.JSX.Element | null => {
     };
 
     // SSR
-    if (inSSR) hooks.saveObservables({ count });
+    if (inSSR) hooks.saveSignals({ count });
     else if (window.hydrating) return null;
 
     return (
@@ -102,7 +104,7 @@ const LoginForm = (): h.JSX.Element | null => {
           onKeyUp={ev => {
             hasTyped(true);
             // @ts-ignore
-            s[id](ev.target.value);
+            state[id](ev.target.value);
           }}
         />
         {emptyMessage
@@ -114,7 +116,7 @@ const LoginForm = (): h.JSX.Element | null => {
   };
 
   // SSR
-  if (inSSR) hooks.saveObservables(s);
+  if (inSSR) hooks.saveSignals(state);
   else if (window.hydrating) return null;
 
   return (
@@ -124,7 +126,7 @@ const LoginForm = (): h.JSX.Element | null => {
       <button
         class={styles.ButtonBlue}
         type="button"
-        onClick={() => addMessage(`${s.username()} & ${s.password()}`)}
+        onClick={() => addMessage(`${state.username()} & ${state.password()}`)}
       >
         Add user/pass fields as a message
       </button>
