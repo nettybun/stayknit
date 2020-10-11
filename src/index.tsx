@@ -88,16 +88,14 @@ const Page = () =>
     <button
       class={styles.ButtonBlue}
       type="button"
-      onClick={() => addMessage(String(count() + 1))}
-    >
+      onClick={() => addMessage(String(count() + 1))}>
       Add message
     </button>
 
     <button
       class={`${styles.ButtonBlue} ${css`margin-left: 5px;`}`}
       type="button"
-      onClick={() => messages([])}
-    >
+      onClick={() => messages([])}>
       Clear all
     </button>
 
@@ -111,20 +109,19 @@ const routeA = () =>
     <button
       class={styles.ButtonBlue}
       type="button"
-      onClick={() => route('B')}
-    >
+      onClick={() => route('B')}>
       Swap to route "B"
     </button>
     <div class={css`display: flex; justify-content: center;`}>
       <HeartIcon size={svgSize}/>
     </div>
-    <p class={css`text-align: center;`}>The heart icon is an SVG that's rendered (in JSX) via <code>api.s</code>.<br />It grows with how many messages there are.</p>
+    <p class={css`text-align: center;`}>The heart icon is an SVG that's rendered (in JSX) via <code>api.s</code>.<br/>It grows with how many messages there are.</p>
 
     <p>There's {() => `${count()} message${count() === 1 ? '' : 's'}`} right now</p>
 
     <p>Here's a <code>{'<LoginForm/>'}</code> component that also writes to the list of messages</p>
 
-    <LoginForm />
+    <LoginForm/>
 
     <p>There's a blue component below called <code>{'<AttachTest/>'}</code> that will be removed after 5 messages are in the list</p>
 
@@ -150,12 +147,11 @@ const routeB = () =>
   <div class={`${styles.DashBorderBlue} space`}>
     <p>Gone. This is now route B</p>
     <p>Here's some content to play with while you're here. Each button adds a message. When you go back to route A, the heart will be bigger.</p>
-    <NavBar items={['Add A', 'Add B', 'Add C', 'Add D', 'Add E']} />
+    <NavBar items={['Add A', 'Add B', 'Add C', 'Add D', 'Add E']}/>
     <button
       class={styles.ButtonBlue}
       type="button"
-      onClick={() => route('A')}
-    >
+      onClick={() => route('A')}>
       Restore "A"
     </button>
   </div>;

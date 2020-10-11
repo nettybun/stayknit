@@ -68,7 +68,6 @@
           }
         ],
         "@typescript-eslint/no-unused-vars": "off",
-        "@typescript-eslint/unbound-method": "off",
         "@typescript-eslint/no-unnecessary-condition": [
           "error",
           {
@@ -211,7 +210,10 @@
       "error",
       "single"
     ],
-    "react/jsx-closing-bracket-location": "error",
+    "react/jsx-closing-bracket-location": [
+      "error",
+      "after-props"
+    ],
     "react/jsx-closing-tag-location": "error",
     "react/jsx-curly-brace-presence": [
       "error",
@@ -230,6 +232,15 @@
       2
     ],
     "react/jsx-no-undef": "error",
+    "react/jsx-tag-spacing": [
+      "error",
+      {
+        "closingSlash": "never",
+        "beforeSelfClosing": "never",
+        "afterOpening": "never",
+        "beforeClosing": "never"
+      }
+    ],
     "react/jsx-uses-react": "error",
     "react/jsx-uses-vars": "error",
     "react/no-adjacent-inline-elements": "error",

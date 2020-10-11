@@ -11,8 +11,7 @@ const HeartIcon = ({ size }: { size: Signal<string|number> }) => {
       height={size}
       viewBox="0 0 16 16"
       fill="currentColor"
-      xmlns="http://www.w3.org/2000/svg"
-    >
+      xmlns="http://www.w3.org/2000/svg">
       <path fillRule="evenodd" d={path} clip-rule="evenodd"/>
     </svg>
   );
@@ -32,21 +31,18 @@ const SvelteIcon = ({ size }: { size: Signal<string|number> }) => {
       width={size}
       height={size}
       viewBox="0 0 103 124"
-      xmlns="http://www.w3.org/2000/svg"
-    >
+      xmlns="http://www.w3.org/2000/svg">
       <g out-fade="{{duration: 200}}" opacity={0.2}>
         <path
           in-expand="{{duration: 400, delay: 1000, easing: quintOut}}"
           class={pathStyle}
           style={`stroke: ${svelteRed}; fill: ${svelteRed}; stroke-width: 50;`}
-          d={outerPath}
-        />
+          d={outerPath}/>
         <path
           in-draw="{{duration: 1000}}"
           class={pathStyle}
           style={`stroke: ${svelteRed}; stroke-width: 1.5`}
-          d={innerPath}
-        />
+          d={innerPath}/>
       </g>
     </svg>
   );

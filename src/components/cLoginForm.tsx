@@ -48,15 +48,13 @@ const LoginForm = () => {
           display: inline-block;
           margin-top: ${sizes._02};
           background-color: ${colours.red._300};
-          `}
-        >
+          `}>
           <p class={css`
             color: #fff;
             font-style: italic;
             padding: ${sizes._01} ${sizes._03} 4px;
             ${snippets.text.xs}
-          `}
-          >
+          `}>
             {text}
           </p>
           <div class={emptyLoaderStyle}/>
@@ -79,8 +77,7 @@ const LoginForm = () => {
             font-weight: bold;
             ${snippets.text.sm}
           `}
-          htmlFor={id}
-        >
+          htmlFor={id}>
           {name} ({count} chars)
         </label>
         <input
@@ -105,8 +102,7 @@ const LoginForm = () => {
             hasTyped(true);
             // @ts-ignore
             state[id](ev.target.value);
-          }}
-        />
+          }}/>
         {emptyMessage
           && (() => (count() === 0 && hasTyped())
             && <DisappearingMessage text={emptyMessage}/>)
@@ -121,13 +117,12 @@ const LoginForm = () => {
 
   return (
     <div>
-      <Item name="Username" />
-      <Item name="Password" emptyMessage="Please choose a password" />
+      <Item name="Username"/>
+      <Item name="Password" emptyMessage="Please choose a password"/>
       <button
         class={styles.ButtonBlue}
         type="button"
-        onClick={() => addMessage(`${state.username()} & ${state.password()}`)}
-      >
+        onClick={() => addMessage(`${state.username()} & ${state.password()}`)}>
         Add user/pass fields as a message
       </button>
     </div>

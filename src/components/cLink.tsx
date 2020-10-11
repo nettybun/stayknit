@@ -11,8 +11,7 @@ const Link = ({ to, name }: { to: string, name?: string }) =>
           text-decoration: underline;
         }
       `}
-    href={to}
-  >
+    href={to}>
     {name ?? to}
   </a>;
 

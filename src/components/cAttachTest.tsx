@@ -49,8 +49,7 @@ const AttachTest = () => {
         border: 2px solid ${colours.indigo._300};
         margin-top: 15px;
         padding: 20px;
-      `}
-    >
+      `}>
       <p>The window's size is <span>{s.windowSize}</span></p>
       <p>This post has {s.xhrFetchedCommentCount} comments</p>
       <HelloMessage name="Nested! (Works)"/>
