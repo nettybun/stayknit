@@ -72,8 +72,8 @@ window.fetch = (url, ...args) => {
 
 // Sinuous add-ons
 Object.assign(classProperties.Element, {
-  // Naturally el._listeners = {} but minified. Ugh.
-  t: {},
+  // Naturally el._listeners = {}
+  $l: {},
   // Cannot set property of 'cssText' of undefined
   style: {},
   // This isn't implemented in SoftDOM but I write to it in sinuous-trace/log
