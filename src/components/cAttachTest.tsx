@@ -2,7 +2,7 @@ import { h } from 'haptic';
 import { signal, computed } from 'haptic/s';
 import { css, colours, sizes } from 'styletakeout.macro';
 
-import { hooks } from '../sinuous.js';
+import { lifecycles } from '../lifecycles.js';
 import { inSSR, debounce } from '../util.js';
 
 import { HelloMessage } from './cHelloMessage.js';
@@ -21,7 +21,7 @@ const AttachTest = (): h.JSX.Element | null => {
   });
 
   const fetchController = new AbortController();
-  hooks.onAttach(() => {
+  lifecycles.onAttach(() => {
     void fetch('fetchData.txt', { signal: fetchController.signal })
       .then(r => r.text())
       .then(count => s.xhrFetchedCommentCount(count.trim()));
@@ -31,7 +31,7 @@ const AttachTest = (): h.JSX.Element | null => {
     }
   });
 
-  hooks.onDetach(() => {
+  lifecycles.onDetach(() => {
     fetchController.abort();
     if (!inSSR) {
       window.removeEventListener('resize', onWindowResize);
@@ -39,7 +39,7 @@ const AttachTest = (): h.JSX.Element | null => {
   });
 
   // SSR
-  if (inSSR) hooks.saveSignals(s);
+  if (inSSR) lifecycles.saveSignals(s);
   else if (window.hydrating) return null;
 
   return (

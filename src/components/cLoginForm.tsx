@@ -2,7 +2,7 @@ import { h, when } from 'haptic';
 import { s, computed } from 'haptic/s';
 import { css, decl, snippets, colours, sizes } from 'styletakeout.macro';
 
-import { hooks } from '../sinuous.js';
+import { lifecycles } from '../lifecycles.js';
 
 import { inSSR } from '../util.js';
 import { addMessage } from '../state.js';
@@ -34,13 +34,13 @@ const LoginForm = (): h.JSX.Element | null => {
       const emptyLoaderStyle = s(transitionStyle);
 
       let timeout: NodeJS.Timeout;
-      hooks.onAttach(() => {
+      lifecycles.onAttach(() => {
         // Here the _child_ asks the _parent_ to unmount itself (!!!)
         timeout = setTimeout(() => hasTyped(false), 3000);
         // rAF() and sT() both seem to be enough
         setTimeout(() => emptyLoaderStyle(`${transitionStyle} ${css`width: 0;`}`), 10);
       });
-      hooks.onDetach(() => {
+      lifecycles.onDetach(() => {
         clearTimeout(timeout);
       });
       return (
@@ -65,7 +65,7 @@ const LoginForm = (): h.JSX.Element | null => {
     };
 
     // SSR
-    if (inSSR) hooks.saveSignals({ count });
+    if (inSSR) lifecycles.saveSignals({ count });
     else if (window.hydrating) return null;
 
     return (
@@ -116,7 +116,7 @@ const LoginForm = (): h.JSX.Element | null => {
   };
 
   // SSR
-  if (inSSR) hooks.saveSignals(state);
+  if (inSSR) lifecycles.saveSignals(state);
   else if (window.hydrating) return null;
 
   return (

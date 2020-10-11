@@ -1,6 +1,7 @@
 import { h, api, when } from 'haptic';
 import { css, snippets, sizes } from 'styletakeout.macro';
 
+import { lifecyclesInstall } from './lifecycles.js';
 import { messages, count, addMessage, route, svgSize } from './state.js';
 
 import { AttachTest } from './components/cAttachTest.js';
@@ -12,6 +13,8 @@ import { NavBar } from './components/cNavBar.js';
 
 import { styles } from './styles.js';
 import { stripIndent } from './util.js';
+
+lifecyclesInstall();
 
 const Page = () =>
   <main class={`${styles.Page} space`}>
