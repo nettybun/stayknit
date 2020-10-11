@@ -7,7 +7,7 @@ import { inSSR, debounce } from '../util.js';
 
 import { HelloMessage } from './cHelloMessage.js';
 
-const AttachTest = (): h.JSX.Element | null => {
+const AttachTest = () => {
   const s = {
     xhrFetchedCommentCount: signal('...'),
     windowSize: signal('...'),

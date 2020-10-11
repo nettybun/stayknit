@@ -8,7 +8,7 @@ import { inSSR } from '../util.js';
 import { addMessage } from '../state.js';
 import { styles } from '../styles.js';
 
-const LoginForm = (): h.JSX.Element | null => {
+const LoginForm = () => {
   type Name = 'Username' | 'Password';
   const state = {
     username: s(''),

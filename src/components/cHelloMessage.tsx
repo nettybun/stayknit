@@ -10,7 +10,7 @@ const baseStyle = css`
   transition-duration: 500ms;
 `;
 
-const HelloMessage = ({ name }: { name: string }): h.JSX.Element => {
+const HelloMessage = ({ name }: { name: string }) => {
   // I've decided this doesn't need hydration
   const style = signal(baseStyle);
 

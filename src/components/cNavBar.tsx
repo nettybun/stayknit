@@ -3,7 +3,7 @@ import { css, sizes, colours, snippets } from 'styletakeout.macro';
 
 import { addMessage } from '../state.js';
 
-const NavBar = ({ items }: { items: string[] }): h.JSX.Element =>
+const NavBar = ({ items }: { items: string[] }) =>
   <div class={barStyle}>
     {items.map(text =>
       <a class={linkStyle} onClick={() => addMessage(text)}>

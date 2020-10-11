@@ -1,7 +1,7 @@
 import { h } from 'haptic';
 import { colours, css } from 'styletakeout.macro';
 
-const Link = ({ to, name }: { to: string, name?: string }): h.JSX.Element =>
+const Link = ({ to, name }: { to: string, name?: string }) =>
   <a
     class={
       css`
