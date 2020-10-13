@@ -21,7 +21,7 @@ const LoginForm = () => {
     const hasTyped = s(false);
 
     // XXX: This is only an example that you can nest components. I don't
-    // recommend it tho! It's too much closure overhead to think about...
+    // recommend it! It's too much closure overhead to think about...
     const DisappearingMessage = ({ text }: { text: string }) => {
       const transitionStyle = css`
         transition-timing-function: linear;
@@ -30,14 +30,14 @@ const LoginForm = () => {
         width: 100%;
         height: 2px;
         background-color: ${colours.red._600};
-        `;
+      `;
       const emptyLoaderStyle = s(transitionStyle);
 
       let timeout: NodeJS.Timeout;
       lifecycles.onAttach(() => {
         // Here the _child_ asks the _parent_ to unmount itself (!!!)
         timeout = setTimeout(() => hasTyped(false), 3000);
-        // rAF() and sT() both seem to be enough
+        // rAF() and sT() both don't seem to be enough so add 10ms
         setTimeout(() => emptyLoaderStyle(`${transitionStyle} ${css`width: 0;`}`), 10);
       });
       lifecycles.onDetach(() => {
