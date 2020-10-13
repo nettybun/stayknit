@@ -1,7 +1,7 @@
 # Stayknit
 
-This repo is for the testing and development of [Sinuous][1] and other packages
-listed below. It's a place to try out a modern healthy web stack.
+This repo is for the testing and development of [Sinuous][1]/Haptic and other
+packages listed below. It's a place to try out a modern healthy web stack.
 
 It's Sinuous(+Lifecycles), ESM-only, TS, JSX, CSS-in-JS, and SSR.
 
@@ -22,22 +22,24 @@ Web:
 
 ## Structure
 
-This is ESM-only. No bundler - Babel removes all Typescript annotations.
+This is ESM-only. No bundler - Babel removes all TypeScript annotations.
 Packages are handled by [Snowpack][6]. I was very tired of bundlers - if you are
 too, let this spark hope a better future in JS modules.
 
-I've composed _parts_ of Sinuous in _src/sinuous.ts_ to provide a local
+~~I've composed _parts_ of Sinuous in _src/sinuous.ts_ to provide a local
 framework used throughout the rest of the project. Mostly because by default
 Sinuous pulls in [HTM][7] but JSX already does this work at compile time.
-There's no tree-shaking so the best option is to not include HTM at all.
+There's no tree-shaking so the best option is to not include HTM at all.~~
+
+As of 83c09c6 I use Haptic which better supports TypeScript.
 
 ## Future
 
-- Publish a TS+JSX Sinuous starter kit
-- Publish a ESM(Snowpack)+TS+JSX Sinuous starter kit
-- Work on SSR hydration (SSR is working via SoftDOM: [CI demo][8])
+- [x] ~~Publish a TS+JSX Sinuous starter kit~~
+- [x] ~~Publish a ESM(Snowpack)+TS+JSX Sinuous starter kit~~
+- [ ] Work on SSR hydration (SSR is working via SoftDOM: [CI demo][8])
   - Support event handlers
-  - Support observables
+  - Support observables - WIP
 
 I think Sinuous is a beautiful project and has a bright future. JS frameworks
 often become over-engineered and heavy, so it's nice to see an approachable
