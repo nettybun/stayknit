@@ -6,7 +6,7 @@
       {
         "styletakeout": {
           "outputFile": "serve/takeout.css",
-          "timing": true,
+          // "timing": true,
           // "stdoutPatch": false
           // "beautify": false
           "variables": {
@@ -186,13 +186,14 @@
         "useBuiltIns": true,
         "useNativeSpread": true
       }
-    ],
-    [
-      "@snowpack/babel-plugin-package-import",
-      {
-        "webModulesUrl": "/web_modules/"
-      }
     ]
+    // Using sed-hack for now
+    // [
+    //   "@snowpack/babel-plugin-package-import",
+    //   {
+    //     "webModulesUrl": "/web_modules/"
+    //   }
+    // ]
     // Using VSCode's "Import Module Specifier Ending" and ESLint instead
     // "./tools/babel-plugin-import-ext-patch.js"
   ]

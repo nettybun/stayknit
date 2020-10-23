@@ -8,8 +8,12 @@
     "esModuleInterop": true,
     "pretty": true,
     "jsx": "preserve",
-    "jsxFactory": "h"
+    "jsxFactory": "h",
+    "baseUrl": ".",
+    "paths": {
+      "/web_modules/*": [
+        "./node_modules/*"
+      ]
+    }
   }
-  // I've never been able to get include/exclude working for VSCode, but checkJS
-  // allows skipping JS files temporarily
 }

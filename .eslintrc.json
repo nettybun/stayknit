@@ -65,34 +65,12 @@
   ],
   "extends": [
     "eslint:recommended",
-    "plugin:@typescript-eslint/eslint-recommended",
-    "plugin:import/errors",
-    "plugin:import/warnings",
-    "plugin:import/typescript"
+    "plugin:@typescript-eslint/eslint-recommended"
   ],
   "settings": {
     "react": {
       "pragma": "h",
       "createClass": ""
-    },
-    "import/parsers": {
-      "@typescript-eslint/parser": [
-        ".ts",
-        ".tsx"
-      ]
-    },
-    "import/resolver": {
-      "node": {
-        "extensions": [
-          ".js",
-          ".jsx",
-          ".ts",
-          ".tsx"
-        ]
-      },
-      "typescript": {
-        "directory": "./"
-      }
     }
   },
   "rules": {
@@ -121,17 +99,6 @@
         "SwitchCase": 1
       }
     ],
-    "import/extensions": [
-      "error",
-      "ignorePackages",
-      {
-        "ts": "never",
-        "tsx": "never",
-        "js": "ignorePackages"
-      }
-    ],
-    // Doesn't understand Typescript's resolver that allows .js for .ts/.tsx
-    "import/no-unresolved": "off",
     "key-spacing": [
       "error",
       {
