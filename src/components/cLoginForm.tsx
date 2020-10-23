@@ -1,5 +1,5 @@
-import { h, when } from 'haptic';
-import { s, computed } from 'haptic/s';
+import { h, when } from '/web_modules/haptic';
+import { s, computed } from '/web_modules/haptic/s';
 import { css, decl, snippets, colours, sizes } from 'styletakeout.macro';
 
 import { lifecycles } from '../lifecycles.js';

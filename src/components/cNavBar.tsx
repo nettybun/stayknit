@@ -1,4 +1,4 @@
-import { h } from 'haptic';
+import { h } from '/web_modules/haptic';
 import { css, sizes, colours, snippets } from 'styletakeout.macro';
 
 import { addMessage } from '../state.js';

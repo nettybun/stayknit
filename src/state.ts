@@ -1,5 +1,5 @@
-import { signal, computed, subscribe, sample } from 'haptic/s';
-import type { Signal } from 'haptic/s';
+import { signal, computed, subscribe, sample } from '/web_modules/haptic/s';
+import type { Signal } from '/web_modules/haptic/s';
 
 const route: Signal<'A' | 'B' | 'C'> = signal('A');
 

@@ -1,11 +1,11 @@
-import { api } from 'haptic';
+import { api } from '/web_modules/haptic';
 
 import { trace } from 'sinuous-trace';
 import { lifecycle } from 'sinuous-lifecycle';
 import { logTrace } from 'sinuous-trace/log';
 import { logLifecycle } from 'sinuous-lifecycle/log';
 
-import type { Signal } from 'haptic/s';
+import type { Signal } from '/web_modules/haptic/s';
 
 let ran = false;
 

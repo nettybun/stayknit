@@ -1,4 +1,4 @@
-import { h, api, when } from 'haptic';
+import { h, api, when } from '/web_modules/haptic';
 import { css, snippets, sizes } from 'styletakeout.macro';
 
 import { lifecyclesInstall } from './lifecycles.js';

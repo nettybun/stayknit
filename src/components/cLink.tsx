@@ -1,4 +1,4 @@
-import { h } from 'haptic';
+import { h } from '/web_modules/haptic';
 import { colours, css } from 'styletakeout.macro';
 
 const Link = ({ to, name }: { to: string, name?: string }) =>
