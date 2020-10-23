@@ -156,37 +156,4 @@ const routeB = () =>
     </button>
   </div>;
 
-// api.h = (tag, ...args) => {
-//   const functions: Array<() => unknown> = [];
-//   if (typeof tag === 'function') {
-//     console.group('Tag call:', tag.name);
-//     const fromTag = tag(...args);
-//     console.log('From tag:', fromTag);
-//     // @ts-ignore
-//     functions.push(fromTag);
-//     console.groupEnd();
-//   } else {
-//     const toSearch = [...args];
-//     while (toSearch.length) {
-//       console.log(toSearch);
-//       const x = toSearch.shift();
-//       if (typeof x === 'function') {
-//         // @ts-ignore
-//         if (x.$o) {
-//           console.log('DOM observable:', x.name);
-//         }
-//         functions.push(x as () => unknown);
-//         console.log('Argument call:', x.toString());
-//         x();
-//       }
-//       else if (typeof x === 'object' && x !== null) {
-//         console.log('Add object');
-//         // @ts-ignore
-//         Object.values(x).forEach(y => toSearch.push(y));
-//       }
-//     }
-//   }
-//   return functions;
-// };
-// console.log(<Page/>);
 api.add(document.body, <Page/>, document.body.firstChild as Node);

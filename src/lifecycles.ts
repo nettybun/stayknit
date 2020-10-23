@@ -28,42 +28,6 @@ const lifecyclesInstall = () => {
   logLifecycle(trace, lifecycle);
 };
 
-/**
- * I put this in haptic/s.js
- * It mostly works, but as signals are garbage collected/destroyed the counter
- * won't go down. Only shows WritableSignal creation. Need to patch computed()
- * to see those and DOM subscriptions... Maybe patch h()#api.subscribe?
-
-const sDeclarations = new Map();
-const { origin } = window;
-
-const stackTraceBlink = new RegExp(` at (\\w+) \\(${origin}(.+\\.js.+)\\)`);
-const stackTraceGecko = new RegExp(`(\\w+)@${origin}(.+\\.js.+)`);
-
-const s = (arg) => {
-  let error;
-  try { throw Error(''); } catch (err) { error = err; }
-  if (error.stack) {
-    error = error.stack.split('\n');
-    // Blink-based browsers do this
-    if (error[0] === 'Error') error.shift();
-    const [hereLine, callerLine] = error;
-    const match
-      = callerLine.startsWith('    at ')
-        ? stackTraceBlink.exec(callerLine)
-        : stackTraceGecko.exec(callerLine);
-    if (match) {
-      const [matchLine, callerFn, callerLocation] = match;
-      const loc = `${callerFn}@${callerLocation}`;
-      const count = (sDeclarations.get(loc) ?? 0) + 1;
-      sDeclarations.set(loc, count);
-      console.log(`Signal declared at ${loc}#${count}`);
-    }
-  }
-  return y(arg);
-};
- */
-
 /** Component lifecycles */
 const lifecycles = {
   onAttach(callback: () => void): void { lifecycle.set('onAttach', callback); },
