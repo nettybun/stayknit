@@ -39,6 +39,9 @@ const macroPlugin = plugin => {
     }
     return { path: args.path, namespace: 'macro' };
   });
+
+  // This _doesn't_ run after the resolver! It might look it, but if you run the
+  // program multiple times it's a race condition. Don't trust it.
   plugin.addLoader({ filter: /.*/, namespace: 'macro' }, args => {
     const res = macroResolutions[args.path];
     if (!res) {
