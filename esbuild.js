@@ -18,51 +18,64 @@ const macros = {
 
 const macroPlugin = plugin => {
   plugin.setName('macro');
+  // TODO: Won't resolve tsconfig.json non-relative imports, but it's a start
   plugin.addResolver({ filter: /\.(ts|js)x?$/ }, args => {
-    // TODO: Won't resolve tsconfig.json non-relative imports, but it's a start
-    if (!args.path.startsWith('./')) {
-      // Skip
+    console.group(`Resolver: ${args.path}`);
+    let importee = path.resolve(args.resolveDir, args.path);
+    const lookupPaths = [importee];
+
+    // TypeScript files may import '.js' to refer to either '.ts' or '.tsx'
+    if (importee.endsWith('.js')) {
+      for (const ext of ['ts', 'jsx', 'tsx'])
+        lookupPaths.push(importee.replace(/js$/, ext));
+    } else {
+      for (const ext of ['js', 'ts', 'jsx', 'tsx'])
+        lookupPaths.push(`${importee}.${ext}`);
+    }
+    let code;
+    for (const curr of lookupPaths) {
+      try {
+        code = fs.readFileSync(curr, 'utf-8');
+      } catch { /* */ }
+      if (code) {
+        console.log('Translated', importee, 'as', curr);
+        importee = curr;
+        break;
+      }
+    }
+    if (!code) {
+      throw new Error(`Unresolved import "${importee}"`);
+    }
+
+    let match;
+    let fileHasMacros;
+    while ((match = macroRegex.exec(code))) {
+      let [importLine, macroExports, macroModule] = match;
+      macroExports = macroExports.replace(/(\s+|{|})/g, '').split(',');
+      for (const mExport of macroExports) {
+        if (!macros[macroModule]) macros[macroModule] = new Set();
+        macros[macroModule].add(mExport);
+      }
+      fileHasMacros = true;
+      console.log(macroModule, macroExports);
+    }
+    if (!fileHasMacros) {
+      console.log('No macros; skipping', args.path);
+      console.groupEnd();
       return { path: args.path };
     }
 
-    //   const code = fs.readFileSync(args.importer, 'utf-8');
-    //   let match;
-    //   // eslint-disable-next-line no-cond-assign
-    //   while (match = macroRegex.exec(code)) {
-    //     let [importLine, macroExports, macroModule] = match;
-    //     macroExports = macroExports.replace(/(\s+|{|})/g, '').split(',');
-    //     for (const mExport of macroExports) {
-    //       if (!macros[macroModule]) macros[macroModule] = new Set();
-    //       macros[macroModule].add(mExport);
-    //     }
-    //     // console.log(args, macroModule, macroExports);
-    //   }
-
-    const imported = path.resolve(args.resolveDir, args.path);
-    const lookupPaths = [imported];
-
-    // TypeScript files may import '.js' to refer to either '.ts' or '.tsx'
-    if (imported.endsWith('.js')) {
-      for (const ext of ['ts', 'jsx', 'tsx'])
-        lookupPaths.push(imported.replace(/js$/, ext));
-    } else {
-      for (const ext of ['js', 'ts', 'jsx', 'tsx'])
-        lookupPaths.push(`${imported}.${ext}`);
-    }
-    for (const curr of lookupPaths) {
-      let contents;
-      try {
-        contents = fs.readFileSync(curr, 'utf-8');
-      } catch { /* */ }
-      if (contents) {
-        console.log('Resolved', imported, 'to', curr);
-        return { contents, loader: 'tsx' };
-      }
-    }
-    throw new Error(`Unresolved import "${imported}"`);
+    console.log('Found macros', importee);
+    console.groupEnd();
+    // Pass the absolute path to the loader; we'll need it later
+    return { path: importee, namespace: 'macro' };
   });
 
-  plugin.addLoader({ filter: /.*/, namespace: 'macro' }, args => {
+  const srcDirRegex = new RegExp(`^${process.cwd()}/src/.+\\.(ts|js)x?$`);
+  plugin.addLoader({ filter: srcDirRegex }, args => {
+    console.group('Loader');
+    console.log(args.path);
+    console.groupEnd();
   });
 };
 
