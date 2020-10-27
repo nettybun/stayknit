@@ -48,6 +48,16 @@ const macroPlugin = plugin => {
 
 // TODO Macros: StripIndent, Preval, JSON-subset-loader, Millisecond-convert
 
+const snowpackPrefixed = new Set();
+const snowpackPrefixPlugin = plugin => {
+  plugin.setName('snowpack-prefix');
+  // Filter /^(?!\.).*/ with negative-lookahead isn't supported in Go
+  plugin.addResolver({ filter: /^(?:haptic|sinuous)/ }, args => {
+    snowpackPrefixed.add(args.path);
+    return { path: `/web_modules/${args.path}.js`, external: true, namespace: 'snowpack' };
+  });
+};
+
 build({
   entryPoints: ['src/index.tsx'],
   outdir: 'serve/esbuild',
@@ -57,10 +67,15 @@ build({
   format: 'esm',
   plugins: [
     macroPlugin,
+    snowpackPrefixPlugin,
   ],
   // macros: [
   //   'styletakeout.macro',
   // ],
   jsxFactory: 'h',
   jsxFragment: 'h',
-}).catch(() => process.exit(1));
+})
+  .then(() => {
+    console.log('Prefixed:', Array.from(snowpackPrefixed).join(', '));
+  })
+  .catch(() => process.exit(1));
