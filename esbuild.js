@@ -54,6 +54,7 @@ const snowpackPrefixPlugin = plugin => {
   // Filter /^(?!\.).*/ with negative-lookahead isn't supported in Go
   plugin.addResolver({ filter: /^(?:haptic|sinuous)/ }, args => {
     snowpackPrefixed.add(args.path);
+    // Moving to a new namespace is necessary else '/' will resolve the OS root
     return { path: `/web_modules/${args.path}.js`, external: true, namespace: 'snowpack' };
   });
 };
