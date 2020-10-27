@@ -3,6 +3,7 @@
 // loader instead (hopefully that also catches the entrypoint?)
 
 import * as fs from 'fs';
+import * as path from 'path';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 
@@ -11,49 +12,57 @@ const require = createRequire(import.meta.url);
 const { build } = require('esbuild');
 
 const macroRegex = /^import (.+) from ['"](.+\.macro)['"];?$/mg;
-const macros = new Set();
-
-// Per-macro
-const macroResolutions = {
-  'styletakeout.macro': {
-    'css': '() => {}',
-    'injectGlobal': '() => {}',
-    '*': 'undefined',
-  },
+const macros = {
+  // Per macro; "styletakeout.macro": Set<["decl", "css", "injectGlobal"]>
 };
 
 const macroPlugin = plugin => {
   plugin.setName('macro');
-  plugin.addResolver({ filter: /\.macro$/ }, args => {
-    const code = fs.readFileSync(args.importer, 'utf-8');
-    let match;
-    // eslint-disable-next-line no-cond-assign
-    while (match = macroRegex.exec(code)) {
-      let [importLine, importWhat, importFrom] = match;
-      for (const rm of [/\s+/g, /^{/, /}$/]) {
-        importWhat = importWhat.replace(rm, '');
-      }
-      importWhat = importWhat.split(',');
-      importWhat.forEach(what => macros.add(what));
-      console.log(importLine, importWhat, importFrom);
+  plugin.addResolver({ filter: /\.(ts|js)x?$/ }, args => {
+    // TODO: Won't resolve tsconfig.json non-relative imports, but it's a start
+    if (!args.path.startsWith('./')) {
+      // Skip
+      return { path: args.path };
     }
-    return { path: args.path, namespace: 'macro' };
+
+    //   const code = fs.readFileSync(args.importer, 'utf-8');
+    //   let match;
+    //   // eslint-disable-next-line no-cond-assign
+    //   while (match = macroRegex.exec(code)) {
+    //     let [importLine, macroExports, macroModule] = match;
+    //     macroExports = macroExports.replace(/(\s+|{|})/g, '').split(',');
+    //     for (const mExport of macroExports) {
+    //       if (!macros[macroModule]) macros[macroModule] = new Set();
+    //       macros[macroModule].add(mExport);
+    //     }
+    //     // console.log(args, macroModule, macroExports);
+    //   }
+
+    const imported = path.resolve(args.resolveDir, args.path);
+    const lookupPaths = [imported];
+
+    // TypeScript files may import '.js' to refer to either '.ts' or '.tsx'
+    if (imported.endsWith('.js')) {
+      for (const ext of ['ts', 'jsx', 'tsx'])
+        lookupPaths.push(imported.replace(/js$/, ext));
+    } else {
+      for (const ext of ['js', 'ts', 'jsx', 'tsx'])
+        lookupPaths.push(`${imported}.${ext}`);
+    }
+    for (const curr of lookupPaths) {
+      let contents;
+      try {
+        contents = fs.readFileSync(curr, 'utf-8');
+      } catch { /* */ }
+      if (contents) {
+        console.log('Resolved', imported, 'to', curr);
+        return { contents, loader: 'tsx' };
+      }
+    }
+    throw new Error(`Unresolved import "${imported}"`);
   });
 
-  // This _doesn't_ run after the resolver! It might look it, but if you run the
-  // program multiple times it's a race condition. Don't trust it.
   plugin.addLoader({ filter: /.*/, namespace: 'macro' }, args => {
-    const res = macroResolutions[args.path];
-    if (!res) {
-      throw new Error(`No import resolution for "${args.path}"`);
-    }
-    let contents = '';
-    macros.forEach(what => {
-      contents += `export const ${what} = ${res[what] || res['*']};\n`;
-    });
-    console.log('Final:');
-    console.log(contents);
-    return { contents };
   });
 };
 
